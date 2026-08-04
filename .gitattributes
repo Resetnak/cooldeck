@@ -1,0 +1,8 @@
+# Keep golden snapshots byte-stable across Windows and Unix checkouts.
+internal/tui/testdata/** text eol=lf
+*.golden text eol=lf
+
+# Go sources stay LF for gofmt / CI format checks.
+*.go text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf

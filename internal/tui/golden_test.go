@@ -202,6 +202,7 @@ func TestGoldenViews(t *testing.T) {
 				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 					t.Fatal(err)
 				}
+				// Always write LF-only files so Windows and Unix CI compare equal.
 				if err := os.WriteFile(path, []byte(got), 0o644); err != nil {
 					t.Fatal(err)
 				}
@@ -212,7 +213,9 @@ func TestGoldenViews(t *testing.T) {
 			if err != nil {
 				t.Fatalf("read golden %s: %v (run: make test-update-golden)", path, err)
 			}
-			want := string(wantBytes)
+			// Normalize the fixture too: Git on Windows may check out CRLF even
+			// when the repo stores LF, which would false-fail every snapshot.
+			want := normalizeGolden(string(wantBytes))
 			if got != want {
 				t.Fatalf("golden mismatch for %s\n--- got (%d bytes) ---\n%s\n--- want (%d bytes) ---\n%s",
 					tc.name, len(got), got, len(want), want)
@@ -222,6 +225,9 @@ func TestGoldenViews(t *testing.T) {
 }
 
 func normalizeGolden(s string) string {
+	// Windows checkouts may introduce CR; snapshots always compare as LF.
+	s = strings.ReplaceAll(s, "\r\n", "\n")
+	s = strings.ReplaceAll(s, "\r", "\n")
 	// ASCII mode uses plain spinner frames; still strip any braille just in case.
 	s = spinnerDots.ReplaceAllString(s, "*")
 	s = orphanCSI.ReplaceAllString(s, "")
@@ -235,21 +241,24 @@ func normalizeGolden(s string) string {
 	for i, line := range lines {
 		lines[i] = trailingSpace.ReplaceAllString(line, "")
 	}
-	// Ensure a trailing newline for stable file diffs.
-	out := strings.Join(lines, "\n")
-	if !strings.HasSuffix(out, "\n") {
-		out += "\n"
+	// Drop a trailing empty element from a final newline before re-joining so
+	// we control exactly one terminating newline.
+	for len(lines) > 0 && lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
 	}
-	return out
+	return strings.Join(lines, "\n") + "\n"
 }
 
 func TestNormalizeGoldenStabilizesHostDependentFields(t *testing.T) {
 	in := "" +
-		"Platform            darwin/arm64\n" +
-		"GOOS/GOARCH         linux/amd64\n" +
-		"Go                  go1.26.5\n" +
-		"Started        3m ago  (2026-08-04 13:57:00)\n"
+		"Platform            darwin/arm64\r\n" +
+		"GOOS/GOARCH         linux/amd64\r\n" +
+		"Go                  go1.26.5\r\n" +
+		"Started        3m ago  (2026-08-04 13:57:00)\r\n"
 	got := normalizeGolden(in)
+	if strings.Contains(got, "\r") {
+		t.Fatal("normalizeGolden left CR bytes in output")
+	}
 	for _, bad := range []string{"darwin", "linux", "arm64", "amd64", "go1.26.5", "13:57:00"} {
 		if strings.Contains(got, bad) {
 			t.Fatalf("normalizeGolden left host-dependent value %q in:\n%s", bad, got)
@@ -259,6 +268,14 @@ func TestNormalizeGoldenStabilizesHostDependentFields(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Fatalf("normalizeGolden missing %q in:\n%s", want, got)
 		}
+	}
+}
+
+func TestNormalizeGoldenMatchesCRLFFixtures(t *testing.T) {
+	lf := normalizeGolden("hello\nworld\n")
+	crlf := normalizeGolden("hello\r\nworld\r\n")
+	if lf != crlf {
+		t.Fatalf("CRLF fixture normalized differently:\n%q\nvs\n%q", lf, crlf)
 	}
 }
 
