@@ -6,3 +6,8 @@ internal/tui/testdata/** text eol=lf
 *.go text eol=lf
 go.mod text eol=lf
 go.sum text eol=lf
+
+# README recordings are binary; never let autocrlf touch them. The VHS scripts
+# that produce them are shell-adjacent, so they stay LF too.
+*.gif binary
+*.tape text eol=lf
