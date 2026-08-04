@@ -62,11 +62,11 @@ jobs:
         with:
           version: latest
           install-go: false
+      # Install with the job's Go toolchain so the linter matches go.mod (1.26+).
+      # Prebuilt golangci-lint binaries lag and refuse newer language versions.
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v1.64.5
-          args: --timeout=5m
+        run: |
+          go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6 run --timeout=5m
 
   coverage:
     name: Coverage

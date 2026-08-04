@@ -36,8 +36,12 @@ jobs:
         with:
           fail-on-severity: high
 
+  # CodeQL upload requires GitHub Advanced Security / code scanning enabled on
+  # the repository. Private free plans reject the upload and fail the workflow,
+  # so we only run analysis when explicitly opted in.
   codeql:
     name: CodeQL
+    if: ${{ vars.ENABLE_CODEQL == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       security-events: write

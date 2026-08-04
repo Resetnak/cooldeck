@@ -247,14 +247,16 @@ func (c Config) Save(path string) error {
 		return fmt.Errorf("create temporary config: %w", err)
 	}
 	tmpName := tmp.Name()
-	defer os.Remove(tmpName)
+	// Best-effort cleanup: after a successful rename the temp file is gone, so
+	// a failure here carries no information the caller could act on.
+	defer func() { _ = os.Remove(tmpName) }()
 
 	if err := tmp.Chmod(0o600); err != nil {
-		tmp.Close()
+		_ = tmp.Close()
 		return fmt.Errorf("secure temporary config: %w", err)
 	}
 	if _, err := tmp.WriteString(b.String()); err != nil {
-		tmp.Close()
+		_ = tmp.Close()
 		return fmt.Errorf("write temporary config: %w", err)
 	}
 	if err := tmp.Close(); err != nil {

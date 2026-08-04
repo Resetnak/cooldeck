@@ -3,6 +3,7 @@ package setup
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -136,8 +137,11 @@ func TestPersistConfigEnvWritesFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if perm := fi.Mode().Perm(); perm != 0o600 {
-		t.Fatalf("config perms = %o, want 0600", perm)
+	// Windows does not preserve Unix 0600 the way POSIX filesystems do.
+	if runtime.GOOS != "windows" {
+		if perm := fi.Mode().Perm(); perm != 0o600 {
+			t.Fatalf("config perms = %o, want 0600", perm)
+		}
 	}
 }
 

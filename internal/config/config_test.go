@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -186,8 +187,11 @@ func TestSaveLoadRoundTrip(t *testing.T) {
 		t.Fatalf("Stat: %v", err)
 	}
 	// The file may hold a plaintext token, so it must not be group/world readable.
-	if perm := fi.Mode().Perm(); perm != 0o600 {
-		t.Errorf("config permissions = %o, want 600", perm)
+	// Windows does not enforce Unix permission bits the same way; skip there.
+	if runtime.GOOS != "windows" {
+		if perm := fi.Mode().Perm(); perm != 0o600 {
+			t.Errorf("config permissions = %o, want 600", perm)
+		}
 	}
 
 	got, err := Load(path)

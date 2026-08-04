@@ -138,14 +138,10 @@ func TestDeleteInstanceRequiresConfirmationAndSaves(t *testing.T) {
 	if cmd == nil {
 		t.Fatal("confirm produced no command")
 	}
-	// runDeleteInstance returns a toast cmd (or batch); execute it.
-	msg := cmd()
-	if _, ok := msg.(toastMsg); !ok {
-		// Might be a batch via tea.Batch — in that case just check state.
-		if saved.Instances["b"].ID != "" && len(saved.Instances) == 2 {
-			// Batch path: delete of non-active should only toast.
-		}
-	}
+	// runDeleteInstance returns a toast cmd (or a tea.Batch wrapping one); the
+	// deletion happens as its side effect, so run it and assert on the state
+	// below rather than on which message shape came back.
+	_ = cmd()
 	if _, ok := model.opts.Config.Instances["b"]; ok {
 		t.Fatal("instance b still in memory config")
 	}

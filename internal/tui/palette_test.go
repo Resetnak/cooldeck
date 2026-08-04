@@ -39,7 +39,7 @@ func TestCommandPaletteOpensFiltersAndRuns(t *testing.T) {
 
 	// Filter down to deploy commands.
 	for _, r := range "deploy" {
-		model.handleKey(tea.KeyPressMsg{Code: rune(r), Text: string(r)})
+		model.handleKey(tea.KeyPressMsg{Code: r, Text: string(r)})
 	}
 	items := model.filteredPaletteCommands()
 	if len(items) == 0 {
