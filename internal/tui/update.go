@@ -9,6 +9,7 @@ import (
 	"github.com/resetnak/cooldeck/internal/config"
 	"github.com/resetnak/cooldeck/internal/domain"
 	"github.com/resetnak/cooldeck/internal/tui/components"
+	"github.com/resetnak/cooldeck/internal/tui/views"
 )
 
 // activeInstance resolves the config entry for the running instance, falling
@@ -30,9 +31,15 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.shutdown()
 		return m, tea.Quit
 	}
+	if m.pendingAction != nil {
+		return m.handleConfirmationKey(msg)
+	}
 
 	if m.filtering {
 		return m.handleFilterKey(msg)
+	}
+	if m.logSearching {
+		return m.handleLogSearchKey(msg)
 	}
 
 	switch {
@@ -119,6 +126,29 @@ func (m *Model) handleFilterKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m *Model) handleLogSearchKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	if key.Matches(msg, m.keys.Cancel) || key.Matches(msg, m.keys.Confirm) {
+		m.logSearching = false
+		return m, nil
+	}
+
+	switch msg.String() {
+	case "backspace":
+		if len(m.logSearchText) > 0 {
+			runes := []rune(m.logSearchText)
+			m.logSearchText = string(runes[:len(runes)-1])
+		}
+	case "ctrl+u":
+		m.logSearchText = ""
+	default:
+		if text := msg.String(); len([]rune(text)) == 1 {
+			m.logSearchText += text
+		}
+	}
+	m.detail.SetRuntimeSearch(m.logSearchText)
+	return m, nil
+}
+
 // handleSidebarKey moves between sections when the sidebar has focus.
 func (m *Model) handleSidebarKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch {
@@ -177,6 +207,17 @@ func (m *Model) handleListKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		next := m.apps.SortMode().Next()
 		m.apps.SetSort(next)
 		return m, m.pushToast(components.ToastInfo, "Sorted by "+next.Label(), "")
+	case key.Matches(msg, m.keys.Deploy):
+		return m, m.stageAction(actionDeploy, false)
+	case key.Matches(msg, m.keys.ForceDeploy):
+		return m, m.stageAction(actionDeploy, true)
+	case key.Matches(msg, m.keys.Restart):
+		return m, m.stageAction(actionRestart, false)
+	case key.Matches(msg, m.keys.StartStop):
+		if application, ok := m.currentApplication(); ok && application.Status.IsRunning() {
+			return m, m.stageAction(actionStop, false)
+		}
+		return m, m.stageAction(actionStart, false)
 
 	case key.Matches(msg, m.keys.Enter):
 		a, ok := m.apps.Selected()
@@ -219,18 +260,89 @@ func (m *Model) handleListKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 func (m *Model) handleDetailKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case key.Matches(msg, m.keys.Back), key.Matches(msg, m.keys.Quit):
+		if m.detail.DeploymentLogsOpen() {
+			m.cancelDeploymentLogsRequest()
+			m.detail.CloseDeploymentLogs()
+			return m, nil
+		}
+		m.cancelRuntimeLogsRequest()
+		m.cancelDeploymentLogsRequest()
 		m.screen = screenList
 		return m, nil
 
+	case key.Matches(msg, m.keys.RuntimeLogs):
+		m.detail.SetTab(views.TabRuntimeLogs)
+		return m, m.loadActiveDetailTab()
+	case key.Matches(msg, m.keys.BuildLogs):
+		m.detail.SetTab(views.TabDeployments)
+		if uuid, ok := m.detail.OpenSelectedDeploymentLogs(); ok {
+			return m, m.loadDeploymentLogs(uuid)
+		}
+	case key.Matches(msg, m.keys.Deploy):
+		return m, m.stageAction(actionDeploy, false)
+	case key.Matches(msg, m.keys.ForceDeploy):
+		return m, m.stageAction(actionDeploy, true)
+	case key.Matches(msg, m.keys.Restart):
+		return m, m.stageAction(actionRestart, false)
+	case key.Matches(msg, m.keys.StartStop):
+		if application, ok := m.currentApplication(); ok && application.Status.IsRunning() {
+			return m, m.stageAction(actionStop, false)
+		}
+		return m, m.stageAction(actionStart, false)
 	case key.Matches(msg, m.keys.Right):
 		m.detail.NextTab()
+		return m, m.loadActiveDetailTab()
 	case key.Matches(msg, m.keys.Left):
 		m.detail.PrevTab()
+		return m, m.loadActiveDetailTab()
+	case key.Matches(msg, m.keys.LogPause):
+		if m.detail.Tab() == views.TabRuntimeLogs {
+			if m.detail.ToggleRuntimePause() {
+				m.cancelRuntimeLogsRequest()
+				return m, nil
+			}
+			return m, m.loadRuntimeLogs(m.detail.Application().UUID)
+		}
+	case key.Matches(msg, m.keys.LogFollow):
+		if m.detail.Tab() == views.TabRuntimeLogs {
+			m.detail.ToggleRuntimeFollow()
+		}
+	case key.Matches(msg, m.keys.LogWrap):
+		if m.detail.Tab() == views.TabRuntimeLogs {
+			m.detail.ToggleRuntimeWrap()
+		}
+	case key.Matches(msg, m.keys.LogSearch):
+		if m.detail.Tab() == views.TabRuntimeLogs {
+			m.logSearching = true
+			m.logSearchText = m.detail.RuntimeSearch()
+		}
+	case key.Matches(msg, m.keys.LogNext):
+		if m.detail.Tab() == views.TabRuntimeLogs {
+			m.detail.NextRuntimeMatch(1)
+		}
+	case key.Matches(msg, m.keys.LogPrev):
+		if m.detail.Tab() == views.TabRuntimeLogs {
+			m.detail.NextRuntimeMatch(-1)
+		}
+	case key.Matches(msg, m.keys.Enter):
+		if m.detail.Tab() == views.TabDeployments && !m.detail.DeploymentLogsOpen() {
+			if uuid, ok := m.detail.OpenSelectedDeploymentLogs(); ok {
+				return m, m.loadDeploymentLogs(uuid)
+			}
+		}
 
 	case key.Matches(msg, m.keys.Down):
-		m.detail.Scroll(1)
+		if m.detail.Tab() == views.TabDeployments && !m.detail.DeploymentLogsOpen() {
+			m.detail.MoveDeployment(1)
+		} else {
+			m.detail.Scroll(1)
+		}
 	case key.Matches(msg, m.keys.Up):
-		m.detail.Scroll(-1)
+		if m.detail.Tab() == views.TabDeployments && !m.detail.DeploymentLogsOpen() {
+			m.detail.MoveDeployment(-1)
+		} else {
+			m.detail.Scroll(-1)
+		}
 	case key.Matches(msg, m.keys.PageDown):
 		m.detail.Scroll(max(m.contentHeight()-2, 1))
 	case key.Matches(msg, m.keys.PageUp):
@@ -244,6 +356,16 @@ func (m *Model) handleDetailKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, m.openSelectedRepository()
 	}
 	return m, nil
+}
+
+func (m *Model) loadActiveDetailTab() tea.Cmd {
+	if m.detail.Tab() == views.TabRuntimeLogs && !m.detail.RuntimeLogsLoaded() {
+		return m.loadRuntimeLogs(m.detail.Application().UUID)
+	}
+	if m.cancelRuntimeLogs != nil && m.detail.Tab() != views.TabRuntimeLogs {
+		m.cancelRuntimeLogsRequest()
+	}
+	return nil
 }
 
 // openSelectedDomain opens the primary domain of the current application.

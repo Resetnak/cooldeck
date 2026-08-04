@@ -5,8 +5,9 @@ A keyboard-first terminal dashboard for Coolify, built with Go and Charm v2.
 CoolDeck currently provides a responsive applications dashboard, filtering,
 sorting, application detail, automatic refresh, dark/light themes, safe
 credential loading, and a deterministic demo mode. The Coolify client already
-supports application and deployment reads, logs, and lifecycle operations;
-the remaining log/deployment/mutation screens are still in progress.
+supports application and deployment reads, runtime/build logs, and confirmed
+deploy/restart/start/stop actions. Dedicated top-level deployment and instance
+screens are still in progress.
 
 ## Run it
 

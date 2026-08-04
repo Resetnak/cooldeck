@@ -1,6 +1,7 @@
 package views
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -40,16 +41,41 @@ func (t DetailTab) Label() string {
 
 // Detail is the application detail screen.
 type Detail struct {
-	app      domain.Application
-	loaded   bool
-	loadedAt time.Time
+	app                     domain.Application
+	loaded                  bool
+	loadedAt                time.Time
+	deployments             []domain.Deployment
+	deploymentsLoaded       bool
+	deploymentSelected      int
+	deploymentLogUUID       string
+	deploymentLogs          []domain.LogLine
+	deploymentLogsLoaded    bool
+	deploymentLogsAt        time.Time
+	deploymentLogsTruncated bool
+	runtimeLogs             []domain.LogLine
+	runtimeLogsLoaded       bool
+	runtimeLogsAt           time.Time
+	runtimeTruncated        bool
+	runtimePaused           bool
+	runtimeFollow           bool
+	runtimeWrap             bool
+	logMaxScroll            int
+	runtimeSearch           string
+	runtimeMatch            int
 
 	tab    DetailTab
 	scroll int
 }
 
 // NewDetail returns an empty detail view.
-func NewDetail() *Detail { return &Detail{} }
+func NewDetail() *Detail {
+	return &Detail{
+		deployments:    []domain.Deployment{},
+		deploymentLogs: []domain.LogLine{},
+		runtimeLogs:    []domain.LogLine{},
+		runtimeFollow:  true,
+	}
+}
 
 // SetApplication loads an application into the view. Switching to a different
 // application resets the scroll position; refreshing the same one does not, so
@@ -58,6 +84,24 @@ func (v *Detail) SetApplication(a domain.Application, at time.Time) {
 	if v.app.UUID != a.UUID {
 		v.scroll = 0
 		v.tab = TabOverview
+		v.deployments = []domain.Deployment{}
+		v.deploymentsLoaded = false
+		v.deploymentSelected = 0
+		v.deploymentLogUUID = ""
+		v.deploymentLogs = []domain.LogLine{}
+		v.deploymentLogsLoaded = false
+		v.deploymentLogsAt = time.Time{}
+		v.deploymentLogsTruncated = false
+		v.runtimeLogs = []domain.LogLine{}
+		v.runtimeLogsLoaded = false
+		v.runtimeLogsAt = time.Time{}
+		v.runtimeTruncated = false
+		v.runtimePaused = false
+		v.runtimeFollow = true
+		v.runtimeWrap = false
+		v.logMaxScroll = 0
+		v.runtimeSearch = ""
+		v.runtimeMatch = 0
 	}
 	v.app = a
 	v.loaded = true
@@ -72,6 +116,156 @@ func (v *Detail) Application() domain.Application { return v.app }
 
 // Loaded reports whether an application has been set.
 func (v *Detail) Loaded() bool { return v.loaded }
+
+// SetDeployments replaces the application's deployment history.
+func (v *Detail) SetDeployments(deployments []domain.Deployment) {
+	v.deployments = append([]domain.Deployment{}, deployments...)
+	v.deploymentsLoaded = true
+	v.deploymentSelected = min(v.deploymentSelected, max(len(v.deployments)-1, 0))
+}
+
+// SelectedDeployment returns the highlighted deployment.
+func (v *Detail) SelectedDeployment() (domain.Deployment, bool) {
+	if v.deploymentSelected < 0 || v.deploymentSelected >= len(v.deployments) {
+		return domain.Deployment{}, false
+	}
+	return v.deployments[v.deploymentSelected], true
+}
+
+// MoveDeployment moves the deployment table selection and clamps it to the list.
+func (v *Detail) MoveDeployment(delta int) {
+	if len(v.deployments) == 0 {
+		return
+	}
+	v.deploymentSelected = min(max(v.deploymentSelected+delta, 0), len(v.deployments)-1)
+}
+
+// OpenSelectedDeploymentLogs enters the selected deployment's log view.
+func (v *Detail) OpenSelectedDeploymentLogs() (string, bool) {
+	deployment, ok := v.SelectedDeployment()
+	if !ok {
+		return "", false
+	}
+	v.deploymentLogUUID = deployment.UUID
+	v.deploymentLogs = []domain.LogLine{}
+	v.deploymentLogsLoaded = false
+	v.deploymentLogsAt = time.Time{}
+	v.deploymentLogsTruncated = false
+	v.scroll = 0
+	return deployment.UUID, true
+}
+
+// SetDeploymentLogs stores the selected deployment's build log snapshot.
+func (v *Detail) SetDeploymentLogs(uuid string, lines []domain.LogLine, at time.Time, truncated bool) {
+	if uuid != v.deploymentLogUUID {
+		return
+	}
+	v.deploymentLogs = append([]domain.LogLine{}, lines...)
+	v.deploymentLogsLoaded = true
+	v.deploymentLogsAt = at
+	v.deploymentLogsTruncated = truncated
+}
+
+// DeploymentLogsOpen reports whether the deployments tab is showing a build log.
+func (v *Detail) DeploymentLogsOpen() bool { return v.deploymentLogUUID != "" }
+
+// CloseDeploymentLogs returns to deployment history.
+func (v *Detail) CloseDeploymentLogs() {
+	v.deploymentLogUUID = ""
+	v.scroll = 0
+}
+
+// SetRuntimeLogs replaces the current runtime log snapshot.
+func (v *Detail) SetRuntimeLogs(lines []domain.LogLine, at time.Time, truncated bool) {
+	v.runtimeLogs = append([]domain.LogLine{}, lines...)
+	v.runtimeLogsLoaded = true
+	v.runtimeLogsAt = at
+	v.runtimeTruncated = truncated
+}
+
+// RuntimeLogsLoaded reports whether at least one log request completed.
+func (v *Detail) RuntimeLogsLoaded() bool { return v.runtimeLogsLoaded }
+
+// RuntimeLogsPaused reports whether polling is paused.
+func (v *Detail) RuntimeLogsPaused() bool { return v.runtimePaused }
+
+// ToggleRuntimePause changes polling state and returns the new value.
+func (v *Detail) ToggleRuntimePause() bool {
+	v.runtimePaused = !v.runtimePaused
+	return v.runtimePaused
+}
+
+// RuntimeLogsFollowing reports whether new output stays pinned to the tail.
+func (v *Detail) RuntimeLogsFollowing() bool { return v.runtimeFollow }
+
+// ToggleRuntimeFollow changes tail following and returns the new value.
+func (v *Detail) ToggleRuntimeFollow() bool {
+	v.runtimeFollow = !v.runtimeFollow
+	return v.runtimeFollow
+}
+
+// RuntimeLogsWrapping reports whether long lines wrap.
+func (v *Detail) RuntimeLogsWrapping() bool { return v.runtimeWrap }
+
+// ToggleRuntimeWrap changes long-line wrapping and returns the new value.
+func (v *Detail) ToggleRuntimeWrap() bool {
+	v.runtimeWrap = !v.runtimeWrap
+	return v.runtimeWrap
+}
+
+// RuntimeSearch returns the current local log query.
+func (v *Detail) RuntimeSearch() string { return v.runtimeSearch }
+
+// SetRuntimeSearch replaces the local query and selects its first match.
+func (v *Detail) SetRuntimeSearch(query string) {
+	v.runtimeSearch = query
+	v.runtimeMatch = 0
+	v.jumpRuntimeMatch()
+}
+
+// NextRuntimeMatch cycles through matching loaded log lines.
+func (v *Detail) NextRuntimeMatch(delta int) {
+	matches := v.runtimeMatches()
+	if len(matches) == 0 {
+		return
+	}
+	v.runtimeMatch = (v.runtimeMatch + delta%len(matches) + len(matches)) % len(matches)
+	v.jumpRuntimeMatch()
+}
+
+// RuntimeSearchStatus returns the one-based selected match and total count.
+func (v *Detail) RuntimeSearchStatus() (int, int) {
+	matches := v.runtimeMatches()
+	if len(matches) == 0 {
+		return 0, 0
+	}
+	v.runtimeMatch = min(v.runtimeMatch, len(matches)-1)
+	return v.runtimeMatch + 1, len(matches)
+}
+
+func (v *Detail) runtimeMatches() []int {
+	query := strings.ToLower(v.runtimeSearch)
+	if query == "" {
+		return nil
+	}
+	matches := make([]int, 0)
+	for i, line := range v.runtimeLogs {
+		if strings.Contains(strings.ToLower(line.Text), query) {
+			matches = append(matches, i)
+		}
+	}
+	return matches
+}
+
+func (v *Detail) jumpRuntimeMatch() {
+	matches := v.runtimeMatches()
+	if len(matches) == 0 {
+		return
+	}
+	v.runtimeMatch = min(v.runtimeMatch, len(matches)-1)
+	v.scroll = matches[v.runtimeMatch] + 3
+	v.runtimeFollow = false
+}
 
 // Tab returns the active tab.
 func (v *Detail) Tab() DetailTab { return v.tab }
@@ -91,7 +285,13 @@ func (v *Detail) NextTab() { v.SetTab((v.tab + 1) % detailTabCount) }
 func (v *Detail) PrevTab() { v.SetTab((v.tab - 1 + detailTabCount) % detailTabCount) }
 
 // Scroll moves the overview body by delta lines.
-func (v *Detail) Scroll(delta int) { v.scroll = max(v.scroll+delta, 0) }
+func (v *Detail) Scroll(delta int) {
+	v.scroll = max(v.scroll+delta, 0)
+	if v.tab == TabRuntimeLogs {
+		v.scroll = min(v.scroll, v.logMaxScroll)
+		v.runtimeFollow = v.scroll >= v.logMaxScroll
+	}
+}
 
 // TabBar renders the section tabs for the detail screen.
 func (v *Detail) TabBar(th *theme.Theme, width int, compact bool) string {
@@ -117,10 +317,198 @@ func (v *Detail) Render(th *theme.Theme, width, height int, now time.Time) strin
 	}
 
 	switch v.tab {
+	case TabDeployments:
+		return v.renderDeployments(th, width, height, now)
+	case TabRuntimeLogs:
+		return v.renderRuntimeLogs(th, width, height, now)
 	case TabConfiguration:
 		return v.renderScrollable(th, v.configurationRows(th), width, height)
 	default:
 		return v.renderScrollable(th, v.overviewRows(th, now), width, height)
+	}
+}
+
+func (v *Detail) renderDeployments(th *theme.Theme, width, height int, now time.Time) string {
+	if v.DeploymentLogsOpen() {
+		return v.renderDeploymentLogs(th, width, height, now)
+	}
+	if !v.deploymentsLoaded {
+		return components.Skeleton(th, width, height)
+	}
+	if len(v.deployments) == 0 {
+		return components.EmptyState(
+			th,
+			width,
+			height,
+			"No deployments yet",
+			"Coolify has no deployment history for this application.",
+			nil,
+		)
+	}
+
+	rows := make([]components.Row, 0, len(v.deployments))
+	for _, deployment := range v.deployments {
+		rows = append(rows, components.Row{Cells: []string{
+			th.DeploymentStatusText(deployment.Status),
+			components.OrDash(deployment.ShortCommit()),
+			domain.HumanizeAge(deployment.CreatedAt, now),
+			domain.HumanizeDuration(deployment.Duration(now)),
+			components.OrDash(deployment.Trigger),
+			components.OrDash(deployment.CommitMessage),
+		}})
+	}
+	table := components.Table{
+		Columns: []components.Column{
+			{Title: "Status", MinWidth: 12, Priority: 0},
+			{Title: "Commit", MinWidth: 8, Priority: 0},
+			{Title: "Started", MinWidth: 10, Priority: 1},
+			{Title: "Duration", MinWidth: 10, Priority: 2},
+			{Title: "Trigger", MinWidth: 8, Priority: 3},
+			{Title: "Message", MinWidth: 18, Flex: 1, Priority: 4},
+		},
+		Rows:     rows,
+		Selected: v.deploymentSelected,
+		Focused:  true,
+	}
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		th.Title.Render("DEPLOYMENTS"),
+		th.Subtle.Render(strconv.Itoa(len(v.deployments))+" recent"),
+		"",
+		table.Render(th, width, max(height-3, 1)),
+	)
+	return components.FitBlock(content, width, height)
+}
+
+func (v *Detail) renderDeploymentLogs(th *theme.Theme, width, height int, now time.Time) string {
+	if !v.deploymentLogsLoaded {
+		return components.Skeleton(th, width, height)
+	}
+	if len(v.deploymentLogs) == 0 {
+		return components.EmptyState(
+			th,
+			width,
+			height,
+			"No deployment logs",
+			"Coolify returned no build output for this deployment.",
+			[]components.KeyHint{{Key: "esc", Desc: "back to deployments"}},
+		)
+	}
+	meta := v.deploymentLogUUID + "  " + domain.HumanizeAge(v.deploymentLogsAt, now)
+	if v.deploymentLogsTruncated {
+		meta += "  truncated"
+	}
+	return v.renderLogs(
+		th,
+		width,
+		height,
+		logContent{title: "DEPLOYMENT LOG", meta: meta, lines: v.deploymentLogs},
+	)
+}
+
+func (v *Detail) renderRuntimeLogs(th *theme.Theme, width, height int, now time.Time) string {
+	if !v.runtimeLogsLoaded {
+		return components.Skeleton(th, width, height)
+	}
+	if len(v.runtimeLogs) == 0 {
+		return components.EmptyState(
+			th,
+			width,
+			height,
+			"No runtime logs",
+			"The application has not emitted any output yet.",
+			nil,
+		)
+	}
+
+	meta := strconv.Itoa(len(v.runtimeLogs)) + " lines  " + domain.HumanizeAge(v.runtimeLogsAt, now)
+	if v.runtimeTruncated {
+		meta += "  truncated"
+	}
+	if v.runtimePaused {
+		meta += "  paused"
+	}
+	if v.runtimeFollow {
+		meta += "  follow"
+	}
+	if v.runtimeWrap {
+		meta += "  wrap"
+	}
+	if current, total := v.RuntimeSearchStatus(); total > 0 {
+		meta += "  search " + strconv.Itoa(current) + "/" + strconv.Itoa(total)
+	} else if v.runtimeSearch != "" {
+		meta += "  no matches"
+	}
+	return v.renderLogs(
+		th,
+		width,
+		height,
+		logContent{title: "RUNTIME LOGS", meta: meta, lines: v.runtimeLogs, wrap: v.runtimeWrap, follow: v.runtimeFollow, trackScroll: true, search: v.runtimeSearch},
+	)
+}
+
+type logContent struct {
+	title       string
+	meta        string
+	lines       []domain.LogLine
+	wrap        bool
+	follow      bool
+	trackScroll bool
+	search      string
+}
+
+func (v *Detail) renderLogs(th *theme.Theme, width, height int, content logContent) string {
+	lines := []string{th.Title.Render(content.title), th.Subtle.Render(content.meta), ""}
+	var search *regexp.Regexp
+	if content.search != "" {
+		search = regexp.MustCompile("(?i)" + regexp.QuoteMeta(content.search))
+	}
+	for _, line := range content.lines {
+		timestamp := line.TimestampText
+		if timestamp == "" && !line.Timestamp.IsZero() {
+			timestamp = line.Timestamp.Format("15:04:05")
+		}
+		prefix := ""
+		if timestamp != "" {
+			prefix = th.Subtle.Render(timestamp) + " "
+		}
+		if label := line.Level.Label(); label != "" {
+			prefix += logLevelStyle(th, line.Level).Render(components.Pad(label, 5)) + " "
+		}
+		text := prefix + line.Text
+		if search != nil {
+			text = search.ReplaceAllStringFunc(text, func(match string) string {
+				return th.FilterPrompt.Render(match)
+			})
+		}
+		if content.wrap {
+			lines = append(lines, strings.Split(components.Wrap(text, width), "\n")...)
+		} else {
+			lines = append(lines, components.Truncate(text, width, th.Sym.Ellipsis))
+		}
+	}
+
+	maxScroll := max(len(lines)-height, 0)
+	if content.trackScroll {
+		v.logMaxScroll = maxScroll
+	}
+	if content.follow {
+		v.scroll = maxScroll
+	}
+	v.scroll = min(v.scroll, maxScroll)
+	return components.FitBlock(strings.Join(lines[v.scroll:], "\n"), width, height)
+}
+
+func logLevelStyle(th *theme.Theme, level domain.LogLevel) lipgloss.Style {
+	switch level {
+	case domain.LogLevelWarn:
+		return th.Attention
+	case domain.LogLevelError, domain.LogLevelFatal:
+		return th.Danger
+	case domain.LogLevelInfo:
+		return th.Note
+	default:
+		return th.Subtle
 	}
 }
 

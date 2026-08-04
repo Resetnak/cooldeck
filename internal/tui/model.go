@@ -133,11 +133,17 @@ type Model struct {
 	// Sequence numbers and cancel functions implement request supersession:
 	// starting a new request of a kind cancels the previous one and bumps the
 	// sequence, so a late reply is both stopped and ignored.
-	connectSeq      uint64
-	dashboardSeq    uint64
-	detailSeq       uint64
-	cancelDashboard context.CancelFunc
-	cancelDetail    context.CancelFunc
+	connectSeq           uint64
+	dashboardSeq         uint64
+	detailSeq            uint64
+	runtimeLogsSeq       uint64
+	deploymentLogsSeq    uint64
+	operationSeq         uint64
+	cancelDashboard      context.CancelFunc
+	cancelDetail         context.CancelFunc
+	cancelRuntimeLogs    context.CancelFunc
+	cancelDeploymentLogs context.CancelFunc
+	cancelOperation      context.CancelFunc
 
 	connection    components.ConnectionState
 	connectionErr *domain.Error
@@ -151,8 +157,12 @@ type Model struct {
 	// data can be labelled instead of being silently presented as current.
 	lastSuccess time.Time
 
-	filtering  bool
-	filterText string
+	filtering         bool
+	filterText        string
+	logSearching      bool
+	logSearchText     string
+	pendingAction     *pendingAction
+	operationInFlight bool
 
 	toasts     []components.Toast
 	nextToast  int
@@ -299,12 +309,69 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.detail.SetApplication(msg.Detail.Application, msg.Detail.LoadedAt)
+		m.detail.SetDeployments(msg.Detail.Deployments)
 		return m, nil
 
 	case detailFailedMsg:
 		if msg.Seq != m.detailSeq || msg.Err.Kind == domain.ErrorCancelled {
 			return m, nil
 		}
+		return m, m.pushToast(components.ToastError, msg.Err.Title, msg.Err.Message)
+
+	case runtimeLogsLoadedMsg:
+		if msg.Seq != m.runtimeLogsSeq || msg.AppUUID != m.detail.Application().UUID {
+			return m, nil
+		}
+		m.detail.SetRuntimeLogs(msg.Snapshot.Lines, msg.Snapshot.LoadedAt, msg.Snapshot.Truncated)
+		if m.runtimeLogsVisible(msg.AppUUID) {
+			return m, m.runtimeLogsTick(msg.AppUUID)
+		}
+		return m, nil
+
+	case runtimeLogsFailedMsg:
+		if msg.Seq != m.runtimeLogsSeq || msg.Err.Kind == domain.ErrorCancelled {
+			return m, nil
+		}
+		return m, m.pushToast(components.ToastError, msg.Err.Title, msg.Err.Message)
+
+	case runtimeLogsTickMsg:
+		if !m.runtimeLogsVisible(msg.AppUUID) {
+			return m, nil
+		}
+		return m, m.loadRuntimeLogs(msg.AppUUID)
+
+	case deploymentLogsLoadedMsg:
+		if msg.Seq != m.deploymentLogsSeq || !m.detail.DeploymentLogsOpen() {
+			return m, nil
+		}
+		m.detail.SetDeploymentLogs(msg.DeploymentUUID, msg.Snapshot.Lines, msg.Snapshot.LoadedAt, msg.Snapshot.Truncated)
+		return m, nil
+
+	case deploymentLogsFailedMsg:
+		if msg.Seq != m.deploymentLogsSeq || msg.Err.Kind == domain.ErrorCancelled {
+			return m, nil
+		}
+		return m, m.pushToast(components.ToastError, msg.Err.Title, msg.Err.Message)
+
+	case actionCompletedMsg:
+		if msg.Seq != m.operationSeq {
+			return m, nil
+		}
+		m.operationInFlight = false
+		m.cancelOperation = nil
+		m.capabilities = m.service.Capabilities()
+		return m, tea.Batch(
+			m.pushToast(components.ToastSuccess, "Action queued", "Coolify accepted the "+msg.Result.Operation+" request."),
+			m.manualRefresh(),
+		)
+
+	case actionFailedMsg:
+		if msg.Seq != m.operationSeq || msg.Err.Kind == domain.ErrorCancelled {
+			return m, nil
+		}
+		m.operationInFlight = false
+		m.cancelOperation = nil
+		m.capabilities = m.service.Capabilities()
 		return m, m.pushToast(components.ToastError, msg.Err.Title, msg.Err.Message)
 
 	case refreshTickMsg:
@@ -328,6 +395,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+func (m *Model) runtimeLogsVisible(appUUID string) bool {
+	return m.screen == screenDetail &&
+		m.detail.Tab() == views.TabRuntimeLogs &&
+		!m.detail.RuntimeLogsPaused() &&
+		m.detail.Application().UUID == appUUID
 }
 
 // recomputeLayout resolves geometry after a resize or a compact-mode toggle.
@@ -432,6 +506,18 @@ func (m *Model) filterPrompt(width int) string {
 	hint := th.FilterHint.Render("  status: project: env: branch: domain:  " +
 		th.Sym.Separator + "  esc clear  enter apply")
 
+	line := prompt + text
+	if components.Width(line)+components.Width(hint) <= width {
+		line += hint
+	}
+	return components.Pad(line, width)
+}
+
+func (m *Model) logSearchPrompt(width int) string {
+	th := m.theme
+	prompt := th.FilterPrompt.Render("/ ")
+	text := th.FilterText.Render(m.logSearchText) + th.FilterPrompt.Render("▏")
+	hint := th.FilterHint.Render("  enter apply  " + th.Sym.Separator + "  esc close")
 	line := prompt + text
 	if components.Width(line)+components.Width(hint) <= width {
 		line += hint

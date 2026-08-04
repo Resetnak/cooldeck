@@ -45,6 +45,44 @@ type detailFailedMsg struct {
 	Err     *domain.Error
 }
 
+type runtimeLogsLoadedMsg struct {
+	Seq      uint64
+	AppUUID  string
+	Snapshot app.LogSnapshot
+}
+
+type runtimeLogsFailedMsg struct {
+	Seq     uint64
+	AppUUID string
+	Err     *domain.Error
+}
+
+type deploymentLogsLoadedMsg struct {
+	Seq            uint64
+	DeploymentUUID string
+	Snapshot       app.LogSnapshot
+}
+
+type deploymentLogsFailedMsg struct {
+	Seq            uint64
+	DeploymentUUID string
+	Err            *domain.Error
+}
+
+type actionCompletedMsg struct {
+	Seq    uint64
+	Result app.OperationResult
+}
+
+type actionFailedMsg struct {
+	Seq uint64
+	Err *domain.Error
+}
+
+type runtimeLogsTickMsg struct {
+	AppUUID string
+}
+
 // refreshTickMsg drives the periodic dashboard refresh.
 type refreshTickMsg time.Time
 
