@@ -150,6 +150,52 @@ func TestDetailSearchesLoadedRuntimeLogs(t *testing.T) {
 	}
 }
 
+func TestDetailClearsAndCopiesRuntimeLogs(t *testing.T) {
+	view := NewDetail()
+	view.SetApplication(domain.Application{UUID: "app-1"}, time.Now())
+	view.SetTab(TabRuntimeLogs)
+	view.SetRuntimeLogs([]domain.LogLine{
+		{TimestampText: "12:00:00", Text: "first"},
+		{Text: "second line"},
+	}, time.Now(), true)
+
+	if got := view.RuntimeLogText(); !strings.Contains(got, "first") || !strings.Contains(got, "second line") {
+		t.Fatalf("RuntimeLogText = %q", got)
+	}
+	if view.RuntimeLogCount() != 2 {
+		t.Fatalf("count = %d", view.RuntimeLogCount())
+	}
+
+	view.SetRuntimeSearch("second")
+	if got := view.RuntimeLogText(); got != "second line" {
+		t.Fatalf("search match copy = %q", got)
+	}
+
+	view.ClearRuntimeLogs()
+	if view.RuntimeLogCount() != 0 || view.RuntimeSearch() != "" || !view.RuntimeLogsLoaded() {
+		t.Fatalf("clear left residual state: count=%d search=%q loaded=%v",
+			view.RuntimeLogCount(), view.RuntimeSearch(), view.RuntimeLogsLoaded())
+	}
+	if view.RuntimeLogText() != "" {
+		t.Fatalf("cleared buffer still produced text %q", view.RuntimeLogText())
+	}
+}
+
+func TestDetailClearsDeploymentLogs(t *testing.T) {
+	view := NewDetail()
+	view.SetApplication(domain.Application{UUID: "app-1"}, time.Now())
+	view.SetDeployments([]domain.Deployment{{UUID: "dep-1"}})
+	view.OpenSelectedDeploymentLogs()
+	view.SetDeploymentLogs("dep-1", []domain.LogLine{{Text: "build step"}}, time.Now(), false)
+	if view.DeploymentLogCount() != 1 || view.DeploymentLogText() != "build step" {
+		t.Fatalf("deployment log text not set")
+	}
+	view.ClearDeploymentLogs()
+	if view.DeploymentLogCount() != 0 || view.DeploymentLogText() != "" {
+		t.Fatal("clear deployment logs failed")
+	}
+}
+
 func testTheme() *theme.Theme {
 	return theme.New(theme.Options{Mode: theme.ModeDark, ASCII: true})
 }

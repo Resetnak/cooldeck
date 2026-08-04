@@ -82,6 +82,17 @@ const (
 	focusSidebar
 )
 
+// OpenServiceFunc builds an app.Service for a configured instance ID. The TUI
+// calls it when the user switches instances mid-session.
+type OpenServiceFunc func(ctx context.Context, instanceID string) (app.Service, string, error)
+
+// SaveConfigFunc persists the in-memory config after local instance edits.
+type SaveConfigFunc func(cfg config.Config) error
+
+// RemoveCredentialsFunc deletes the OS keyring entry (or equivalent) for an
+// instance after it is removed from the config. Missing credentials are OK.
+type RemoveCredentialsFunc func(inst config.Instance) error
+
 // Options configures the root model.
 type Options struct {
 	Config  config.Config
@@ -100,6 +111,24 @@ type Options struct {
 	// ASCII forces the plain-text glyph set for terminals that cannot render
 	// box-drawing and geometric characters.
 	ASCII bool
+
+	// ConfigPath is the absolute path of the loaded config file, for diagnostics.
+	ConfigPath string
+	// LogPath is the application log file path, for diagnostics.
+	LogPath string
+	// RecentErrors feeds the diagnostics screen. Optional; when nil only
+	// in-session errors recorded by the model are shown.
+	RecentErrors func() []string
+
+	// OpenService enables mid-session instance switching. When nil, Enter on
+	// another instance only explains how to switch from the shell.
+	OpenService OpenServiceFunc
+	// SaveConfig writes instance-list changes. When nil, delete is disabled.
+	SaveConfig SaveConfigFunc
+	// RemoveCredentials cleans the keyring after a local instance delete.
+	RemoveCredentials RemoveCredentialsFunc
+	// StoreCredentials saves a token when adding an instance from the TUI.
+	StoreCredentials StoreCredentialsFunc
 
 	// Now injects the clock. Nil uses time.Now. Tests pin it so that relative
 	// timestamps and golden snapshots are stable.
@@ -127,8 +156,11 @@ type Model struct {
 	screen  screen
 	focus   focusTarget
 
-	apps   *views.Applications
-	detail *views.Detail
+	apps        *views.Applications
+	detail      *views.Detail
+	deployments *views.Deployments
+	instances   *views.Instances
+	diagnostics *views.Diagnostics
 
 	// Sequence numbers and cancel functions implement request supersession:
 	// starting a new request of a kind cancels the previous one and bumps the
@@ -149,6 +181,8 @@ type Model struct {
 	connectionErr *domain.Error
 	capabilities  app.Capabilities
 	coolifyVer    string
+	// lastConnection holds the non-secret fields from the most recent Connect.
+	lastConnection app.Connection
 
 	loading    bool
 	refreshing bool
@@ -156,11 +190,27 @@ type Model struct {
 	// staleSince records when the last successful load happened, so cached
 	// data can be labelled instead of being silently presented as current.
 	lastSuccess time.Time
+	// recentErrors is a short ring of user-visible failures for diagnostics.
+	recentErrors []string
 
-	filtering         bool
-	filterText        string
-	logSearching      bool
-	logSearchText     string
+	filtering     bool
+	filterText    string
+	logSearching  bool
+	logSearchText string
+	// logLines is the session override of config.LogLines. +/- on the log
+	// view changes it without writing config back to disk.
+	logLines int
+
+	paletteOpen     bool
+	paletteQuery    string
+	paletteSelected int
+
+	helpOpen   bool
+	helpScroll int
+
+	// instanceForm is non-nil while the add/edit instance modal is open.
+	instanceForm *instanceForm
+
 	pendingAction     *pendingAction
 	operationInFlight bool
 
@@ -184,15 +234,24 @@ func New(opts Options) *Model {
 		log = slog.New(slog.DiscardHandler)
 	}
 
+	logLines := opts.Config.LogLines
+	if logLines <= 0 {
+		logLines = config.DefaultLogLines
+	}
+
 	m := &Model{
-		opts:      opts,
-		keys:      DefaultKeyMap(),
-		now:       now,
-		service:   opts.Service,
-		log:       log,
-		themeMode: opts.Theme,
-		apps:      views.NewApplications(),
-		detail:    views.NewDetail(),
+		opts:        opts,
+		keys:        DefaultKeyMap(),
+		now:         now,
+		service:     opts.Service,
+		log:         log,
+		themeMode:   opts.Theme,
+		apps:        views.NewApplications(),
+		detail:      views.NewDetail(),
+		deployments: views.NewDeployments(),
+		instances:   views.NewInstances(),
+		diagnostics: views.NewDiagnostics(),
+		logLines:    logLines,
 		// Until the terminal reports its background colour, assume dark: it is
 		// by far the more common terminal configuration, so the wrong guess is
 		// visible for at most one frame.
@@ -203,6 +262,8 @@ func New(opts Options) *Model {
 	}
 	m.forceCompact = opts.Config.UI.CompactMode == config.TristateOn
 	m.rebuildTheme()
+	m.refreshInstances()
+	m.refreshDiagnostics()
 	return m
 }
 
@@ -253,6 +314,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.connectionErr = nil
 		m.capabilities = msg.Connection.Capabilities
 		m.coolifyVer = msg.Connection.Version
+		m.lastConnection = msg.Connection
+		m.refreshInstances()
+		m.refreshDiagnostics()
 		m.log.Info("connected",
 			"instance", msg.Connection.InstanceID,
 			"version", msg.Connection.Version,
@@ -267,6 +331,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.connectionErr = msg.Err
 		m.connection = connectionStateFor(msg.Err)
 		m.lastError = msg.Err
+		m.rememberError(msg.Err)
+		m.refreshInstances()
+		m.refreshDiagnostics()
 		m.log.Warn("connect failed", "kind", string(msg.Err.Kind), "err", msg.Err.Error())
 		return m, tea.Batch(m.pushToast(components.ToastError, msg.Err.Title, msg.Err.Message), m.refreshTick())
 
@@ -279,7 +346,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.lastSuccess = msg.Snapshot.LoadedAt
 		m.connection = components.ConnectionOnline
 		m.apps.SetApplications(msg.Snapshot.Applications, msg.Snapshot.ActiveDeployments, msg.Snapshot.LoadedAt)
+		recent := msg.Snapshot.RecentDeployments
+		if len(recent) == 0 {
+			recent = msg.Snapshot.ActiveDeployments
+		}
+		m.deployments.SetItems(recent, msg.Snapshot.LoadedAt)
 		m.syncDetailFromList()
+		m.refreshDiagnostics()
 		var cmds []tea.Cmd
 		for _, w := range msg.Snapshot.Warnings {
 			cmds = append(cmds, m.pushToast(components.ToastWarning, w, ""))
@@ -297,6 +370,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.lastError = msg.Err
 		m.connection = connectionStateFor(msg.Err)
+		m.rememberError(msg.Err)
+		m.refreshInstances()
+		m.refreshDiagnostics()
 		m.log.Warn("dashboard load failed", "kind", string(msg.Err.Kind), "err", msg.Err.Error())
 		// With cached data on screen the failure is a toast, not a takeover.
 		if m.apps.Loaded() {
@@ -392,6 +468,30 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case openURLFailedMsg:
 		return m, m.pushToast(components.ToastError, "Could not open link", msg.Err.Error())
+
+	case instanceSwitchedMsg:
+		return m, m.applyInstanceSwitch(msg)
+
+	case instanceSwitchFailedMsg:
+		return m, m.applyInstanceSwitchFailed(msg)
+
+	case instanceRemovedMsg:
+		if msg.EmptyFleet {
+			m.apps = views.NewApplications()
+			m.deployments = views.NewDeployments()
+			m.connection = components.ConnectionOffline
+			m.loading = false
+			return m, m.pushToast(components.ToastSuccess, "Instance removed",
+				"No instances remain. Run cooldeck setup to add one.")
+		}
+		if msg.NextID != "" {
+			return m, tea.Batch(
+				m.pushToast(components.ToastSuccess, "Instance removed", msg.Name),
+				m.switchInstance(msg.NextID),
+			)
+		}
+		return m, m.pushToast(components.ToastSuccess, "Instance removed",
+			msg.Name+" deleted from local config")
 	}
 
 	return m, nil
@@ -418,20 +518,24 @@ func (m *Model) recomputeLayout() {
 // never per frame.
 func (m *Model) rebuildTheme() {
 	mode := theme.ModeDark
+	paletteName := ""
 	switch m.themeMode {
 	case config.ThemeLight:
 		mode = theme.ModeLight
 	case config.ThemeDark:
 		mode = theme.ModeDark
+	case config.ThemeDracula, config.ThemeCatppuccin, config.ThemeNord, config.ThemeGruvbox, config.ThemeTokyoNight:
+		paletteName = string(m.themeMode)
 	default:
 		if !m.darkTerm {
 			mode = theme.ModeLight
 		}
 	}
 	m.theme = theme.New(theme.Options{
-		Mode:     mode,
-		NerdFont: m.opts.Config.UI.NerdFont == config.TristateOn,
-		ASCII:    m.opts.ASCII,
+		Mode:        mode,
+		PaletteName: paletteName,
+		NerdFont:    m.opts.Config.UI.NerdFont == config.TristateOn,
+		ASCII:       m.opts.ASCII,
 	})
 }
 
@@ -469,16 +573,143 @@ func (m *Model) spinnerFrame() string {
 // availability. A section the token cannot serve is shown disabled rather than
 // hidden, so the user learns the feature exists.
 func (m *Model) sections() []components.NavItem {
-	item := components.NavItem{
+	apps := components.NavItem{
 		Label:   SectionApplications.Label(),
 		Short:   SectionApplications.Short(),
 		Count:   m.apps.Count(),
 		Enabled: m.capabilities.Applications,
 	}
-	if !item.Enabled {
-		item.Reason = "the token cannot list applications"
+	if !apps.Enabled {
+		apps.Reason = "the token cannot list applications"
 	}
-	return []components.NavItem{item}
+	deploys := components.NavItem{
+		Label:   SectionDeployments.Label(),
+		Short:   SectionDeployments.Short(),
+		Count:   m.deployments.Count(),
+		Enabled: m.capabilities.Deployments,
+	}
+	if !deploys.Enabled {
+		deploys.Reason = "the token cannot list deployments"
+	}
+	instances := components.NavItem{
+		Label:   SectionInstances.Label(),
+		Short:   SectionInstances.Short(),
+		Count:   m.instances.Count(),
+		Enabled: true,
+	}
+	diagnostics := components.NavItem{
+		Label:   SectionDiagnostics.Label(),
+		Short:   SectionDiagnostics.Short(),
+		Count:   -1,
+		Enabled: true,
+	}
+	return []components.NavItem{apps, deploys, instances, diagnostics}
+}
+
+// rememberError keeps a short, redacted trail of failures for the diagnostics
+// screen. Titles only — never raw response bodies.
+func (m *Model) rememberError(err *domain.Error) {
+	if err == nil {
+		return
+	}
+	line := err.Title
+	if err.Message != "" {
+		line += ": " + err.Message
+	}
+	line = domain.SanitizeLogText(line)
+	m.recentErrors = append(m.recentErrors, line)
+	const maxRecent = 12
+	if len(m.recentErrors) > maxRecent {
+		m.recentErrors = m.recentErrors[len(m.recentErrors)-maxRecent:]
+	}
+}
+
+// refreshInstances rebuilds the instances list from config and live connection state.
+func (m *Model) refreshInstances() {
+	rows := make([]views.InstanceRow, 0)
+	activeID := m.service.InstanceID()
+
+	if m.opts.Demo {
+		rows = append(rows, views.InstanceRow{
+			ID:          "demo",
+			Name:        m.instanceLabel(),
+			URL:         m.lastConnection.BaseURL,
+			TokenSource: "demo",
+			Active:      true,
+			Demo:        true,
+			Version:     m.coolifyVer,
+			Team:        m.lastConnection.TeamName,
+			Latency:     m.lastConnection.Latency,
+			Connection:  m.connection,
+			ConnectedAt: m.lastConnection.ConnectedAt,
+		})
+		if m.connectionErr != nil {
+			rows[0].LastError = m.connectionErr.Title
+		}
+		m.instances.SetItems(rows)
+		return
+	}
+
+	// Stable order by ID so the list does not jump between refreshes.
+	ids := make([]string, 0, len(m.opts.Config.Instances))
+	for id := range m.opts.Config.Instances {
+		ids = append(ids, id)
+	}
+	// Simple insertion order via sort would need import; use map iteration then
+	// a tiny selection sort by ID.
+	for i := 0; i < len(ids); i++ {
+		for j := i + 1; j < len(ids); j++ {
+			if ids[j] < ids[i] {
+				ids[i], ids[j] = ids[j], ids[i]
+			}
+		}
+	}
+	for _, id := range ids {
+		inst := m.opts.Config.Instances[id]
+		inst.ID = id
+		row := views.InstanceRow{
+			ID:          id,
+			Name:        inst.DisplayName(),
+			URL:         inst.URL,
+			TokenSource: string(inst.TokenSource),
+			Active:      id == activeID,
+			Connection:  components.ConnectionConnecting,
+		}
+		if row.Active {
+			row.Version = m.coolifyVer
+			row.Team = m.lastConnection.TeamName
+			row.Latency = m.lastConnection.Latency
+			row.Connection = m.connection
+			row.ConnectedAt = m.lastConnection.ConnectedAt
+			if m.lastConnection.BaseURL != "" {
+				row.URL = m.lastConnection.BaseURL
+			}
+			if m.connectionErr != nil {
+				row.LastError = m.connectionErr.Title
+			}
+		}
+		rows = append(rows, row)
+	}
+	// Active service with no matching config entry (edge case / tests).
+	if len(rows) == 0 && activeID != "" {
+		rows = append(rows, views.InstanceRow{
+			ID:          activeID,
+			Name:        m.instanceLabel(),
+			URL:         m.lastConnection.BaseURL,
+			Active:      true,
+			Version:     m.coolifyVer,
+			Team:        m.lastConnection.TeamName,
+			Latency:     m.lastConnection.Latency,
+			Connection:  m.connection,
+			ConnectedAt: m.lastConnection.ConnectedAt,
+		})
+	}
+	m.instances.SetItems(rows)
+}
+
+// refreshDiagnostics rebuilds the diagnostics field list from live state.
+func (m *Model) refreshDiagnostics() {
+	m.diagnostics.SetFields(m.buildDiagnosticFields())
 }
 
 // instanceLabel is the header's instance name.

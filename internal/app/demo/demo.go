@@ -124,10 +124,16 @@ func (s *Service) Dashboard(ctx context.Context) (app.DashboardSnapshot, error) 
 		Applications: append([]domain.Application(nil), s.apps...),
 		LoadedAt:     s.now(),
 	}
-	for _, deps := range s.deployments {
-		for _, d := range deps {
+	// Collect a short history per application (newest first already).
+	for _, a := range s.apps {
+		deps := s.deployments[a.UUID]
+		for i, d := range deps {
 			if d.Status.IsActive() {
 				snap.ActiveDeployments = append(snap.ActiveDeployments, d)
+			}
+			// Cap recent history so the global list stays scannable.
+			if i < 3 {
+				snap.RecentDeployments = append(snap.RecentDeployments, d)
 			}
 		}
 	}

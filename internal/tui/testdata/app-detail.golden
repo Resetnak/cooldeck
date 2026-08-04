@@ -1,0 +1,32 @@
+ COOLDECK  Demo   o connected    DEMO                                                    12 apps  |  refreshed just now
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ RESOURCES         │Demo -> StimuStop -> production -> stimustop-api
+                   │  Overview  |  Deployments  |  Runtime Logs  |  Configuration
+ > Applic...   12  │
+   Deploym...   0  │OVERVIEW
+   Instances    1  │Status         o Running
+   Diagnostics     │Health         healthy
+                   │Description    Public REST API
+                   │UUID           demo000ayg9ml
+                   │
+                   │PLACEMENT
+                   │Project        StimuStop
+                   │Environment    production   PRODUCTION
+                   │Server         hetzner-fsn1
+                   │
+                   │SOURCE
+                   │Repository     git@github.com:resetnak/stimustop-api.git
+                   │Branch         main
+                   │Commit         6b3514c
+                   │Build pack     nixpacks
+                   │
+                   │DOMAINS
+                   │               api.stimustop.com
+                   │
+                   │LAST DEPLOYMENT
+                   │Result         + Finished
+                   │Started        3m ago  (2026-08-04 13:57:00)
+                   │Duration       1m 12s
+                   │Commit         6b3514c
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ←→  tabs   ↑↓  scroll   d  deploy   r  restart   s  start/stop   b  open domain   o  open repo   ?  more     Overview

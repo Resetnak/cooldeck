@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"strconv"
 	"strings"
 
 	"charm.land/bubbles/v2/key"
@@ -34,6 +35,15 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if m.pendingAction != nil {
 		return m.handleConfirmationKey(msg)
 	}
+	if m.instanceForm != nil {
+		return m.handleInstanceFormKey(msg)
+	}
+	if m.helpOpen {
+		return m.handleHelpKey(msg)
+	}
+	if m.paletteOpen {
+		return m.handlePaletteKey(msg)
+	}
 
 	if m.filtering {
 		return m.handleFilterKey(msg)
@@ -44,16 +54,22 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	switch {
 	case key.Matches(msg, m.keys.Help):
-		return m, m.pushToast(components.ToastInfo,
-			"Keys: j/k move, enter detail, / filter, R refresh, q back", "")
+		m.openHelp()
+		return m, nil
+
+	case key.Matches(msg, m.keys.Palette):
+		m.openPalette()
+		return m, nil
 
 	case key.Matches(msg, m.keys.Theme):
 		m.cycleTheme()
+		m.refreshDiagnostics()
 		return m, m.pushToast(components.ToastInfo, "Theme: "+string(m.themeMode), "")
 
 	case key.Matches(msg, m.keys.Compact):
 		m.forceCompact = !m.forceCompact
 		m.recomputeLayout()
+		m.refreshDiagnostics()
 		return m, nil
 
 	case key.Matches(msg, m.keys.Refresh):
@@ -69,6 +85,32 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, m.keys.SectionApplications):
 		return m.gotoSection(SectionApplications)
+	case key.Matches(msg, m.keys.SectionDeployments):
+		return m.gotoSection(SectionDeployments)
+	case key.Matches(msg, m.keys.SectionInstances):
+		return m.gotoSection(SectionInstances)
+	case key.Matches(msg, m.keys.SectionDiagnostics):
+		return m.gotoSection(SectionDiagnostics)
+
+	case key.Matches(msg, m.keys.DemoToggleOffline):
+		type offlineToggler interface {
+			SetOffline(bool)
+			Offline() bool
+		}
+		if m.opts.Demo {
+			if d, ok := m.service.(offlineToggler); ok {
+				next := !d.Offline()
+				d.SetOffline(next)
+				state := "online"
+				if next {
+					state = "offline"
+				}
+				return m, tea.Batch(
+					m.pushToast(components.ToastInfo, "Demo outage "+state, ""),
+					m.manualRefresh(),
+				)
+			}
+		}
 	}
 
 	if m.focus == focusSidebar {
@@ -166,18 +208,23 @@ func (m *Model) handleSidebarKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// handleListKey drives the applications table.
+// handleListKey drives the list-level screens for every top-level section.
 func (m *Model) handleListKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	if m.section != SectionApplications {
-		// The remaining sections land in Milestone 8; until then their keys
-		// fall through to the globals rather than pretending to work.
-		switch {
-		case key.Matches(msg, m.keys.Quit), key.Matches(msg, m.keys.Back):
-			return m.gotoSection(SectionApplications)
-		}
-		return m, nil
+	switch m.section {
+	case SectionDeployments:
+		return m.handleDeploymentsKey(msg)
+	case SectionInstances:
+		return m.handleInstancesKey(msg)
+	case SectionDiagnostics:
+		return m.handleDiagnosticsKey(msg)
+	case SectionApplications:
+		return m.handleApplicationsKey(msg)
+	default:
+		return m.handleApplicationsKey(msg)
 	}
+}
 
+func (m *Model) handleApplicationsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	page := max(m.contentHeight()-2, 1)
 
 	switch {
@@ -234,6 +281,9 @@ func (m *Model) handleListKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case key.Matches(msg, m.keys.OpenRepo):
 		return m, m.openSelectedRepository()
 
+	case key.Matches(msg, m.keys.CopyUUID):
+		return m, m.copyApplicationUUID()
+
 	case key.Matches(msg, m.keys.Back):
 		// Esc clears an active filter before it does anything else, which is
 		// what the empty state tells the user it will do.
@@ -254,6 +304,139 @@ func (m *Model) handleListKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 	return m, nil
+}
+
+func (m *Model) handleDeploymentsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	page := max(m.contentHeight()-2, 1)
+	switch {
+	case key.Matches(msg, m.keys.Up):
+		m.deployments.Move(-1)
+	case key.Matches(msg, m.keys.Down):
+		m.deployments.Move(1)
+	case key.Matches(msg, m.keys.Top):
+		m.deployments.MoveTo(0)
+	case key.Matches(msg, m.keys.Bottom):
+		m.deployments.MoveTo(m.deployments.Count() - 1)
+	case key.Matches(msg, m.keys.PageDown):
+		m.deployments.Move(page)
+	case key.Matches(msg, m.keys.PageUp):
+		m.deployments.Move(-page)
+	case key.Matches(msg, m.keys.Left):
+		if m.layout.ShowSidebar {
+			m.focus = focusSidebar
+		}
+	case key.Matches(msg, m.keys.Enter), key.Matches(msg, m.keys.BuildLogs):
+		return m.openSelectedDeployment()
+	case key.Matches(msg, m.keys.CopyUUID):
+		if d, ok := m.deployments.Selected(); ok && d.UUID != "" {
+			return m, m.copyText(d.UUID, "Copied deployment UUID")
+		}
+	case msg.String() == "a":
+		only := m.deployments.ToggleActiveOnly()
+		label := "recent history"
+		if only {
+			label = "active only"
+		}
+		return m, m.pushToast(components.ToastInfo, "Deployments filter: "+label, "")
+	case key.Matches(msg, m.keys.Quit), key.Matches(msg, m.keys.Back):
+		return m.gotoSection(SectionApplications)
+	}
+	return m, nil
+}
+
+func (m *Model) handleInstancesKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	page := max(m.contentHeight()-2, 1)
+	switch {
+	case key.Matches(msg, m.keys.Up):
+		m.instances.Move(-1)
+	case key.Matches(msg, m.keys.Down):
+		m.instances.Move(1)
+	case key.Matches(msg, m.keys.Top):
+		m.instances.MoveTo(0)
+	case key.Matches(msg, m.keys.Bottom):
+		m.instances.MoveTo(m.instances.Count() - 1)
+	case key.Matches(msg, m.keys.PageDown):
+		m.instances.Move(page)
+	case key.Matches(msg, m.keys.PageUp):
+		m.instances.Move(-page)
+	case key.Matches(msg, m.keys.Left):
+		if m.layout.ShowSidebar {
+			m.focus = focusSidebar
+		}
+	case key.Matches(msg, m.keys.Enter):
+		return m, m.activateSelectedInstance()
+	case msg.String() == "T":
+		return m, tea.Batch(
+			m.pushToast(components.ToastInfo, "Testing connection…", ""),
+			m.testActiveConnection(),
+		)
+	case msg.String() == "a":
+		return m, m.openAddInstanceForm()
+	case msg.String() == "e":
+		return m, m.openEditInstanceForm()
+	case msg.String() == "d":
+		if row, ok := m.instances.Selected(); ok {
+			return m, m.stageDeleteInstance(row.ID, row.Name)
+		}
+	case key.Matches(msg, m.keys.Quit), key.Matches(msg, m.keys.Back):
+		return m.gotoSection(SectionApplications)
+	}
+	return m, nil
+}
+
+func (m *Model) handleDiagnosticsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	page := max(m.contentHeight()-2, 1)
+	switch {
+	case key.Matches(msg, m.keys.Up):
+		m.diagnostics.Scroll(-1, page)
+	case key.Matches(msg, m.keys.Down):
+		m.diagnostics.Scroll(1, page)
+	case key.Matches(msg, m.keys.PageDown):
+		m.diagnostics.Scroll(page, page)
+	case key.Matches(msg, m.keys.PageUp):
+		m.diagnostics.Scroll(-page, page)
+	case key.Matches(msg, m.keys.Top):
+		m.diagnostics.Scroll(-1<<20, page)
+	case key.Matches(msg, m.keys.Left):
+		if m.layout.ShowSidebar {
+			m.focus = focusSidebar
+		}
+	case key.Matches(msg, m.keys.CopyUUID), msg.String() == "c":
+		return m, m.copyDiagnostics()
+	case msg.String() == "e":
+		return m, m.exportDiagnostics()
+	case key.Matches(msg, m.keys.Quit), key.Matches(msg, m.keys.Back):
+		return m.gotoSection(SectionApplications)
+	}
+	return m, nil
+}
+
+// openSelectedDeployment opens the application detail for the selected
+// global deployment and jumps into its build log when possible.
+func (m *Model) openSelectedDeployment() (tea.Model, tea.Cmd) {
+	d, ok := m.deployments.Selected()
+	if !ok {
+		return m, nil
+	}
+	appUUID := d.ApplicationUUID
+	if appUUID == "" {
+		return m, m.pushToast(components.ToastWarning, "No application on deployment", "")
+	}
+	application := domain.Application{UUID: appUUID, Name: d.ApplicationName}
+	if m.apps.SelectUUID(appUUID) {
+		if a, ok := m.apps.Selected(); ok {
+			application = a
+		}
+	}
+	m.section = SectionApplications
+	m.screen = screenDetail
+	m.detail.SetApplication(application, m.apps.LoadedAt())
+	m.detail.SetTab(views.TabDeployments)
+	m.detail.SetDeployments([]domain.Deployment{d})
+	if uuid, ok := m.detail.OpenSelectedDeploymentLogs(); ok {
+		return m, tea.Batch(m.loadDetail(appUUID), m.loadDeploymentLogs(uuid))
+	}
+	return m, m.loadDetail(appUUID)
 }
 
 // handleDetailKey drives the application detail screen.
@@ -324,6 +507,14 @@ func (m *Model) handleDetailKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		if m.detail.Tab() == views.TabRuntimeLogs {
 			m.detail.NextRuntimeMatch(-1)
 		}
+	case key.Matches(msg, m.keys.LogClear):
+		return m, m.clearActiveLogs()
+	case key.Matches(msg, m.keys.LogMore):
+		return m, m.adjustLogLines(1)
+	case key.Matches(msg, m.keys.LogLess):
+		return m, m.adjustLogLines(-1)
+	case key.Matches(msg, m.keys.CopyUUID):
+		return m, m.copyFromDetail()
 	case key.Matches(msg, m.keys.Enter):
 		if m.detail.Tab() == views.TabDeployments && !m.detail.DeploymentLogsOpen() {
 			if uuid, ok := m.detail.OpenSelectedDeploymentLogs(); ok {
@@ -356,6 +547,109 @@ func (m *Model) handleDetailKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, m.openSelectedRepository()
 	}
 	return m, nil
+}
+
+// logLinesStep is how many lines +/- changes the runtime log window by.
+const logLinesStep = 50
+
+const (
+	minSessionLogLines = 10
+	maxSessionLogLines = 10000
+)
+
+// adjustLogLines changes the session log window size and reloads when runtime
+// logs are open. Outside the log view the binding is a no-op.
+func (m *Model) adjustLogLines(direction int) tea.Cmd {
+	if m.screen != screenDetail || m.detail.Tab() != views.TabRuntimeLogs {
+		return nil
+	}
+	next := m.logLines + direction*logLinesStep
+	if next < minSessionLogLines {
+		next = minSessionLogLines
+	}
+	if next > maxSessionLogLines {
+		next = maxSessionLogLines
+	}
+	if next == m.logLines {
+		return m.pushToast(components.ToastInfo, "Log lines already at "+strconv.Itoa(m.logLines), "")
+	}
+	m.logLines = next
+	toast := m.pushToast(components.ToastInfo, "Fetching "+strconv.Itoa(m.logLines)+" log lines", "")
+	if m.detail.RuntimeLogsPaused() {
+		return toast
+	}
+	return tea.Batch(toast, m.loadRuntimeLogs(m.detail.Application().UUID))
+}
+
+// clearActiveLogs clears the local log buffer for the open log pane.
+func (m *Model) clearActiveLogs() tea.Cmd {
+	if m.screen != screenDetail {
+		return nil
+	}
+	if m.detail.DeploymentLogsOpen() {
+		if m.detail.DeploymentLogCount() == 0 {
+			return m.pushToast(components.ToastInfo, "Log buffer already empty", "")
+		}
+		m.detail.ClearDeploymentLogs()
+		return m.pushToast(components.ToastInfo, "Cleared deployment log buffer", "")
+	}
+	if m.detail.Tab() == views.TabRuntimeLogs {
+		if m.detail.RuntimeLogCount() == 0 {
+			return m.pushToast(components.ToastInfo, "Log buffer already empty", "")
+		}
+		m.detail.ClearRuntimeLogs()
+		return m.pushToast(components.ToastInfo, "Cleared runtime log buffer", "")
+	}
+	return nil
+}
+
+// copyFromDetail copies the most relevant detail-screen value: log text when a
+// log pane is open, the selected deployment UUID on the deployments table, or
+// the application UUID otherwise.
+func (m *Model) copyFromDetail() tea.Cmd {
+	if m.detail.DeploymentLogsOpen() {
+		text := m.detail.DeploymentLogText()
+		if text == "" {
+			return m.pushToast(components.ToastWarning, "Nothing to copy", "No deployment log lines loaded.")
+		}
+		n := m.detail.DeploymentLogCount()
+		return m.copyText(text, "Copied "+strconv.Itoa(n)+" log line"+plural(n))
+	}
+	if m.detail.Tab() == views.TabRuntimeLogs {
+		text := m.detail.RuntimeLogText()
+		if text == "" {
+			return m.pushToast(components.ToastWarning, "Nothing to copy", "No runtime log lines loaded.")
+		}
+		if m.detail.RuntimeSearch() != "" {
+			if current, total := m.detail.RuntimeSearchStatus(); total > 0 {
+				return m.copyText(text, "Copied search match "+strconv.Itoa(current)+"/"+strconv.Itoa(total))
+			}
+		}
+		n := m.detail.RuntimeLogCount()
+		return m.copyText(text, "Copied "+strconv.Itoa(n)+" log line"+plural(n))
+	}
+	if m.detail.Tab() == views.TabDeployments {
+		if deployment, ok := m.detail.SelectedDeployment(); ok && deployment.UUID != "" {
+			return m.copyText(deployment.UUID, "Copied deployment UUID")
+		}
+	}
+	return m.copyApplicationUUID()
+}
+
+// copyApplicationUUID copies the current application's UUID.
+func (m *Model) copyApplicationUUID() tea.Cmd {
+	a, ok := m.currentApplication()
+	if !ok || a.UUID == "" {
+		return m.pushToast(components.ToastWarning, "Nothing to copy", "No application selected.")
+	}
+	return m.copyText(a.UUID, "Copied application UUID")
+}
+
+func plural(n int) string {
+	if n == 1 {
+		return ""
+	}
+	return "s"
 }
 
 func (m *Model) loadActiveDetailTab() tea.Cmd {
@@ -404,12 +698,24 @@ func (m *Model) currentApplication() (domain.Application, bool) {
 }
 
 func (m *Model) gotoSection(s Section) (tea.Model, tea.Cmd) {
+	s = clampSection(s)
 	if s == m.section && m.screen == screenList {
 		return m, nil
+	}
+	// Leaving detail cancels its log streams so they cannot keep polling.
+	if m.screen == screenDetail {
+		m.cancelRuntimeLogsRequest()
+		m.cancelDeploymentLogsRequest()
 	}
 	m.section = s
 	m.screen = screenList
 	m.focus = focusContent
+	if s == SectionInstances {
+		m.refreshInstances()
+	}
+	if s == SectionDiagnostics {
+		m.refreshDiagnostics()
+	}
 	return m, nil
 }
 
@@ -425,13 +731,23 @@ func (m *Model) cycleFocus(delta int) {
 	m.focus = focusTarget((int(m.focus) + 1) % 2)
 }
 
-// cycleTheme steps through auto, dark and light.
+// cycleTheme steps through available themes.
 func (m *Model) cycleTheme() {
 	switch m.themeMode {
 	case config.ThemeAuto:
 		m.themeMode = config.ThemeDark
 	case config.ThemeDark:
 		m.themeMode = config.ThemeLight
+	case config.ThemeLight:
+		m.themeMode = config.ThemeDracula
+	case config.ThemeDracula:
+		m.themeMode = config.ThemeCatppuccin
+	case config.ThemeCatppuccin:
+		m.themeMode = config.ThemeNord
+	case config.ThemeNord:
+		m.themeMode = config.ThemeGruvbox
+	case config.ThemeGruvbox:
+		m.themeMode = config.ThemeTokyoNight
 	default:
 		m.themeMode = config.ThemeAuto
 	}
@@ -451,7 +767,13 @@ func (m *Model) contentHeight() int {
 }
 
 func clampSection(s Section) Section {
-	return SectionApplications
+	if s < 0 {
+		return SectionApplications
+	}
+	if s >= sectionCount {
+		return sectionCount - 1
+	}
+	return s
 }
 
 func trimLastWord(s string) string {

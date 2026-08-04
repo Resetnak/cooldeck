@@ -37,9 +37,10 @@ func (c Config) Validate() error {
 	}
 
 	switch c.Theme {
-	case ThemeAuto, ThemeDark, ThemeLight:
+	case ThemeAuto, ThemeDark, ThemeLight,
+		ThemeDracula, ThemeCatppuccin, ThemeNord, ThemeGruvbox, ThemeTokyoNight:
 	default:
-		problems = append(problems, fmt.Errorf("theme %q must be one of auto, dark, light", c.Theme))
+		problems = append(problems, fmt.Errorf("theme %q must be one of auto, dark, light, dracula, catppuccin, nord, gruvbox, tokyo-night", c.Theme))
 	}
 	if err := validateTristate("ui.nerd_font", c.UI.NerdFont); err != nil {
 		problems = append(problems, err)

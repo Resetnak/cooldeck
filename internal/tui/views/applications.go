@@ -237,15 +237,14 @@ func deployedAt(a domain.Application) time.Time {
 
 // applicationColumns defines the table shape once. Priority drives which
 // columns survive on a narrow terminal: status and name never drop.
-func applicationColumns() []components.Column {
-	return []components.Column{
-		{Title: "Status", MinWidth: 12, Priority: 0},
-		{Title: "Application", MinWidth: 16, Flex: 3, MaxWidth: 40, Priority: 0},
-		{Title: "Project / Env", ShortTitle: "Project", MinWidth: 16, Flex: 2, MaxWidth: 30, Priority: 3},
-		{Title: "Branch", MinWidth: 8, Flex: 1, MaxWidth: 18, Priority: 2},
-		{Title: "Deployed", MinWidth: 10, Priority: 1, Right: true},
-		{Title: "Domain", MinWidth: 16, Flex: 3, MaxWidth: 44, Priority: 4},
-	}
+// Allocated once: Render is hot and must not rebuild the schema every frame.
+var applicationColumns = []components.Column{
+	{Title: "Status", MinWidth: 12, Priority: 0},
+	{Title: "Application", MinWidth: 16, Flex: 3, MaxWidth: 40, Priority: 0},
+	{Title: "Project / Env", ShortTitle: "Project", MinWidth: 16, Flex: 2, MaxWidth: 30, Priority: 3},
+	{Title: "Branch", MinWidth: 8, Flex: 1, MaxWidth: 18, Priority: 2},
+	{Title: "Deployed", MinWidth: 10, Priority: 1, Right: true},
+	{Title: "Domain", MinWidth: 16, Flex: 3, MaxWidth: 44, Priority: 4},
 }
 
 // Render draws the table, or the appropriate empty, loading or filtered-out
@@ -279,11 +278,12 @@ func (v *Applications) Render(th *theme.Theme, width, height int, focused bool, 
 	v.offset = components.ClampOffset(v.offset, v.selected, len(rows), visible)
 
 	tbl := components.Table{
-		Columns:  applicationColumns(),
-		Rows:     rows,
-		Selected: v.selected,
-		Offset:   v.offset,
-		Focused:  focused,
+		Columns:      applicationColumns,
+		Rows:         rows,
+		Selected:     v.selected,
+		Offset:       v.offset,
+		Focused:      focused,
+		ZebraStripes: true,
 	}
 	return tbl.Render(th, width, height)
 }

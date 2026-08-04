@@ -61,6 +61,10 @@ type DashboardSnapshot struct {
 	// ActiveDeployments are the in-flight deployments across all applications,
 	// used to badge rows without a per-application request.
 	ActiveDeployments []domain.Deployment
+	// RecentDeployments is a bounded history (active + finished) for the
+	// top-level deployments section. May equal ActiveDeployments when the
+	// backend only exposes the live queue.
+	RecentDeployments []domain.Deployment
 	LoadedAt          time.Time
 	// Partial marks a snapshot where an optional enrichment (project names,
 	// deployment badges) failed but the applications themselves loaded.

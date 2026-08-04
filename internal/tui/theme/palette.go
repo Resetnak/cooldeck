@@ -107,6 +107,151 @@ var LightPalette = Palette{
 	SelectionDim:  lipgloss.Color("#EFF1F5"),
 }
 
+// DraculaPalette implements the Dracula colour scheme.
+// Reference: https://draculatheme.com/contribute
+var DraculaPalette = Palette{
+	Background:    lipgloss.Color("#282A36"),
+	Surface:       lipgloss.Color("#2D303D"),
+	SurfaceRaised: lipgloss.Color("#343746"),
+	Overlay:       lipgloss.Color("#2D303D"),
+
+	Border:        lipgloss.Color("#44475A"),
+	BorderFocused: lipgloss.Color("#BD93F9"),
+	BorderSubtle:  lipgloss.Color("#383A4A"),
+
+	Text:       lipgloss.Color("#F8F8F2"),
+	TextMuted:  lipgloss.Color("#BFBFBF"),
+	TextSubtle: lipgloss.Color("#6272A4"),
+	TextInvert: lipgloss.Color("#282A36"),
+
+	Primary:   lipgloss.Color("#BD93F9"),
+	Secondary: lipgloss.Color("#8BE9FD"),
+	Success:   lipgloss.Color("#50FA7B"),
+	Warning:   lipgloss.Color("#F1FA8C"),
+	Error:     lipgloss.Color("#FF5555"),
+	Info:      lipgloss.Color("#8BE9FD"),
+
+	Selection:     lipgloss.Color("#44475A"),
+	SelectionText: lipgloss.Color("#F8F8F2"),
+	SelectionDim:  lipgloss.Color("#363948"),
+}
+
+// CatppuccinPalette implements the Catppuccin Mocha flavour.
+// Reference: https://github.com/catppuccin/catppuccin
+var CatppuccinPalette = Palette{
+	Background:    lipgloss.Color("#1E1E2E"),
+	Surface:       lipgloss.Color("#232334"),
+	SurfaceRaised: lipgloss.Color("#313244"),
+	Overlay:       lipgloss.Color("#232334"),
+
+	Border:        lipgloss.Color("#45475A"),
+	BorderFocused: lipgloss.Color("#CBA6F7"),
+	BorderSubtle:  lipgloss.Color("#313244"),
+
+	Text:       lipgloss.Color("#CDD6F4"),
+	TextMuted:  lipgloss.Color("#A6ADC8"),
+	TextSubtle: lipgloss.Color("#6C7086"),
+	TextInvert: lipgloss.Color("#1E1E2E"),
+
+	Primary:   lipgloss.Color("#CBA6F7"),
+	Secondary: lipgloss.Color("#89DCEB"),
+	Success:   lipgloss.Color("#A6E3A1"),
+	Warning:   lipgloss.Color("#F9E2AF"),
+	Error:     lipgloss.Color("#F38BA8"),
+	Info:      lipgloss.Color("#89B4FA"),
+
+	Selection:     lipgloss.Color("#45475A"),
+	SelectionText: lipgloss.Color("#CDD6F4"),
+	SelectionDim:  lipgloss.Color("#2A2A3C"),
+}
+
+// NordPalette implements the Nord colour scheme.
+// Reference: https://www.nordtheme.com/docs/colors-and-palettes
+var NordPalette = Palette{
+	Background:    lipgloss.Color("#2E3440"),
+	Surface:       lipgloss.Color("#333946"),
+	SurfaceRaised: lipgloss.Color("#3B4252"),
+	Overlay:       lipgloss.Color("#333946"),
+
+	Border:        lipgloss.Color("#4C566A"),
+	BorderFocused: lipgloss.Color("#88C0D0"),
+	BorderSubtle:  lipgloss.Color("#434C5E"),
+
+	Text:       lipgloss.Color("#ECEFF4"),
+	TextMuted:  lipgloss.Color("#D8DEE9"),
+	TextSubtle: lipgloss.Color("#737D8C"),
+	TextInvert: lipgloss.Color("#2E3440"),
+
+	Primary:   lipgloss.Color("#88C0D0"),
+	Secondary: lipgloss.Color("#81A1C1"),
+	Success:   lipgloss.Color("#A3BE8C"),
+	Warning:   lipgloss.Color("#EBCB8B"),
+	Error:     lipgloss.Color("#BF616A"),
+	Info:      lipgloss.Color("#5E81AC"),
+
+	Selection:     lipgloss.Color("#434C5E"),
+	SelectionText: lipgloss.Color("#ECEFF4"),
+	SelectionDim:  lipgloss.Color("#3B4252"),
+}
+
+// GruvboxPalette implements the Gruvbox Dark colour scheme.
+// Reference: https://github.com/morhetz/gruvbox
+var GruvboxPalette = Palette{
+	Background:    lipgloss.Color("#282828"),
+	Surface:       lipgloss.Color("#2D2D2D"),
+	SurfaceRaised: lipgloss.Color("#3C3836"),
+	Overlay:       lipgloss.Color("#2D2D2D"),
+
+	Border:        lipgloss.Color("#504945"),
+	BorderFocused: lipgloss.Color("#D79921"),
+	BorderSubtle:  lipgloss.Color("#3C3836"),
+
+	Text:       lipgloss.Color("#EBDBB2"),
+	TextMuted:  lipgloss.Color("#BDAE93"),
+	TextSubtle: lipgloss.Color("#7C6F64"),
+	TextInvert: lipgloss.Color("#282828"),
+
+	Primary:   lipgloss.Color("#D79921"),
+	Secondary: lipgloss.Color("#458588"),
+	Success:   lipgloss.Color("#B8BB26"),
+	Warning:   lipgloss.Color("#FE8019"),
+	Error:     lipgloss.Color("#FB4934"),
+	Info:      lipgloss.Color("#83A598"),
+
+	Selection:     lipgloss.Color("#504945"),
+	SelectionText: lipgloss.Color("#EBDBB2"),
+	SelectionDim:  lipgloss.Color("#3C3836"),
+}
+
+// TokyoNightPalette implements the Tokyo Night colour scheme.
+// Reference: https://github.com/enkia/tokyo-night-vscode-theme
+var TokyoNightPalette = Palette{
+	Background:    lipgloss.Color("#1A1B26"),
+	Surface:       lipgloss.Color("#1E2030"),
+	SurfaceRaised: lipgloss.Color("#24283B"),
+	Overlay:       lipgloss.Color("#1E2030"),
+
+	Border:        lipgloss.Color("#3B4261"),
+	BorderFocused: lipgloss.Color("#7AA2F7"),
+	BorderSubtle:  lipgloss.Color("#292E42"),
+
+	Text:       lipgloss.Color("#C0CAF5"),
+	TextMuted:  lipgloss.Color("#A9B1D6"),
+	TextSubtle: lipgloss.Color("#565F89"),
+	TextInvert: lipgloss.Color("#1A1B26"),
+
+	Primary:   lipgloss.Color("#7AA2F7"),
+	Secondary: lipgloss.Color("#7DCFFF"),
+	Success:   lipgloss.Color("#9ECE6A"),
+	Warning:   lipgloss.Color("#E0AF68"),
+	Error:     lipgloss.Color("#F7768E"),
+	Info:      lipgloss.Color("#2AC3DE"),
+
+	Selection:     lipgloss.Color("#33467C"),
+	SelectionText: lipgloss.Color("#C0CAF5"),
+	SelectionDim:  lipgloss.Color("#292E42"),
+}
+
 // Spacing is the spacing scale. Every gap in the UI is one of these values, so
 // rhythm stays consistent without magic numbers scattered through views.
 const (

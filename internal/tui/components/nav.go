@@ -38,14 +38,27 @@ func Sidebar(th *theme.Theme, items []NavItem, active, width, height int, focuse
 		label := it.Label
 		badge := ""
 		if it.Count >= 0 {
-			badge = strconv.Itoa(it.Count)
+			badge = th.NavCount.Render(" " + strconv.Itoa(it.Count) + " ")
 		}
 		if !it.Enabled {
-			badge = th.Sym.Lock
+			badge = th.Subtle.Render(" " + th.Sym.Lock + " ")
 		}
 
-		text := Fit(label, inner-4-Width(badge), th.Sym.Ellipsis)
-		row := " " + text + " " + badge + " "
+		// Leading marker keeps the active section obvious even without colour.
+		marker := " "
+		if i == active {
+			marker = th.TableMarker.Render(th.Sym.Selected)
+		}
+
+		textBudget := inner - 3 - Width(badge) - Width(marker)
+		text := Fit(label, max(textBudget, 1), th.Sym.Ellipsis)
+		row := marker + " " + text
+		if badge != "" {
+			pad := max(inner-2-Width(row)-Width(badge), 1)
+			row += strings.Repeat(" ", pad) + badge
+		} else {
+			row = Pad(row, inner-2)
+		}
 
 		switch {
 		case i == active && focused:

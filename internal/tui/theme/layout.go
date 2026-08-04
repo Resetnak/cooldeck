@@ -89,7 +89,8 @@ func ComputeLayout(width, height int, opts LayoutOptions) Layout {
 		l.HeaderHeight = 2
 	}
 	if l.ShowFooter {
-		l.FooterHeight = 1
+		// Hairline rule plus the key-hint bar.
+		l.FooterHeight = 2
 	}
 
 	l.ShowSidebar = l.Break == BreakpointWide

@@ -111,7 +111,10 @@ func (m *Model) loadRuntimeLogs(appUUID string) tea.Cmd {
 	m.runtimeLogsSeq++
 	seq := m.runtimeLogsSeq
 	service := m.service
-	lines := m.opts.Config.LogLines
+	lines := m.logLines
+	if lines <= 0 {
+		lines = m.opts.Config.LogLines
+	}
 
 	return func() tea.Msg {
 		defer cancel()
@@ -204,6 +207,20 @@ func (m *Model) openURL(url string) tea.Cmd {
 			return openURLFailedMsg{Err: err}
 		}
 		return toastMsg{Kind: int(components.ToastInfo), Text: "Opened " + url}
+	}
+}
+
+// copyText writes text to the system clipboard and reports the result as a toast.
+func (m *Model) copyText(text, success string) tea.Cmd {
+	return func() tea.Msg {
+		if err := platform.WriteClipboard(text); err != nil {
+			return toastMsg{
+				Kind:   int(components.ToastError),
+				Text:   "Copy failed",
+				Detail: err.Error(),
+			}
+		}
+		return toastMsg{Kind: int(components.ToastSuccess), Text: success}
 	}
 }
 

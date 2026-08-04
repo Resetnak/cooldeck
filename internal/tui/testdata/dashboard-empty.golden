@@ -1,0 +1,28 @@
+ COOLDECK  Demo   o connected    DEMO                                 0 apps  |  refreshed just now
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  Applications  0   |  Deployment
+
+
+
+
+
+
+
+                  +--------------------------------------------------------------+
+                  | No applications on this instance                             |
+                  |                                                              |
+                  | Check that the API token belongs to the right team, or       |
+                  | create an                                                    |
+                  | application in the Coolify dashboard.                        |
+                  |                                                              |
+                  |  [R]  refresh    [:]  commands                               |
+                  +--------------------------------------------------------------+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  ↑↓  navigate   enter  details   d  deploy   r  restart   s  start/stop   /  filter   ?  more

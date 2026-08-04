@@ -32,8 +32,8 @@ func EmptyState(th *theme.Theme, width, height int, title, body string, hints []
 		block = append(block, "", strings.Join(parts, "   "))
 	}
 
-	content := lipgloss.JoinVertical(lipgloss.Left, block...)
-	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, content)
+	card := th.Panel.Width(inner).Render(lipgloss.JoinVertical(lipgloss.Left, block...))
+	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, card)
 }
 
 // ErrorState renders a domain error as a readable panel. It shows the title,
@@ -65,8 +65,8 @@ func ErrorState(th *theme.Theme, width, height int, err *domain.Error, hints []K
 		block = append(block, "", strings.Join(parts, "   "))
 	}
 
-	content := lipgloss.JoinVertical(lipgloss.Left, block...)
-	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, content)
+	card := th.Modal.Width(inner).Render(lipgloss.JoinVertical(lipgloss.Left, block...))
+	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, card)
 }
 
 // skeletonSeed keeps the placeholder bar lengths stable between frames, so the

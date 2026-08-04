@@ -1,0 +1,28 @@
+ COOLDECK  Demo   o connected    DEMO                                12 apps  |  refreshed just now
+──────────────+----------------------------------------------------------------------+──────────────
+  Applications|                                                                      |  |  Deploymen
+  STATUS      |  cooldeck help                                                       |N
+──────────────|  A fast and polished terminal dashboard for monitoring and           |──────────────
+> ! Degraded  |  operating Coolify deployments.                                      |aintenea.dev
+  * Restarting|  esc close  ·  ↑↓ scroll                                             |
+  * Running   |                                                                      |nak.cz
+  . Queued    |  Global                                                              |loq.com
+  # Stopped   |  ↑↓ / j k            move selection                                  |
+  # Stopped   |  g / G               first / last                                    |ng.weektraq.ap
+  o Running   |  ctrl+d / ctrl+u     page down / up                                  |t.logen.examp.
+  o Running   |  enter               open / confirm                                  |ko.app
+  o Running   |  esc / q             back / quit                                     |timustop.com
+  o Running   |  tab / shift+tab     next / previous pane                            |stop.com
+  o Running   |  /                   filter or search                                |ng-api.weektr.
+  ? Unknown   |  : / ctrl+k          command palette                                 |
+              |  ?                   this help                                       |
+              |  R                   manual refresh                                  |
+              |  ctrl+t              cycle theme                                     |
+              |  ctrl+w              toggle compact mode                             |
+              |  ctrl+c              force quit                                      |
+              |                                                                      |
+              |  Sections                                                            |
+              |  1                   applications                                    |
+              |  2                   deployments                                     |
+──────────────|                                                                      |──────────────
+  ↑↓  scroll  +----------------------------------------------------------------------+         1/12

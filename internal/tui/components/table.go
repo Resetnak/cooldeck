@@ -167,8 +167,11 @@ func (t Table) Render(th *theme.Theme, width, height int) string {
 
 	var b strings.Builder
 	b.WriteString(t.renderHeader(th, cols, width))
+	// Hairline under the sticky header makes column labels scan faster.
+	b.WriteByte('\n')
+	b.WriteString(th.HeaderRule.Render(strings.Repeat("─", width)))
 
-	bodyHeight := height - 1
+	bodyHeight := height - 2
 	if bodyHeight <= 0 {
 		return b.String()
 	}
@@ -247,11 +250,12 @@ func stripStyles(s string, width int) string {
 }
 
 // VisibleRows returns how many body rows fit in the given height.
+// One row is reserved for the header label and one for the hairline rule.
 func VisibleRows(height int) int {
-	if height <= 1 {
+	if height <= 2 {
 		return 0
 	}
-	return height - 1
+	return height - 2
 }
 
 // ClampOffset returns a scroll offset that keeps the selected row on screen,

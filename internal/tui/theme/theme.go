@@ -19,6 +19,9 @@ const (
 // Options selects which palette and glyphs a Theme is built from.
 type Options struct {
 	Mode Mode
+	// PaletteName selects a named palette (e.g. "dracula"). When set, Mode
+	// is ignored for palette selection but still recorded on the Theme.
+	PaletteName string
 	// NerdFont upgrades a handful of glyphs. Never required.
 	NerdFont bool
 	// ASCII forces the plain-text glyph set for terminals that mangle
@@ -150,10 +153,7 @@ type Theme struct {
 // New builds a theme. It is called once at startup and again whenever the
 // user toggles the theme or the terminal reports a background colour change.
 func New(opts Options) *Theme {
-	p := DarkPalette
-	if opts.Mode == ModeLight {
-		p = LightPalette
-	}
+	p := resolvePalette(opts)
 
 	sym := UnicodeSymbols
 	switch {
@@ -191,18 +191,28 @@ func New(opts Options) *Theme {
 	t.Attention = lipgloss.NewStyle().Foreground(p.Warning)
 	t.Note = lipgloss.NewStyle().Foreground(p.Info)
 
-	// Header: a single line plus a hairline rule. Anything taller steals rows
-	// from the table, which is the only content that actually matters.
-	t.HeaderBar = lipgloss.NewStyle().Padding(0, SpaceXS)
-	t.HeaderLogo = lipgloss.NewStyle().Bold(true).Foreground(p.Primary)
-	t.HeaderInstance = lipgloss.NewStyle().Bold(true).Foreground(p.Text)
-	t.HeaderMeta = lipgloss.NewStyle().Foreground(p.TextMuted)
+	// Header: a single surface line plus a hairline rule. Anything taller
+	// steals rows from the table, which is the only content that actually matters.
+	t.HeaderBar = lipgloss.NewStyle().
+		Background(p.Surface).
+		Foreground(p.Text).
+		Padding(0, SpaceXS)
+	t.HeaderLogo = lipgloss.NewStyle().Bold(true).Foreground(p.Primary).Background(p.Surface)
+	t.HeaderInstance = lipgloss.NewStyle().Bold(true).Foreground(p.Text).Background(p.Surface)
+	t.HeaderMeta = lipgloss.NewStyle().Foreground(p.TextMuted).Background(p.Surface)
 	t.HeaderRule = lipgloss.NewStyle().Foreground(p.BorderSubtle)
 
-	t.FooterBar = lipgloss.NewStyle().Padding(0, SpaceXS)
-	t.FooterKey = lipgloss.NewStyle().Bold(true).Foreground(p.Secondary)
-	t.FooterDesc = lipgloss.NewStyle().Foreground(p.TextMuted)
-	t.FooterSep = lipgloss.NewStyle().Foreground(p.BorderSubtle)
+	t.FooterBar = lipgloss.NewStyle().
+		Background(p.Surface).
+		Foreground(p.TextMuted).
+		Padding(0, SpaceXS)
+	t.FooterKey = lipgloss.NewStyle().
+		Bold(true).
+		Foreground(p.Secondary).
+		Background(p.SurfaceRaised).
+		Padding(0, SpaceXS)
+	t.FooterDesc = lipgloss.NewStyle().Foreground(p.TextMuted).Background(p.Surface)
+	t.FooterSep = lipgloss.NewStyle().Foreground(p.BorderSubtle).Background(p.Surface)
 
 	t.NavTitle = lipgloss.NewStyle().Bold(true).Foreground(p.TextSubtle).Padding(0, SpaceXS)
 	t.NavItem = lipgloss.NewStyle().Foreground(p.TextMuted).Padding(0, SpaceXS)
@@ -215,8 +225,15 @@ func New(opts Options) *Theme {
 		Foreground(p.Text).
 		Background(p.SelectionDim).
 		Padding(0, SpaceXS)
-	t.NavCount = lipgloss.NewStyle().Foreground(p.TextSubtle)
-	t.TabActive = lipgloss.NewStyle().Bold(true).Foreground(p.Primary).Padding(0, SpaceXS)
+	t.NavCount = lipgloss.NewStyle().
+		Foreground(p.TextSubtle).
+		Background(p.SurfaceRaised).
+		Padding(0, SpaceXS)
+	t.TabActive = lipgloss.NewStyle().
+		Bold(true).
+		Foreground(p.Primary).
+		Underline(true).
+		Padding(0, SpaceXS)
 	t.TabInactive = lipgloss.NewStyle().Foreground(p.TextMuted).Padding(0, SpaceXS)
 
 	t.TableHeader = lipgloss.NewStyle().Bold(true).Foreground(p.TextSubtle)
@@ -379,5 +396,25 @@ func (t *Theme) LogLineStyle(level domain.LogLevel) lipgloss.Style {
 		return t.LogDebug
 	default:
 		return t.LogText
+	}
+}
+
+func resolvePalette(opts Options) Palette {
+	switch opts.PaletteName {
+	case "dracula":
+		return DraculaPalette
+	case "catppuccin":
+		return CatppuccinPalette
+	case "nord":
+		return NordPalette
+	case "gruvbox":
+		return GruvboxPalette
+	case "tokyo-night":
+		return TokyoNightPalette
+	default:
+		if opts.Mode == ModeLight {
+			return LightPalette
+		}
+		return DarkPalette
 	}
 }
