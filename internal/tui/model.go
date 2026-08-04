@@ -1,0 +1,455 @@
+package tui
+
+import (
+	"context"
+	"log/slog"
+	"strings"
+	"time"
+
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+
+	"github.com/resetnak/cooldeck/internal/app"
+	"github.com/resetnak/cooldeck/internal/config"
+	"github.com/resetnak/cooldeck/internal/domain"
+	"github.com/resetnak/cooldeck/internal/tui/components"
+	"github.com/resetnak/cooldeck/internal/tui/theme"
+	"github.com/resetnak/cooldeck/internal/tui/views"
+)
+
+// requestTimeout bounds every individual API call. It is generous enough for a
+// slow instance over a slow link, but short enough that a dead host does not
+// leave the UI waiting indefinitely.
+const requestTimeout = 20 * time.Second
+
+// frameInterval drives spinner animation and relative-time updates. Two ticks
+// per second is enough for both and costs almost nothing over SSH.
+const frameInterval = 500 * time.Millisecond
+
+// Section is a top-level destination.
+type Section int
+
+// Available sections.
+const (
+	SectionApplications Section = iota
+	SectionDeployments
+	SectionInstances
+	SectionDiagnostics
+	sectionCount
+)
+
+// Label names the section for navigation.
+func (s Section) Label() string {
+	switch s {
+	case SectionDeployments:
+		return "Deployments"
+	case SectionInstances:
+		return "Instances"
+	case SectionDiagnostics:
+		return "Diagnostics"
+	default:
+		return "Applications"
+	}
+}
+
+// Short returns the abbreviated label used in the compact tab bar.
+func (s Section) Short() string {
+	switch s {
+	case SectionDeployments:
+		return "Deploys"
+	case SectionInstances:
+		return "Inst"
+	case SectionDiagnostics:
+		return "Diag"
+	default:
+		return "Apps"
+	}
+}
+
+// screen is the current level within a section.
+type screen int
+
+const (
+	screenList screen = iota
+	screenDetail
+)
+
+// focusTarget is the pane keystrokes are routed to.
+type focusTarget int
+
+const (
+	focusContent focusTarget = iota
+	focusSidebar
+)
+
+// Options configures the root model.
+type Options struct {
+	Config  config.Config
+	Service app.Service
+	Logger  *slog.Logger
+
+	// InstanceName labels the active instance in the header.
+	InstanceName string
+	// Demo marks the run as using generated data.
+	Demo bool
+	// Theme is the requested colour scheme; "auto" is resolved from the
+	// terminal's reported background colour.
+	Theme config.Theme
+	// Mouse enables mouse reporting.
+	Mouse bool
+	// ASCII forces the plain-text glyph set for terminals that cannot render
+	// box-drawing and geometric characters.
+	ASCII bool
+
+	// Now injects the clock. Nil uses time.Now. Tests pin it so that relative
+	// timestamps and golden snapshots are stable.
+	Now func() time.Time
+}
+
+// Model is the Bubble Tea root. It owns the data, the async lifecycle and the
+// chrome; the views own their own selection and rendering.
+type Model struct {
+	opts    Options
+	keys    KeyMap
+	now     func() time.Time
+	service app.Service
+	log     *slog.Logger
+
+	theme        *theme.Theme
+	themeMode    config.Theme
+	darkTerm     bool
+	layout       theme.Layout
+	width        int
+	height       int
+	forceCompact bool
+
+	section Section
+	screen  screen
+	focus   focusTarget
+
+	apps   *views.Applications
+	detail *views.Detail
+
+	// Sequence numbers and cancel functions implement request supersession:
+	// starting a new request of a kind cancels the previous one and bumps the
+	// sequence, so a late reply is both stopped and ignored.
+	connectSeq      uint64
+	dashboardSeq    uint64
+	detailSeq       uint64
+	cancelDashboard context.CancelFunc
+	cancelDetail    context.CancelFunc
+
+	connection    components.ConnectionState
+	connectionErr *domain.Error
+	capabilities  app.Capabilities
+	coolifyVer    string
+
+	loading    bool
+	refreshing bool
+	lastError  *domain.Error
+	// staleSince records when the last successful load happened, so cached
+	// data can be labelled instead of being silently presented as current.
+	lastSuccess time.Time
+
+	filtering  bool
+	filterText string
+
+	toasts     []components.Toast
+	nextToast  int
+	spinnerIdx int
+
+	quitting bool
+}
+
+var _ tea.Model = (*Model)(nil)
+
+// New builds the root model.
+func New(opts Options) *Model {
+	now := opts.Now
+	if now == nil {
+		now = time.Now
+	}
+	log := opts.Logger
+	if log == nil {
+		log = slog.New(slog.DiscardHandler)
+	}
+
+	m := &Model{
+		opts:      opts,
+		keys:      DefaultKeyMap(),
+		now:       now,
+		service:   opts.Service,
+		log:       log,
+		themeMode: opts.Theme,
+		apps:      views.NewApplications(),
+		detail:    views.NewDetail(),
+		// Until the terminal reports its background colour, assume dark: it is
+		// by far the more common terminal configuration, so the wrong guess is
+		// visible for at most one frame.
+		darkTerm:     true,
+		connection:   components.ConnectionConnecting,
+		loading:      true,
+		capabilities: app.FullCapabilities(),
+	}
+	m.forceCompact = opts.Config.UI.CompactMode == config.TristateOn
+	m.rebuildTheme()
+	return m
+}
+
+// Init implements tea.Model.
+func (m *Model) Init() tea.Cmd {
+	return tea.Batch(
+		tea.RequestBackgroundColor,
+		m.connect(),
+		m.frameTick(),
+	)
+}
+
+// View implements tea.Model.
+func (m *Model) View() tea.View {
+	v := tea.NewView(m.render())
+	v.AltScreen = true
+	v.WindowTitle = "cooldeck"
+	if m.opts.Mouse {
+		v.MouseMode = tea.MouseModeCellMotion
+	}
+	return v
+}
+
+// Update implements tea.Model.
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width, m.height = msg.Width, msg.Height
+		m.recomputeLayout()
+		return m, nil
+
+	case tea.BackgroundColorMsg:
+		// Only "auto" follows the terminal; an explicit choice is the user's.
+		if m.themeMode == config.ThemeAuto {
+			m.darkTerm = msg.IsDark()
+			m.rebuildTheme()
+		}
+		return m, nil
+
+	case tea.KeyPressMsg:
+		return m.handleKey(msg)
+
+	case connectedMsg:
+		if msg.Seq != m.connectSeq {
+			return m, nil
+		}
+		m.connection = components.ConnectionOnline
+		m.connectionErr = nil
+		m.capabilities = msg.Connection.Capabilities
+		m.coolifyVer = msg.Connection.Version
+		m.log.Info("connected",
+			"instance", msg.Connection.InstanceID,
+			"version", msg.Connection.Version,
+			"latency_ms", msg.Connection.Latency.Milliseconds())
+		return m, tea.Batch(m.loadDashboard(), m.refreshTick())
+
+	case connectFailedMsg:
+		if msg.Seq != m.connectSeq {
+			return m, nil
+		}
+		m.loading = false
+		m.connectionErr = msg.Err
+		m.connection = connectionStateFor(msg.Err)
+		m.lastError = msg.Err
+		m.log.Warn("connect failed", "kind", string(msg.Err.Kind), "err", msg.Err.Error())
+		return m, tea.Batch(m.pushToast(components.ToastError, msg.Err.Title, msg.Err.Message), m.refreshTick())
+
+	case dashboardLoadedMsg:
+		if msg.Seq != m.dashboardSeq {
+			return m, nil
+		}
+		m.loading, m.refreshing = false, false
+		m.lastError = nil
+		m.lastSuccess = msg.Snapshot.LoadedAt
+		m.connection = components.ConnectionOnline
+		m.apps.SetApplications(msg.Snapshot.Applications, msg.Snapshot.ActiveDeployments, msg.Snapshot.LoadedAt)
+		m.syncDetailFromList()
+		var cmds []tea.Cmd
+		for _, w := range msg.Snapshot.Warnings {
+			cmds = append(cmds, m.pushToast(components.ToastWarning, w, ""))
+		}
+		return m, tea.Batch(cmds...)
+
+	case dashboardFailedMsg:
+		if msg.Seq != m.dashboardSeq {
+			return m, nil
+		}
+		m.loading, m.refreshing = false, false
+		if msg.Err.Kind == domain.ErrorCancelled {
+			// A cancelled request was superseded on purpose; it is not a fault.
+			return m, nil
+		}
+		m.lastError = msg.Err
+		m.connection = connectionStateFor(msg.Err)
+		m.log.Warn("dashboard load failed", "kind", string(msg.Err.Kind), "err", msg.Err.Error())
+		// With cached data on screen the failure is a toast, not a takeover.
+		if m.apps.Loaded() {
+			return m, m.pushToast(components.ToastError, msg.Err.Title, msg.Err.Message)
+		}
+		return m, nil
+
+	case detailLoadedMsg:
+		if msg.Seq != m.detailSeq {
+			return m, nil
+		}
+		m.detail.SetApplication(msg.Detail.Application, msg.Detail.LoadedAt)
+		return m, nil
+
+	case detailFailedMsg:
+		if msg.Seq != m.detailSeq || msg.Err.Kind == domain.ErrorCancelled {
+			return m, nil
+		}
+		return m, m.pushToast(components.ToastError, msg.Err.Title, msg.Err.Message)
+
+	case refreshTickMsg:
+		cmds := []tea.Cmd{m.refreshTick()}
+		if m.connection == components.ConnectionOnline || m.connectionErr != nil {
+			cmds = append(cmds, m.backgroundRefresh())
+		}
+		return m, tea.Batch(cmds...)
+
+	case frameTickMsg:
+		m.spinnerIdx++
+		m.toasts = components.PruneToasts(m.toasts, m.now())
+		return m, m.frameTick()
+
+	case toastMsg:
+		m.appendToast(components.ToastKind(msg.Kind), msg.Text, msg.Detail)
+		return m, nil
+
+	case openURLFailedMsg:
+		return m, m.pushToast(components.ToastError, "Could not open link", msg.Err.Error())
+	}
+
+	return m, nil
+}
+
+// recomputeLayout resolves geometry after a resize or a compact-mode toggle.
+func (m *Model) recomputeLayout() {
+	m.layout = theme.ComputeLayout(m.width, m.height, theme.LayoutOptions{
+		ShowHeader:   m.opts.Config.UI.ShowHeader,
+		ShowFooter:   m.opts.Config.UI.ShowFooter,
+		ForceCompact: m.forceCompact,
+		ForceRoomy:   m.opts.Config.UI.CompactMode == config.TristateOff,
+	})
+}
+
+// rebuildTheme recreates the styles. It runs on startup and on a theme change,
+// never per frame.
+func (m *Model) rebuildTheme() {
+	mode := theme.ModeDark
+	switch m.themeMode {
+	case config.ThemeLight:
+		mode = theme.ModeLight
+	case config.ThemeDark:
+		mode = theme.ModeDark
+	default:
+		if !m.darkTerm {
+			mode = theme.ModeLight
+		}
+	}
+	m.theme = theme.New(theme.Options{
+		Mode:     mode,
+		NerdFont: m.opts.Config.UI.NerdFont == config.TristateOn,
+		ASCII:    m.opts.ASCII,
+	})
+}
+
+// syncDetailFromList keeps an open detail screen in step with the list data,
+// so a background refresh updates the detail without a second request.
+func (m *Model) syncDetailFromList() {
+	if m.screen != screenDetail || !m.detail.Loaded() {
+		return
+	}
+	uuid := m.detail.Application().UUID
+	if a, ok := m.apps.Selected(); ok && a.UUID == uuid {
+		m.detail.SetApplication(a, m.apps.LoadedAt())
+	}
+}
+
+func connectionStateFor(err *domain.Error) components.ConnectionState {
+	if err == nil {
+		return components.ConnectionOnline
+	}
+	switch err.Kind {
+	case domain.ErrorUnauthorized, domain.ErrorForbidden:
+		return components.ConnectionUnauthorized
+	default:
+		return components.ConnectionOffline
+	}
+}
+
+// spinnerFrame returns the current spinner glyph.
+func (m *Model) spinnerFrame() string {
+	frames := m.theme.Sym.Spinner
+	return frames[m.spinnerIdx%len(frames)]
+}
+
+// sections returns the navigation items with their current counts and
+// availability. A section the token cannot serve is shown disabled rather than
+// hidden, so the user learns the feature exists.
+func (m *Model) sections() []components.NavItem {
+	item := components.NavItem{
+		Label:   SectionApplications.Label(),
+		Short:   SectionApplications.Short(),
+		Count:   m.apps.Count(),
+		Enabled: m.capabilities.Applications,
+	}
+	if !item.Enabled {
+		item.Reason = "the token cannot list applications"
+	}
+	return []components.NavItem{item}
+}
+
+// instanceLabel is the header's instance name.
+func (m *Model) instanceLabel() string {
+	if m.opts.InstanceName != "" {
+		return m.opts.InstanceName
+	}
+	return "cooldeck"
+}
+
+// staleFor reports how long the displayed data has been stale, or zero when it
+// is current.
+func (m *Model) staleFor() time.Duration {
+	if m.lastError == nil || m.lastSuccess.IsZero() {
+		return 0
+	}
+	return m.now().Sub(m.lastSuccess)
+}
+
+// filterPrompt renders the filter input line while filtering is active.
+func (m *Model) filterPrompt(width int) string {
+	th := m.theme
+	prompt := th.FilterPrompt.Render(th.Sym.Filter + " ")
+	text := th.FilterText.Render(m.filterText) + th.FilterPrompt.Render("▏")
+	hint := th.FilterHint.Render("  status: project: env: branch: domain:  " +
+		th.Sym.Separator + "  esc clear  enter apply")
+
+	line := prompt + text
+	if components.Width(line)+components.Width(hint) <= width {
+		line += hint
+	}
+	return components.Pad(line, width)
+}
+
+// joinRows stacks rendered blocks, dropping empty ones so a hidden header does
+// not leave a blank line behind.
+func joinRows(rows ...string) string {
+	kept := make([]string, 0, len(rows))
+	for _, r := range rows {
+		if r != "" {
+			kept = append(kept, r)
+		}
+	}
+	return lipgloss.JoinVertical(lipgloss.Left, kept...)
+}
+
+// trimTrailingBlank removes a trailing newline left by an empty region.
+func trimTrailingBlank(s string) string { return strings.TrimRight(s, "\n") }
