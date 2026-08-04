@@ -100,3 +100,25 @@ type toastMsg struct {
 
 // openURLFailedMsg reports that the OS refused to open a link.
 type openURLFailedMsg struct{ Err error }
+
+// instanceSwitchedMsg is delivered after OpenService succeeds.
+type instanceSwitchedMsg struct {
+	Service      app.Service
+	InstanceID   string
+	InstanceName string
+}
+
+// instanceSwitchFailedMsg is delivered when OpenService fails.
+type instanceSwitchFailedMsg struct {
+	InstanceID string
+	Err        *domain.Error
+}
+
+// instanceRemovedMsg is delivered after a local instance is deleted from config.
+// When NextID is set the model should switch onto that instance next.
+type instanceRemovedMsg struct {
+	Name   string
+	NextID string
+	// EmptyFleet is true when no configured instances remain.
+	EmptyFleet bool
+}

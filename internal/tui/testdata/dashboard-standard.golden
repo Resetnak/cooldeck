@@ -1,0 +1,28 @@
+ COOLDECK  Demo   o connected    DEMO                                12 apps  |  refreshed just now
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  Applications  12   |  Deploymen
+  STATUS       APPLICATION            PROJECT / ENV        BRANCH       DEPLOYED DOMAIN
+────────────────────────────────────────────────────────────────────────────────────────────────────
+> ! Degraded   * maintenea-api        Maintenea / produ... main          47m ago api.maintenea.dev
+  * Restarting logen-dashboard        Logen / preview      feat/ch... 1m 30s ago —
+  * Running    * resetnak-web         Personal / produc... main              21s resetnak.cz
+  . Queued     * shredloq             Personal / produc... main               4s shredloq.com
+  # Stopped    * maintenea-worker     Maintenea / produ... main           2h ago —
+  # Stopped    weektraq-web           Weektraq / staging   develop     1d 2h ago staging.weektraq.ap
+  o Running    * logen-ingest-serv... Logen / production   main           5d ago ingest.logen.examp.
+  o Running    * nosmoko              Personal / produc... main          11d ago nosmoko.app
+  o Running    * stimustop-api        StimuStop / produ... main           3m ago api.stimustop.com
+  o Running    * stimustop-web        StimuStop / produ... main           3m ago stimustop.com
+  o Running    weektraq-api           Weektraq / staging   develop     1d 2h ago staging-api.weektr.
+  ? Unknown    mpd-api                MPD / development    main                — —
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  ↑↓  navigate   enter  details   d  deploy   r  restart   s  start/stop   ?  more             1/12

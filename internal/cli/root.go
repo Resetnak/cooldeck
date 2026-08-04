@@ -59,12 +59,13 @@ func newRootCommand(opts *options) *cobra.Command {
 	flags.BoolVar(&opts.debug, "debug", false, "enable debug logging")
 	flags.BoolVar(&opts.demo, "demo", false, "run with deterministic local demo data")
 	flags.BoolVar(&opts.noMouse, "no-mouse", false, "disable mouse support")
-	flags.StringVar(&opts.theme, "theme", "", "theme override: auto, dark, or light")
+	flags.StringVar(&opts.theme, "theme", "", "theme override: auto, dark, light, dracula, catppuccin, nord, gruvbox, tokyo-night")
 
 	cmd.AddCommand(newVersionCommand())
 	cmd.AddCommand(newConfigCommand(opts))
 	cmd.AddCommand(newAuthCommand(opts))
 	cmd.AddCommand(newSetupCommand())
+	cmd.AddCommand(newThemeCommand(opts))
 	return cmd
 }
 
@@ -87,7 +88,7 @@ func runTUI(ctx context.Context, opts *options) error {
 		logger, _ = logging.Setup(logging.Options{Debug: opts.debug})
 	}
 
-	return tui.Run(ctx, tui.Options{
+	tuiOpts := tui.Options{
 		Config:       cfg,
 		Service:      service,
 		Logger:       logger.Logger,
@@ -95,7 +96,63 @@ func runTUI(ctx context.Context, opts *options) error {
 		Demo:         opts.demo,
 		Theme:        cfg.Theme,
 		Mouse:        cfg.UI.Mouse,
-	})
+		ConfigPath:   cfg.Path(),
+		LogPath:      logPath,
+	}
+	if logger != nil {
+		tuiOpts.RecentErrors = func() []string {
+			recs := logger.Recent()
+			out := make([]string, 0, len(recs))
+			for _, r := range recs {
+				out = append(out, r.Level.String()+": "+r.Message)
+			}
+			return out
+		}
+	}
+	if !opts.demo {
+		configPath := cfg.Path()
+		if configPath == "" {
+			configPath = opts.configPath
+		}
+		tuiOpts.OpenService = func(ctx context.Context, instanceID string) (app.Service, string, error) {
+			return openConfiguredService(ctx, configPath, instanceID)
+		}
+		tuiOpts.SaveConfig = func(c config.Config) error {
+			return c.Save(configPath)
+		}
+		tuiOpts.RemoveCredentials = func(inst config.Instance) error {
+			if inst.TokenSource != config.TokenSourceKeyring {
+				return nil
+			}
+			return credentials.Remove(credentials.KeyFor(inst))
+		}
+		tuiOpts.StoreCredentials = func(inst config.Instance, token string) error {
+			return credentials.Store(credentials.KeyFor(inst), credentials.NewToken(token))
+		}
+	}
+	return tui.Run(ctx, tuiOpts)
+}
+
+// openConfiguredService resolves credentials and builds a Coolify service for
+// an instance ID. Used for mid-session switches from the TUI.
+func openConfiguredService(ctx context.Context, configPath, instanceID string) (app.Service, string, error) {
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		return nil, "", err
+	}
+	instance, err := cfg.Instance(instanceID)
+	if err != nil {
+		return nil, "", err
+	}
+	token, _, err := credentials.Resolve(ctx, instance)
+	if err != nil {
+		return nil, "", fmt.Errorf("resolve credentials for %q: %w", instance.ID, err)
+	}
+	service, err := coolify.New(coolify.Options{Instance: instance, Token: token})
+	if err != nil {
+		return nil, "", err
+	}
+	return service, instance.DisplayName(), nil
 }
 
 func resolveService(ctx context.Context, opts *options) (config.Config, app.Service, string, error) {
@@ -133,10 +190,12 @@ func applyThemeOverride(cfg *config.Config, raw string) error {
 	}
 	theme := config.Theme(raw)
 	switch theme {
-	case config.ThemeAuto, config.ThemeDark, config.ThemeLight:
+	case config.ThemeAuto, config.ThemeDark, config.ThemeLight,
+		config.ThemeDracula, config.ThemeCatppuccin, config.ThemeNord,
+		config.ThemeGruvbox, config.ThemeTokyoNight:
 		cfg.Theme = theme
 		return nil
 	default:
-		return fmt.Errorf("invalid theme %q: use auto, dark, or light", raw)
+		return fmt.Errorf("invalid theme %q: use auto, dark, light, dracula, catppuccin, nord, gruvbox, or tokyo-night", raw)
 	}
 }

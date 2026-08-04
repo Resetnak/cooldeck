@@ -101,17 +101,19 @@ func (s *Service) Dashboard(ctx context.Context) (app.DashboardSnapshot, error) 
 		s.downgradeForError(err, "applications")
 		return app.DashboardSnapshot{}, domain.AsError(err).WithOperation("list applications")
 	}
-	deployments, deployErr := s.listActiveDeployments(ctx)
+	deployments, deployErr := s.listDeployments(ctx)
 	warnings := []string{}
 	if deployErr != nil {
 		s.downgradeForError(deployErr, "deployments")
 		warnings = append(warnings, "Deployment status is temporarily unavailable.")
 		deployments = []domain.Deployment{}
 	}
+	active, recent := splitDeployments(deployments, 100)
 	attachDeployments(applications, deployments, s.now())
 	return app.DashboardSnapshot{
 		Applications:      applications,
-		ActiveDeployments: deployments,
+		ActiveDeployments: active,
+		RecentDeployments: recent,
 		LoadedAt:          s.now(),
 		Partial:           deployErr != nil,
 		Warnings:          warnings,
@@ -221,7 +223,7 @@ func (s *Service) listApplications(ctx context.Context) ([]domain.Application, e
 	return applications, nil
 }
 
-func (s *Service) listActiveDeployments(ctx context.Context) ([]domain.Deployment, error) {
+func (s *Service) listDeployments(ctx context.Context) ([]domain.Deployment, error) {
 	dtos := []deploymentDTO{}
 	if err := s.client.getJSON(ctx, "deployments", nil, &dtos); err != nil {
 		return nil, err
@@ -235,6 +237,25 @@ func mapDeployments(dtos []deploymentDTO) []domain.Deployment {
 		deployments = append(deployments, mapDeployment(dto))
 	}
 	return deployments
+}
+
+// splitDeployments separates the live queue from a bounded recent history
+// (active first, then finished/failed, newest first overall within each group).
+func splitDeployments(all []domain.Deployment, recentLimit int) (active, recent []domain.Deployment) {
+	active = make([]domain.Deployment, 0, len(all))
+	rest := make([]domain.Deployment, 0, len(all))
+	for _, d := range all {
+		if d.Status.IsActive() {
+			active = append(active, d)
+		} else {
+			rest = append(rest, d)
+		}
+	}
+	recent = append(append([]domain.Deployment{}, active...), rest...)
+	if recentLimit > 0 && len(recent) > recentLimit {
+		recent = recent[:recentLimit]
+	}
+	return active, recent
 }
 
 func attachDeployments(applications []domain.Application, deployments []domain.Deployment, now time.Time) {

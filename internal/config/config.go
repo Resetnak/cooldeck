@@ -54,6 +54,13 @@ const (
 	ThemeAuto  Theme = "auto"
 	ThemeDark  Theme = "dark"
 	ThemeLight Theme = "light"
+
+	// Named themes – curated palettes from popular open-source colour schemes.
+	ThemeDracula    Theme = "dracula"
+	ThemeCatppuccin Theme = "catppuccin"
+	ThemeNord       Theme = "nord"
+	ThemeGruvbox    Theme = "gruvbox"
+	ThemeTokyoNight Theme = "tokyo-night"
 )
 
 // Tristate models the "auto" | "on" | "off" settings used for capabilities
@@ -302,6 +309,27 @@ func (c Config) OrderedInstances() []Instance {
 		out = append(out, c.Instances[id])
 	}
 	return out
+}
+
+// RemoveInstance drops a configured instance from the in-memory config. It does
+// not touch Coolify itself or the credential store — callers must clean those
+// up separately. If the removed instance was the default, the default falls
+// back to the first remaining ID (or empty when none remain).
+func (c *Config) RemoveInstance(id string) error {
+	if c.Instances == nil {
+		return fmt.Errorf("unknown instance %q", id)
+	}
+	if _, ok := c.Instances[id]; !ok {
+		return fmt.Errorf("unknown instance %q; available: %s", id, strings.Join(c.InstanceIDs(), ", "))
+	}
+	delete(c.Instances, id)
+	if c.DefaultInstance == id {
+		c.DefaultInstance = ""
+		if ids := c.InstanceIDs(); len(ids) > 0 {
+			c.DefaultInstance = ids[0]
+		}
+	}
+	return nil
 }
 
 // EffectiveRefreshInterval returns the interval to use for an instance,

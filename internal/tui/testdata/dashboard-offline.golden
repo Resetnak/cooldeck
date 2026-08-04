@@ -1,0 +1,28 @@
+ COOLDECK  Demo   x offline    DEMO                                   0 apps  |  refreshed just now
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  Applications  0   |  Deployment
+
+
+
+
+
+                  +--------------------------------------------------------------+
+                  |                                                              |
+                  |  x Cannot reach Coolify                                      |
+                  |                                                              |
+                  |  The Coolify instance did not answer.                        |
+                  |                                                              |
+                  |  Check the instance URL, your network connection and         |
+                  |  whether                                                     |
+                  |  Coolify is running.                                         |
+                  |                                                              |
+                  |   [R]  retry now    [3]  switch instance    [q]  quit        |
+                  |                                                              |
+                  +--------------------------------------------------------------+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  ↑↓  navigate   enter  details   d  deploy   r  restart   s  start/stop   /  filter   ?  more

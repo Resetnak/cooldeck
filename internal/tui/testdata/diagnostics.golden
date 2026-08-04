@@ -1,0 +1,28 @@
+ COOLDECK  Demo   o connected    DEMO                                12 apps  |  refreshed just now
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  Applications  12   |  Deployments  0   |  Instances  1   |  Diagnostics
+DIAGNOSTICS
+c copy  ·  e export  ·  ↑↓ scroll
+
+COOLDECK
+Version             test
+Commit              abcdef1
+Built               2026-08-04
+Go                  go1.26.5
+Platform            darwin/arm64
+GOOS/GOARCH         darwin/arm64
+
+PATHS
+Config              /tmp/cooldeck-test/config.toml
+Log file            /tmp/cooldeck-test/cooldeck.log
+
+INSTANCE
+Name                Demo
+ID                  demo
+URL                 https://coolify.demo.invalid
+Coolify             4.0.0-demo
+Team                Demo Team
+Connection          online
+Latency             —
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  ↑↓  scroll   c  copy   e  export   1  apps   ?  help                                  diagnostics

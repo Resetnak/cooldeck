@@ -183,6 +183,48 @@ func (v *Detail) SetRuntimeLogs(lines []domain.LogLine, at time.Time, truncated 
 	v.runtimeTruncated = truncated
 }
 
+// ClearRuntimeLogs drops the local runtime log buffer without fetching again.
+// Polling can refill it on the next tick when follow is still active.
+func (v *Detail) ClearRuntimeLogs() {
+	v.runtimeLogs = nil
+	v.runtimeLogsLoaded = true
+	v.runtimeTruncated = false
+	v.runtimeSearch = ""
+	v.runtimeMatch = 0
+	v.scroll = 0
+	v.logMaxScroll = 0
+}
+
+// RuntimeLogText returns the loaded runtime log buffer as plain text for copy.
+// When a search match is active, only that line is returned so "c" can copy
+// the highlighted hit; otherwise the whole buffer is copied.
+func (v *Detail) RuntimeLogText() string {
+	if matches := v.runtimeMatches(); len(matches) > 0 {
+		idx := min(v.runtimeMatch, len(matches)-1)
+		return v.runtimeLogs[matches[idx]].String()
+	}
+	return joinLogLines(v.runtimeLogs)
+}
+
+// RuntimeLogCount returns how many runtime log lines are currently buffered.
+func (v *Detail) RuntimeLogCount() int { return len(v.runtimeLogs) }
+
+// ClearDeploymentLogs drops the local deployment log buffer.
+func (v *Detail) ClearDeploymentLogs() {
+	v.deploymentLogs = nil
+	v.deploymentLogsLoaded = true
+	v.deploymentLogsTruncated = false
+	v.scroll = 0
+}
+
+// DeploymentLogText returns the loaded deployment log buffer as plain text.
+func (v *Detail) DeploymentLogText() string {
+	return joinLogLines(v.deploymentLogs)
+}
+
+// DeploymentLogCount returns how many deployment log lines are buffered.
+func (v *Detail) DeploymentLogCount() int { return len(v.deploymentLogs) }
+
 // RuntimeLogsLoaded reports whether at least one log request completed.
 func (v *Detail) RuntimeLogsLoaded() bool { return v.runtimeLogsLoaded }
 
@@ -421,7 +463,10 @@ func (v *Detail) renderRuntimeLogs(th *theme.Theme, width, height int, now time.
 		)
 	}
 
-	meta := strconv.Itoa(len(v.runtimeLogs)) + " lines  " + domain.HumanizeAge(v.runtimeLogsAt, now)
+	meta := strconv.Itoa(len(v.runtimeLogs)) + " lines"
+	if !v.runtimeLogsAt.IsZero() {
+		meta += "  " + domain.HumanizeAge(v.runtimeLogsAt, now)
+	}
 	if v.runtimeTruncated {
 		meta += "  truncated"
 	}
@@ -510,6 +555,17 @@ func logLevelStyle(th *theme.Theme, level domain.LogLevel) lipgloss.Style {
 	default:
 		return th.Subtle
 	}
+}
+
+func joinLogLines(lines []domain.LogLine) string {
+	if len(lines) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(lines))
+	for _, line := range lines {
+		parts = append(parts, line.String())
+	}
+	return strings.Join(parts, "\n")
 }
 
 // field is one label/value pair in the detail body.

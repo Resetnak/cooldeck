@@ -25,7 +25,7 @@ func Footer(th *theme.Theme, l theme.Layout, hints []KeyHint, status string) str
 	}
 
 	width := l.Width - 2*theme.SpaceXS
-	sep := th.FooterSep.Render("   ")
+	sep := th.FooterSep.Render("  ")
 
 	statusWidth := 0
 	if status != "" {
@@ -39,7 +39,7 @@ func Footer(th *theme.Theme, l theme.Layout, hints []KeyHint, status string) str
 		rendered := renderHint(th, l, h)
 		w := Width(rendered)
 		if len(parts) > 0 {
-			w += Width("   ")
+			w += Width("  ")
 		}
 		if used+w+statusWidth > width {
 			overflow = true
@@ -52,8 +52,8 @@ func Footer(th *theme.Theme, l theme.Layout, hints []KeyHint, status string) str
 	if overflow {
 		more := renderHint(th, l, KeyHint{Key: "?", Desc: "more"})
 		// Drop trailing hints until the "more" marker fits.
-		for len(parts) > 0 && used+Width(more)+Width("   ")+statusWidth > width {
-			used -= Width(parts[len(parts)-1]) + Width("   ")
+		for len(parts) > 0 && used+Width(more)+Width("  ")+statusWidth > width {
+			used -= Width(parts[len(parts)-1]) + Width("  ")
 			parts = parts[:len(parts)-1]
 		}
 		parts = append(parts, more)
@@ -64,7 +64,9 @@ func Footer(th *theme.Theme, l theme.Layout, hints []KeyHint, status string) str
 		gap := max(width-Width(line)-Width(status), 1)
 		line += strings.Repeat(" ", gap) + status
 	}
-	return Pad(th.FooterBar.Render(line), l.Width)
+	bar := Pad(th.FooterBar.Render(line), l.Width)
+	rule := th.HeaderRule.Render(strings.Repeat("─", l.Width))
+	return rule + "\n" + bar
 }
 
 func renderHint(th *theme.Theme, l theme.Layout, h KeyHint) string {
@@ -75,5 +77,5 @@ func renderHint(th *theme.Theme, l theme.Layout, h KeyHint) string {
 	if h.Disabled {
 		return th.Subtle.Render(h.Key + " " + desc)
 	}
-	return th.FooterKey.Render(h.Key) + " " + th.FooterDesc.Render(desc)
+	return th.FooterKey.Render(h.Key) + th.FooterDesc.Render(" "+desc)
 }

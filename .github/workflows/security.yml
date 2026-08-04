@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   govulncheck:
+    name: govulncheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,6 +24,7 @@ jobs:
         run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
   dependency-review:
+    name: Dependency review
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
@@ -31,3 +33,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: go
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3

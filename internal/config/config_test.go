@@ -202,6 +202,33 @@ func TestSaveLoadRoundTrip(t *testing.T) {
 	}
 }
 
+func TestRemoveInstanceUpdatesDefault(t *testing.T) {
+	cfg := Default()
+	cfg.DefaultInstance = "prod"
+	cfg.Instances = map[string]Instance{
+		"prod": {ID: "prod", Name: "Prod", URL: "https://a.example"},
+		"dev":  {ID: "dev", Name: "Dev", URL: "https://b.example"},
+	}
+	if err := cfg.RemoveInstance("prod"); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := cfg.Instances["prod"]; ok {
+		t.Fatal("prod still present")
+	}
+	if cfg.DefaultInstance != "dev" {
+		t.Fatalf("default = %q, want dev", cfg.DefaultInstance)
+	}
+	if err := cfg.RemoveInstance("dev"); err != nil {
+		t.Fatal(err)
+	}
+	if cfg.DefaultInstance != "" || len(cfg.Instances) != 0 {
+		t.Fatalf("expected empty config, default=%q n=%d", cfg.DefaultInstance, len(cfg.Instances))
+	}
+	if err := cfg.RemoveInstance("missing"); err == nil {
+		t.Fatal("expected error for missing instance")
+	}
+}
+
 func TestEffectiveRefreshIntervalClampsToMinimum(t *testing.T) {
 	cfg := Default()
 	inst := Instance{ID: "prod", RefreshInterval: Duration(500 * time.Millisecond)}

@@ -2,13 +2,55 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
   test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Format
+        if: runner.os != 'Windows'
+        run: test -z "$(gofmt -l .)"
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./...
+
+      - name: Race
+        # -race is flaky/slow on Windows runners and not the primary target.
+        if: runner.os != 'Windows'
+        run: go test -race ./...
+
+      - name: Build
+        run: go build -trimpath -o cooldeck${{ runner.os == 'Windows' && '.exe' || '' }} ./cmd/cooldeck
+
+      - name: Version
+        run: ./cooldeck${{ runner.os == 'Windows' && '.exe' || '' }} version
+
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,16 +58,61 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - name: Format
-        run: test -z "$(gofmt -l .)"
-      - name: Vet
-        run: go vet ./...
-      - name: Test
-        run: go test -race ./...
-      - name: Staticcheck
-        uses: dominikh/staticcheck-action@v1
+      - uses: dominikh/staticcheck-action@v1
         with:
           version: latest
           install-go: false
-      - name: Build
-        run: go build ./cmd/cooldeck
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64.5
+          args: --timeout=5m
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Coverage profile
+        run: go test ./... -covermode=atomic -coverprofile=coverage.out
+      - name: Coverage summary
+        run: |
+          go tool cover -func=coverage.out | tail -n 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.out
+          if-no-files-found: error
+
+  build-matrix:
+    name: Cross-build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: go build -trimpath -o /tmp/cooldeck-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/cooldeck

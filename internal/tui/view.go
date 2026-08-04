@@ -32,7 +32,14 @@ func (m *Model) render() string {
 	frame := joinRows(header, body, footer)
 	frame = m.overlayToasts(frame)
 	frame = m.overlayConfirmation(frame)
-	return trimTrailingBlank(frame)
+	frame = m.overlayPalette(frame)
+	frame = m.overlayHelp(frame)
+	frame = m.overlayInstanceForm(frame)
+	frame = trimTrailingBlank(frame)
+
+	// Fill the terminal with the theme background so the UI reads as one
+	// surface rather than floating text on the host terminal colour.
+	return m.theme.App.Width(m.width).Height(m.height).Render(frame)
 }
 
 func (m *Model) headerData() components.HeaderData {
@@ -124,7 +131,17 @@ func (m *Model) renderMain(width, height int) string {
 	if m.screen == screenDetail {
 		return m.renderDetail(width, height, now)
 	}
-	return m.apps.Render(th, width, height, m.focus == focusContent, now)
+	focused := m.focus == focusContent
+	switch m.section {
+	case SectionDeployments:
+		return m.deployments.Render(th, width, height, focused, now)
+	case SectionInstances:
+		return m.instances.Render(th, width, height, focused, now)
+	case SectionDiagnostics:
+		return m.diagnostics.Render(th, width, height)
+	default:
+		return m.apps.Render(th, width, height, focused, now)
+	}
 }
 
 func (m *Model) renderDetail(width, height int, now time.Time) string {
@@ -144,8 +161,11 @@ func (m *Model) renderDetail(width, height int, now time.Time) string {
 
 // renderPreview draws the side panel next to the table on wide terminals.
 func (m *Model) renderPreview(width, height int) string {
+	if m.section != SectionApplications || m.screen == screenDetail {
+		return components.FitBlock("", width, height)
+	}
 	a, ok := m.apps.Selected()
-	if !ok || m.screen == screenDetail {
+	if !ok {
 		return components.FitBlock("", width, height)
 	}
 	return components.FitBlock(
@@ -174,16 +194,30 @@ func (m *Model) overlayToasts(frame string) string {
 	return components.Overlay(frame, block, x, y)
 }
 
+func (m *Model) overlayPalette(frame string) string {
+	modal := m.renderPalette()
+	if modal == "" {
+		return frame
+	}
+	x := max((m.layout.Width-lipgloss.Width(modal))/2, 0)
+	y := max((m.layout.Height-lipgloss.Height(modal))/4, 1)
+	return components.Overlay(frame, modal, x, y)
+}
+
 func (m *Model) overlayConfirmation(frame string) string {
 	if m.pendingAction == nil || m.layout.Width < 24 || m.layout.Height < 8 {
 		return frame
 	}
 	action := m.pendingAction
 	width := min(m.layout.Width-6, 54)
-	name := domain.SanitizeLogText(action.app.Name)
-	body := "Application: " + components.Truncate(name, width-13, m.theme.Sym.Ellipsis)
-	if action.force {
-		body += "\nThis bypasses Coolify's normal deployment cache."
+	body := domain.SanitizeLogText(action.body())
+	// Truncate only the first line if it is an application name header.
+	if action.kind != actionDeleteInstance {
+		name := domain.SanitizeLogText(action.app.Name)
+		body = "Application: " + components.Truncate(name, width-13, m.theme.Sym.Ellipsis)
+		if action.force {
+			body += "\nThis bypasses Coolify's normal deployment cache."
+		}
 	}
 	buttons := m.theme.ButtonDanger.Render("enter confirm") + "  " + m.theme.ButtonGhost.Render("esc cancel")
 	content := lipgloss.JoinVertical(
@@ -203,6 +237,25 @@ func (m *Model) overlayConfirmation(frame string) string {
 // footerHints returns the contextual key hints for the active screen.
 func (m *Model) footerHints() []components.KeyHint {
 	switch {
+	case m.instanceForm != nil:
+		return []components.KeyHint{
+			{Key: "tab", Desc: "next field"},
+			{Key: "enter", Desc: "save"},
+			{Key: "esc", Desc: "cancel"},
+		}
+	case m.helpOpen:
+		return []components.KeyHint{
+			{Key: "↑↓", Desc: "scroll"},
+			{Key: "esc", Desc: "close"},
+			{Key: "?", Desc: "close"},
+		}
+	case m.paletteOpen:
+		return []components.KeyHint{
+			{Key: "↑↓", Desc: "select"},
+			{Key: "enter", Desc: "run"},
+			{Key: "esc", Desc: "close"},
+			{Key: "type", Desc: "filter"},
+		}
 	case m.filtering:
 		return []components.KeyHint{
 			{Key: "enter", Desc: "apply"},
@@ -228,6 +281,8 @@ func (m *Model) footerHints() []components.KeyHint {
 		if m.detail.DeploymentLogsOpen() {
 			return []components.KeyHint{
 				{Key: "↑↓", Desc: "scroll"},
+				{Key: "c", Desc: "copy"},
+				{Key: "ctrl+l", Desc: "clear", Short: "clear"},
 				{Key: "esc", Desc: "deployments"},
 				{Key: "l", Desc: "runtime logs", Short: "runtime"},
 			}
@@ -236,6 +291,7 @@ func (m *Model) footerHints() []components.KeyHint {
 			return []components.KeyHint{
 				{Key: "↑↓", Desc: "select"},
 				{Key: "enter", Desc: "build log", Short: "log"},
+				{Key: "c", Desc: "copy UUID", Short: "copy"},
 				{Key: "←→", Desc: "tabs"},
 				{Key: "esc", Desc: "back"},
 			}
@@ -250,6 +306,9 @@ func (m *Model) footerHints() []components.KeyHint {
 				{Key: "f", Desc: "follow"},
 				{Key: "w", Desc: "wrap"},
 				{Key: "/", Desc: "search"},
+				{Key: "c", Desc: "copy"},
+				{Key: "+/-", Desc: "lines"},
+				{Key: "ctrl+l", Desc: "clear", Short: "clear"},
 				{Key: "↑↓", Desc: "scroll"},
 				{Key: "esc", Desc: "back"},
 			}
@@ -266,6 +325,35 @@ func (m *Model) footerHints() []components.KeyHint {
 			{Key: "?", Desc: "help"},
 		}
 
+	case m.section == SectionDeployments:
+		return []components.KeyHint{
+			{Key: "↑↓", Desc: "select"},
+			{Key: "enter", Desc: "open log", Short: "open"},
+			{Key: "a", Desc: "active filter", Short: "filter"},
+			{Key: "c", Desc: "copy UUID", Short: "copy"},
+			{Key: "R", Desc: "refresh"},
+			{Key: "1", Desc: "apps"},
+			{Key: "?", Desc: "help"},
+		}
+	case m.section == SectionInstances:
+		return []components.KeyHint{
+			{Key: "↑↓", Desc: "select"},
+			{Key: "enter", Desc: "switch"},
+			{Key: "T", Desc: "test connection", Short: "test"},
+			{Key: "a", Desc: "add"},
+			{Key: "e", Desc: "edit"},
+			{Key: "d", Desc: "delete local", Short: "delete"},
+			{Key: "1", Desc: "apps"},
+			{Key: "?", Desc: "help"},
+		}
+	case m.section == SectionDiagnostics:
+		return []components.KeyHint{
+			{Key: "↑↓", Desc: "scroll"},
+			{Key: "c", Desc: "copy"},
+			{Key: "e", Desc: "export"},
+			{Key: "1", Desc: "apps"},
+			{Key: "?", Desc: "help"},
+		}
 	default:
 		return []components.KeyHint{
 			{Key: "↑↓", Desc: "navigate", Short: "move"},
@@ -294,6 +382,21 @@ func (m *Model) footerStatus() string {
 		return th.Muted.Render(m.spinnerFrame() + " sending action")
 	case m.screen == screenDetail:
 		return th.Subtle.Render(m.detail.Tab().Label())
+	case m.section == SectionDeployments:
+		if m.deployments.Count() == 0 {
+			return ""
+		}
+		return th.Subtle.Render(strconv.Itoa(m.deployments.SelectedIndex()+1) + "/" + strconv.Itoa(m.deployments.Count()))
+	case m.section == SectionInstances:
+		if m.instances.Count() == 0 {
+			return ""
+		}
+		if row, ok := m.instances.Selected(); ok {
+			return th.Subtle.Render(row.Name)
+		}
+		return ""
+	case m.section == SectionDiagnostics:
+		return th.Subtle.Render("diagnostics")
 	case m.apps.Count() == 0:
 		return ""
 	default:

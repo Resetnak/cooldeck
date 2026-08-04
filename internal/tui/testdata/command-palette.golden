@@ -1,0 +1,28 @@
+ COOLDECK  Demo   o connected    DEMO                                12 apps  |  refreshed just now
+──────────────────+--------------------------------------------------------------+──────────────────
+  Applications [48|                                                              |m   |  Deploymen
+  STATUS       APP|  Commands                                                    |OMAIN
+──────────────────|  > ▏                                                         |──────────────────
+> ! Degraded   * m|  type to filter · enter run · esc close                      |pi.maintenea.dev
+  * Restarting log|                                                              |
+  * Running    * r|  Actions                                                     |esetnak.cz
+  . Queued     * s|  Deploy selected application                                 |hredloq.com
+  # Stopped    * m|  d                                                           |
+  # Stopped    wee|  Force deploy selected application                           |taging.weektraq.ap
+  o Running    * l|  D                                                           |ngest.logen.examp.
+  o Running    * n|  Restart application                                         |osmoko.app
+  o Running    * s|  r                                                           |pi.stimustop.com
+  o Running    * s|  Start or stop application                                   |timustop.com
+  o Running    wee|  s                                                           |taging-api.weektr.
+  ? Unknown    mpd|  Navigate                                                    |
+                  |  Open runtime logs                                           |
+                  |  l                                                           |
+                  |  Open deployments                                            |
+                  |  L                                                           |
+                  |  Open application domain                                     |
+                  |  b                                                           |
+                  |  Open repository                                             |
+                  |  o                                                           |
+                  |  Clipboard                                                   |
+──────────────────|  Copy application UUID                                       |──────────────────
+  ↑↓  select   ent|  c                                                           |             1/12

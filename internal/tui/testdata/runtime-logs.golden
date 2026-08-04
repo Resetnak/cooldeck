@@ -1,0 +1,32 @@
+ COOLDECK  Demo   o connected    DEMO                                                    12 apps  |  refreshed just now
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ RESOURCES         │Demo -> StimuStop -> production -> stimustop-api
+                   │  Overview  |  Deployments  |  Runtime Logs  |  Configuration
+ > Applic...   12  │
+   Deploym...   0  │RUNTIME LOGS
+   Instances    1  │10 lines  just now  follow
+   Diagnostics     │
+                   │2026-08-04T11:56:00Z INFO  INFO  starting stimustop-api (build main)
+                   │2026-08-04T11:56:07Z INFO  INFO  connected to postgres at db:5432
+                   │2026-08-04T11:56:14Z INFO  INFO  listening on 0.0.0.0:3000
+                   │2026-08-04T11:56:21Z DEBUG DEBUG cache warm-up finished in 42ms
+                   │2026-08-04T11:56:28Z INFO  INFO  GET /healthz 200 in 2ms
+                   │2026-08-04T11:56:35Z INFO  INFO  GET /api/v1/entries 200 in 31ms
+                   │2026-08-04T11:56:42Z WARN  WARN  slow query detected: SELECT * FROM entries took 812ms
+                   │2026-08-04T11:56:49Z INFO  INFO  POST /api/v1/entries 201 in 64ms
+                   │2026-08-04T11:56:56Z INFO  INFO  GET /healthz 200 in 2ms
+                   │2026-08-04T11:57:03Z DEBUG DEBUG scheduled job 'digest' skipped, not due yet
+                   │
+                   │
+                   │
+                   │
+                   │
+                   │
+                   │
+                   │
+                   │
+                   │
+                   │
+                   │
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  space  pause   f  follow   w  wrap   /  search   c  copy   +/-  lines   ctrl+l  clear   ?  more          Runtime Logs

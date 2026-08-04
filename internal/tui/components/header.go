@@ -82,13 +82,13 @@ func Header(th *theme.Theme, l theme.Layout, d HeaderData) string {
 func connectionChip(th *theme.Theme, s ConnectionState) string {
 	switch s {
 	case ConnectionOnline:
-		return th.Positive.Render(th.Sym.StatusRunning + " connected")
+		return th.Badge(theme.BadgeSuccess, th.Sym.StatusRunning+" connected")
 	case ConnectionOffline:
-		return th.Danger.Render(th.Sym.StatusFailed + " offline")
+		return th.Badge(theme.BadgeError, th.Sym.StatusFailed+" offline")
 	case ConnectionUnauthorized:
-		return th.Danger.Render(th.Sym.Lock + " unauthorized")
+		return th.Badge(theme.BadgeError, th.Sym.Lock+" unauthorized")
 	default:
-		return th.Attention.Render(th.Sym.StatusDeploying + " connecting")
+		return th.Badge(theme.BadgeWarning, th.Sym.StatusDeploying+" connecting")
 	}
 }
 

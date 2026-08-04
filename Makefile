@@ -7,7 +7,7 @@ LDFLAGS := -s -w \
 	-X github.com/resetnak/cooldeck/internal/version.Commit=$(COMMIT) \
 	-X github.com/resetnak/cooldeck/internal/version.Date=$(DATE)
 
-.PHONY: build run test test-race test-update-golden lint fmt vet vuln check clean snapshot
+.PHONY: build run test test-race test-update-golden lint fmt vet vuln check clean snapshot bench
 
 build:
 	mkdir -p bin
@@ -35,9 +35,16 @@ vet:
 	go vet ./...
 
 vuln:
-	govulncheck ./...
+	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
-check: vet test build
+# Pre-commit / CI local equivalent.
+check: fmt-check vet test build
+
+fmt-check:
+	@test -z "$$(gofmt -l .)" || (echo "gofmt needed on:" && gofmt -l . && exit 1)
+
+bench:
+	go test ./internal/tui/views/ -bench=. -benchmem -count=1
 
 clean:
 	rm -rf bin dist
