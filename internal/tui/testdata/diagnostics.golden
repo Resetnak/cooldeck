@@ -8,9 +8,9 @@ COOLDECK
 Version             test
 Commit              abcdef1
 Built               2026-08-04
-Go                  go1.26.5
-Platform            darwin/arm64
-GOOS/GOARCH         darwin/arm64
+Go                  goX.Y.Z
+Platform            GOOS/GOARCH
+GOOS/GOARCH         GOOS/GOARCH
 
 PATHS
 Config              /tmp/cooldeck-test/config.toml

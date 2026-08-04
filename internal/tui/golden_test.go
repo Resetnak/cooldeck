@@ -40,6 +40,13 @@ var (
 	orphanCSI = regexp.MustCompile(`\x1b\[[0-9;?]*[ -/]*[@-~]|\[[0-9;]*m`)
 	// trailingSpace collapses accidental trailing spaces on each line.
 	trailingSpace = regexp.MustCompile(`[ \t]+$`)
+	// absoluteTime is rendered via time.Local in domain.HumanizeTime, so the
+	// clock face differs between developer laptops and UTC CI runners.
+	absoluteTime = regexp.MustCompile(`\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}`)
+	// hostPlatform covers diagnostics lines that embed runtime.GOOS/GOARCH.
+	hostPlatform = regexp.MustCompile(`(?m)^(Platform|GOOS/GOARCH)(\s+)\S+/\S+`)
+	// goVersion may differ slightly between local toolchains and CI setup-go.
+	goVersion = regexp.MustCompile(`(?m)^(Go)(\s+)go\d+\.\d+(?:\.\d+)?`)
 )
 
 func TestGoldenViews(t *testing.T) {
@@ -218,6 +225,10 @@ func normalizeGolden(s string) string {
 	// ASCII mode uses plain spinner frames; still strip any braille just in case.
 	s = spinnerDots.ReplaceAllString(s, "*")
 	s = orphanCSI.ReplaceAllString(s, "")
+	// Host- and locale-dependent fields must not live in committed goldens.
+	s = absoluteTime.ReplaceAllString(s, "YYYY-MM-DD HH:MM:SS")
+	s = hostPlatform.ReplaceAllString(s, "${1}${2}GOOS/GOARCH")
+	s = goVersion.ReplaceAllString(s, "${1}${2}goX.Y.Z")
 	// Collapse runs of spaces left where colour codes used to be, but keep
 	// intentional column padding (only fix double-space holes from SGR).
 	lines := strings.Split(s, "\n")
@@ -230,6 +241,25 @@ func normalizeGolden(s string) string {
 		out += "\n"
 	}
 	return out
+}
+
+func TestNormalizeGoldenStabilizesHostDependentFields(t *testing.T) {
+	in := "" +
+		"Platform            darwin/arm64\n" +
+		"GOOS/GOARCH         linux/amd64\n" +
+		"Go                  go1.26.5\n" +
+		"Started        3m ago  (2026-08-04 13:57:00)\n"
+	got := normalizeGolden(in)
+	for _, bad := range []string{"darwin", "linux", "arm64", "amd64", "go1.26.5", "13:57:00"} {
+		if strings.Contains(got, bad) {
+			t.Fatalf("normalizeGolden left host-dependent value %q in:\n%s", bad, got)
+		}
+	}
+	for _, want := range []string{"GOOS/GOARCH", "goX.Y.Z", "YYYY-MM-DD HH:MM:SS"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("normalizeGolden missing %q in:\n%s", want, got)
+		}
+	}
 }
 
 // Keep the app import referenced when Connect's return type is inlined away.
