@@ -88,7 +88,7 @@ func runTUI(ctx context.Context, opts *options) error {
 		logger, _ = logging.Setup(logging.Options{Debug: opts.debug})
 	}
 	if logger != nil {
-		defer logger.Close()
+		defer func() { _ = logger.Close() }()
 	}
 
 	tuiOpts := tui.Options{

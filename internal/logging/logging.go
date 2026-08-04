@@ -59,7 +59,7 @@ func Setup(opts Options) (*Logger, error) {
 		level = slog.LevelDebug
 	}
 
-	var w io.Writer = io.Discard
+	w := io.Discard
 	var openErr error
 	if opts.Path != "" {
 		f, err := openLogFile(opts.Path)
