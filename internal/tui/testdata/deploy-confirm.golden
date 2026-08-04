@@ -1,6 +1,6 @@
  COOLDECK  Demo   o connected    DEMO                                12 apps  |  refreshed just now
 ────────────────────────────────────────────────────────────────────────────────────────────────────
-  Applications  12   |  Deploymen
+  Applications  12   |  Deployme
   STATUS       APPLICATION            PROJECT / ENV        BRANCH       DEPLOYED DOMAIN
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 > ! Degraded   * maintenea-api        Maintenea / produ... main          47m ago api.maintenea.dev
