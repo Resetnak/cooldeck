@@ -81,17 +81,19 @@ func runTUI(ctx context.Context, opts *options) error {
 
 	logPath, pathErr := config.LogPath()
 	logger, logErr := logging.Setup(logging.Options{Path: logPath, Debug: opts.debug})
+	if pathErr != nil || logErr != nil || logger == nil {
+		// Fall back to an in-memory / discard logger so a bad log path cannot
+		// take down the TUI. Setup always returns a non-nil logger today, but
+		// the nil check keeps the call site honest for static analysis.
+		logger, _ = logging.Setup(logging.Options{Debug: opts.debug})
+	}
 	if logger != nil {
 		defer logger.Close()
-	}
-	if pathErr != nil || logErr != nil {
-		logger, _ = logging.Setup(logging.Options{Debug: opts.debug})
 	}
 
 	tuiOpts := tui.Options{
 		Config:       cfg,
 		Service:      service,
-		Logger:       logger.Logger,
 		InstanceName: instanceName,
 		Demo:         opts.demo,
 		Theme:        cfg.Theme,
@@ -100,6 +102,7 @@ func runTUI(ctx context.Context, opts *options) error {
 		LogPath:      logPath,
 	}
 	if logger != nil {
+		tuiOpts.Logger = logger.Logger
 		tuiOpts.RecentErrors = func() []string {
 			recs := logger.Recent()
 			out := make([]string, 0, len(recs))

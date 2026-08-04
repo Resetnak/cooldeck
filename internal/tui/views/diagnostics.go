@@ -120,15 +120,13 @@ func (v *Diagnostics) renderLines(th *theme.Theme, width int) []string {
 		if f.Label == "" {
 			continue
 		}
-		label := f.Label
-		value := f.Value
 		if th != nil {
-			label = th.Subtle.Render(components.Pad(f.Label, labelW))
-			value = th.Value.Render(components.Truncate(f.Value, valueW, th.Sym.Ellipsis))
+			label := th.Subtle.Render(components.Pad(f.Label, labelW))
+			value := th.Value.Render(components.Truncate(f.Value, valueW, th.Sym.Ellipsis))
 			lines = append(lines, label+"  "+value)
-		} else {
-			lines = append(lines, fmt.Sprintf("%-*s  %s", labelW, f.Label, value))
+			continue
 		}
+		lines = append(lines, fmt.Sprintf("%-*s  %s", labelW, f.Label, f.Value))
 	}
 	return lines
 }
