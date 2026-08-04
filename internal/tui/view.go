@@ -6,6 +6,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
+	"github.com/resetnak/cooldeck/internal/domain"
 	"github.com/resetnak/cooldeck/internal/tui/components"
 	"github.com/resetnak/cooldeck/internal/tui/views"
 )
@@ -29,7 +30,9 @@ func (m *Model) render() string {
 	footer := components.Footer(m.theme, m.layout, m.footerHints(), m.footerStatus())
 
 	frame := joinRows(header, body, footer)
-	return trimTrailingBlank(m.overlayToasts(frame))
+	frame = m.overlayToasts(frame)
+	frame = m.overlayConfirmation(frame)
+	return trimTrailingBlank(frame)
 }
 
 func (m *Model) headerData() components.HeaderData {
@@ -65,6 +68,9 @@ func (m *Model) renderBody() string {
 	}
 	if m.filtering {
 		banners = append(banners, m.filterPrompt(m.layout.Width))
+	}
+	if m.logSearching {
+		banners = append(banners, m.logSearchPrompt(m.layout.Width))
 	}
 	if stale := m.staleFor(); stale > 0 {
 		banners = append(banners, components.Pad(
@@ -168,6 +174,32 @@ func (m *Model) overlayToasts(frame string) string {
 	return components.Overlay(frame, block, x, y)
 }
 
+func (m *Model) overlayConfirmation(frame string) string {
+	if m.pendingAction == nil || m.layout.Width < 24 || m.layout.Height < 8 {
+		return frame
+	}
+	action := m.pendingAction
+	width := min(m.layout.Width-6, 54)
+	name := domain.SanitizeLogText(action.app.Name)
+	body := "Application: " + components.Truncate(name, width-13, m.theme.Sym.Ellipsis)
+	if action.force {
+		body += "\nThis bypasses Coolify's normal deployment cache."
+	}
+	buttons := m.theme.ButtonDanger.Render("enter confirm") + "  " + m.theme.ButtonGhost.Render("esc cancel")
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		m.theme.ModalTitle.Render(action.title()),
+		"",
+		m.theme.ModalBody.Render(body),
+		"",
+		buttons,
+	)
+	modal := m.theme.ModalDanger.Width(width).Render(content)
+	x := max((m.layout.Width-lipgloss.Width(modal))/2, 0)
+	y := max((m.layout.Height-lipgloss.Height(modal))/2, 0)
+	return components.Overlay(frame, modal, x, y)
+}
+
 // footerHints returns the contextual key hints for the active screen.
 func (m *Model) footerHints() []components.KeyHint {
 	switch {
@@ -176,6 +208,12 @@ func (m *Model) footerHints() []components.KeyHint {
 			{Key: "enter", Desc: "apply"},
 			{Key: "esc", Desc: "clear"},
 			{Key: "ctrl+u", Desc: "clear line", Short: "clear"},
+		}
+	case m.logSearching:
+		return []components.KeyHint{
+			{Key: "enter", Desc: "apply"},
+			{Key: "esc", Desc: "close"},
+			{Key: "ctrl+u", Desc: "clear", Short: "clear"},
 		}
 
 	case m.focus == focusSidebar:
@@ -187,9 +225,41 @@ func (m *Model) footerHints() []components.KeyHint {
 		}
 
 	case m.screen == screenDetail:
+		if m.detail.DeploymentLogsOpen() {
+			return []components.KeyHint{
+				{Key: "↑↓", Desc: "scroll"},
+				{Key: "esc", Desc: "deployments"},
+				{Key: "l", Desc: "runtime logs", Short: "runtime"},
+			}
+		}
+		if m.detail.Tab() == views.TabDeployments {
+			return []components.KeyHint{
+				{Key: "↑↓", Desc: "select"},
+				{Key: "enter", Desc: "build log", Short: "log"},
+				{Key: "←→", Desc: "tabs"},
+				{Key: "esc", Desc: "back"},
+			}
+		}
+		if m.detail.Tab() == views.TabRuntimeLogs {
+			pause := "pause"
+			if m.detail.RuntimeLogsPaused() {
+				pause = "resume"
+			}
+			return []components.KeyHint{
+				{Key: "space", Desc: pause},
+				{Key: "f", Desc: "follow"},
+				{Key: "w", Desc: "wrap"},
+				{Key: "/", Desc: "search"},
+				{Key: "↑↓", Desc: "scroll"},
+				{Key: "esc", Desc: "back"},
+			}
+		}
 		return []components.KeyHint{
 			{Key: "←→", Desc: "tabs"},
 			{Key: "↑↓", Desc: "scroll"},
+			{Key: "d", Desc: "deploy"},
+			{Key: "r", Desc: "restart"},
+			{Key: "s", Desc: "start/stop", Short: "state"},
 			{Key: "b", Desc: "open domain", Short: "domain"},
 			{Key: "o", Desc: "open repo", Short: "repo"},
 			{Key: "esc", Desc: "back"},
@@ -200,6 +270,9 @@ func (m *Model) footerHints() []components.KeyHint {
 		return []components.KeyHint{
 			{Key: "↑↓", Desc: "navigate", Short: "move"},
 			{Key: "enter", Desc: "details", Short: "detail"},
+			{Key: "d", Desc: "deploy"},
+			{Key: "r", Desc: "restart"},
+			{Key: "s", Desc: "start/stop", Short: "state"},
 			{Key: "/", Desc: "filter"},
 			{Key: "S", Desc: "sort: " + m.apps.SortMode().Label(), Short: "sort"},
 			{Key: "b", Desc: "open domain", Short: "domain"},
@@ -217,6 +290,8 @@ func (m *Model) footerStatus() string {
 	switch {
 	case m.loading:
 		return th.Muted.Render(m.spinnerFrame() + " loading")
+	case m.operationInFlight:
+		return th.Muted.Render(m.spinnerFrame() + " sending action")
 	case m.screen == screenDetail:
 		return th.Subtle.Render(m.detail.Tab().Label())
 	case m.apps.Count() == 0:

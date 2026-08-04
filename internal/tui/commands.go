@@ -102,6 +102,68 @@ func (m *Model) loadDetail(appUUID string) tea.Cmd {
 	}
 }
 
+// loadRuntimeLogs fetches one bounded log snapshot for the open application.
+func (m *Model) loadRuntimeLogs(appUUID string) tea.Cmd {
+	m.cancelRuntimeLogsRequest()
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	m.cancelRuntimeLogs = cancel
+
+	m.runtimeLogsSeq++
+	seq := m.runtimeLogsSeq
+	service := m.service
+	lines := m.opts.Config.LogLines
+
+	return func() tea.Msg {
+		defer cancel()
+		snapshot, err := service.RuntimeLogs(ctx, appUUID, lines)
+		if err != nil {
+			return runtimeLogsFailedMsg{Seq: seq, AppUUID: appUUID, Err: domain.AsError(err)}
+		}
+		return runtimeLogsLoadedMsg{Seq: seq, AppUUID: appUUID, Snapshot: snapshot}
+	}
+}
+
+func (m *Model) cancelRuntimeLogsRequest() {
+	if m.cancelRuntimeLogs == nil {
+		return
+	}
+	m.cancelRuntimeLogs()
+	m.cancelRuntimeLogs = nil
+}
+
+func (m *Model) loadDeploymentLogs(deploymentUUID string) tea.Cmd {
+	m.cancelDeploymentLogsRequest()
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	m.cancelDeploymentLogs = cancel
+	m.deploymentLogsSeq++
+	seq := m.deploymentLogsSeq
+	service := m.service
+
+	return func() tea.Msg {
+		defer cancel()
+		snapshot, err := service.DeploymentLogs(ctx, deploymentUUID)
+		if err != nil {
+			return deploymentLogsFailedMsg{Seq: seq, DeploymentUUID: deploymentUUID, Err: domain.AsError(err)}
+		}
+		return deploymentLogsLoadedMsg{Seq: seq, DeploymentUUID: deploymentUUID, Snapshot: snapshot}
+	}
+}
+
+func (m *Model) cancelDeploymentLogsRequest() {
+	if m.cancelDeploymentLogs == nil {
+		return
+	}
+	m.cancelDeploymentLogs()
+	m.cancelDeploymentLogs = nil
+}
+
+func (m *Model) runtimeLogsTick(appUUID string) tea.Cmd {
+	interval := time.Duration(m.opts.Config.LogRefreshInterval)
+	return tea.Tick(interval, func(time.Time) tea.Msg {
+		return runtimeLogsTickMsg{AppUUID: appUUID}
+	})
+}
+
 // refreshTick schedules the next automatic refresh at the configured interval.
 func (m *Model) refreshTick() tea.Cmd {
 	interval := m.opts.Config.EffectiveRefreshInterval(activeInstance(m))
@@ -154,5 +216,11 @@ func (m *Model) shutdown() {
 	if m.cancelDetail != nil {
 		m.cancelDetail()
 		m.cancelDetail = nil
+	}
+	m.cancelRuntimeLogsRequest()
+	m.cancelDeploymentLogsRequest()
+	if m.cancelOperation != nil {
+		m.cancelOperation()
+		m.cancelOperation = nil
 	}
 }

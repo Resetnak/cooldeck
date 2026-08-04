@@ -114,7 +114,7 @@ func DefaultKeyMap() KeyMap {
 		Sort:        key.NewBinding(key.WithKeys("S"), key.WithHelp("S", "sort")),
 
 		LogFollow: key.NewBinding(key.WithKeys("f"), key.WithHelp("f", "follow")),
-		LogPause:  key.NewBinding(key.WithKeys(" "), key.WithHelp("space", "pause")),
+		LogPause:  key.NewBinding(key.WithKeys("space"), key.WithHelp("space", "pause")),
 		LogWrap:   key.NewBinding(key.WithKeys("w"), key.WithHelp("w", "wrap")),
 		LogSearch: key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "search")),
 		LogNext:   key.NewBinding(key.WithKeys("n"), key.WithHelp("n", "next match")),
