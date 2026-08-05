@@ -4,7 +4,7 @@
 
 **Your Coolify fleet, one keystroke away.**
 
-Deployments, logs, restarts and instance switching for [Coolify](https://coolify.io) —
+Deployments, logs, restarts and instance switching for [Coolify](https://coolify.io) -
 from the terminal you already have open.
 
 *No browser tab. No MCP hop. No token on screen. On purpose.*
@@ -33,15 +33,15 @@ from the terminal you already have open.
   <sub>One degraded app, start to finish: <code>/</code> to filter, <code>enter</code> for the detail, <code>l</code> for runtime logs, <code>d</code> to redeploy behind a confirmation, <code>2</code> <code>a</code> to watch it land in the active queue. Rendered from <a href="cassette.tape">cassette.tape</a>.</sub>
 </div>
 
-> ⚠️ **Pre-release.** There is no tagged release yet — build from source (it takes one command). Unit and golden tests run on Linux, macOS and Windows in CI; `--demo` needs no Coolify instance at all, so you can judge the whole UI before you hand it a token.
+> ⚠️ **Pre-release.** There is no tagged release yet - build from source (it takes one command). Unit and golden tests run on Linux, macOS and Windows in CI; `--demo` needs no Coolify instance at all, so you can judge the whole UI before you hand it a token.
 
 ---
 
 ## 💡 Why CoolDeck?
 
 Checking whether a deploy went through should not cost you a browser tab, a login, and three clicks
-through a dashboard. **CoolDeck** puts the same fleet — statuses, deployment history, runtime logs and
-the deploy button — into a terminal window you can leave open next to your editor, and drives all of it
+through a dashboard. **CoolDeck** puts the same fleet - statuses, deployment history, runtime logs and
+the deploy button - into a terminal window you can leave open next to your editor, and drives all of it
 from the keyboard.
 
 It talks to the Coolify REST API directly. No proxy, no agent, no daemon: one static binary that reads
@@ -65,7 +65,7 @@ your config, pulls a token out of your OS keyring, and renders.
 
 ## 🚀 Quick Start
 
-1. **Look before you connect**: `cooldeck --demo` — the full UI on deterministic fake data, offline.
+1. **Look before you connect**: `cooldeck --demo` - the full UI on deterministic fake data, offline.
 2. **Create a Coolify API token**: in Coolify, *profile → API tokens*. Give it the least privilege you can live with (`read` plus only the write scopes you actually want).
 3. **Connect**: `cooldeck setup` walks you through URL, token and keyring storage.
 4. **Use it**: `cooldeck`. Press `?` for the key map, `:` for the command palette, `/` to filter.
@@ -77,10 +77,10 @@ your config, pulls a token out of your OS keyring, and renders.
 - **🖥️ The whole fleet on one screen**: status, project/environment, branch, last deploy and domain for every application, with filtering (`/`) and sorting (`S`).
 - **🔎 Detail without a context switch**: overview, deployment history, runtime logs and configuration as tabs on the same screen.
 - **📜 Real log ergonomics**: follow, pause, wrap, in-buffer search with `n`/`N`, copy the match, clear the buffer, `+`/`-` to widen or narrow the line window.
-- **🚀 Operations behind a confirmation**: deploy, force deploy, restart, start/stop — every destructive action asks first, and only one mutation runs at a time.
+- **🚀 Operations behind a confirmation**: deploy, force deploy, restart, start/stop - every destructive action asks first, and only one mutation runs at a time.
 - **🛟 Honest about failure**: a refresh that fails keeps the last good data on screen behind a stale banner instead of blanking the list. See [When Coolify blinks](#-when-coolify-blinks).
 - **🔀 Several instances, one session**: switch fleets with `3` without restarting; add, edit and delete local instance entries from inside the TUI.
-- **⌨️ Keyboard-first, mouse-optional**: vi-flavoured bindings borrowed from `lazygit` and `k9s`, a command palette (`:` / `Ctrl+K`) for the day you forget one, and a `?` overlay that always shows the truth — every hint is generated from a single `KeyMap`.
+- **⌨️ Keyboard-first, mouse-optional**: vi-flavoured bindings borrowed from `lazygit` and `k9s`, a command palette (`:` / `Ctrl+K`) for the day you forget one, and a `?` overlay that always shows the truth - every hint is generated from a single `KeyMap`.
 - **🎨 Eight themes, responsive layout**: auto, dark, light, Dracula, Catppuccin, Nord, Gruvbox, Tokyo Night; three-pane at 150+ columns, single column when the window is small.
 - **🔐 Tokens you never see**: OS keyring by default, and tokens are kept out of the UI, the logs, the toasts and the diagnostics export by construction.
 - **🧪 Offline demo mode**: `--demo` is a full implementation of the same service interface, which is also what the golden snapshot tests render.
@@ -89,14 +89,14 @@ your config, pulls a token out of your OS keyring, and renders.
 
 ## 🧭 How It Compares
 
-CoolDeck is not a replacement for the Coolify web UI — it is the fast path for the handful of things
+CoolDeck is not a replacement for the Coolify web UI - it is the fast path for the handful of things
 you do twenty times a day.
 
 | Tool | Great at | Where CoolDeck differs |
 | :--- | :--- | :--- |
-| **Coolify web UI** | Everything — creating resources, editing env vars, managing servers | CoolDeck is read-and-operate only, but gets you from "is it up?" to "redeployed" in a few keystrokes, with no tab switch |
+| **Coolify web UI** | Everything - creating resources, editing env vars, managing servers | CoolDeck is read-and-operate only, but gets you from "is it up?" to "redeployed" in a few keystrokes, with no tab switch |
 | **`curl` + `jq`** | Scripting, one-off queries | CoolDeck gives you the same API with statuses, history and logs in one live view, and refuses to let a typo trigger a production deploy without confirming |
-| **k9s / lazydocker** | The container layer underneath | CoolDeck speaks Coolify's model — applications, projects, environments, deployments — not raw containers |
+| **k9s / lazydocker** | The container layer underneath | CoolDeck speaks Coolify's model - applications, projects, environments, deployments - not raw containers |
 
 Everything it does is an ordinary Coolify API call, so nothing here locks you in or out of the web UI.
 
@@ -106,7 +106,7 @@ Everything it does is an ordinary Coolify API call, so nothing here locks you in
 
 Dashboards that clear the screen the moment a request fails are worse than useless during an incident.
 A failed refresh in CoolDeck keeps the last good snapshot, flags it as stale, and tells you how old it
-is. When the instance comes back, the next refresh heals it — no restart, and you keep your place in
+is. When the instance comes back, the next refresh heals it - no restart, and you keep your place in
 the list.
 
 <p align="center">
@@ -148,7 +148,7 @@ from a superseded request are dropped rather than rendered.
 ### 🔍 Filter, Search & Help
 | Shortcut | Action |
 | :--- | :--- |
-| `/` | Filter applications (`status:`, `project:`, `env:`, `branch:`, free text) — or search the log buffer |
+| `/` | Filter applications (`status:`, `project:`, `env:`, `branch:`, free text) - or search the log buffer |
 | `:` / `Ctrl+K` | Command palette; disabled commands show *why* |
 | `?` | Help overlay with the complete key map |
 | `Ctrl+T` / `Ctrl+W` | Cycle theme / toggle compact layout |
@@ -169,7 +169,7 @@ Full map: press `?` in the app, or read [docs/keybindings.md](docs/keybindings.m
 
 ## 📦 Installation
 
-**Requirements:** Go **1.26.5+** to build. No CGO, no runtime dependencies — the result is a single
+**Requirements:** Go **1.26.5+** to build. No CGO, no runtime dependencies - the result is a single
 static binary.
 
 ### Option 1: Build from source (the way, for now)
@@ -199,13 +199,13 @@ go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
 
 Release archives for Linux, macOS and Windows (`amd64` & `arm64`) are produced by
 [GoReleaser](.goreleaser.yaml) from `v*` tags, with a `checksums.txt` alongside them. No tag has been
-pushed yet, so there is nothing to download today — watch [Releases](https://github.com/Resetnak/cooldeck/releases).
+pushed yet, so there is nothing to download today - watch [Releases](https://github.com/Resetnak/cooldeck/releases).
 
 ---
 
 ## ⚙️ Configuration
 
-CoolDeck reads one TOML file. Find it — and check it — with:
+CoolDeck reads one TOML file. Find it - and check it - with:
 
 ```bash
 cooldeck config path
@@ -240,7 +240,7 @@ token_source = "keyring"             # keyring|command|env|plaintext
 token_key = "production"
 ```
 
-`COOLDECK_CONFIG_DIR` moves the whole directory — handy for keeping experiments away from your real
+`COOLDECK_CONFIG_DIR` moves the whole directory - handy for keeping experiments away from your real
 setup. Full reference: [docs/configuration.md](docs/configuration.md).
 
 ### 🔑 Token sources
@@ -250,10 +250,10 @@ Resolved in this order: `COOLDECK_TOKEN` in the environment always wins, otherwi
 
 | Source | Behaviour |
 | :--- | :--- |
-| **`keyring`** | OS keychain, written by `cooldeck setup` or `cooldeck auth add` — **recommended** |
+| **`keyring`** | OS keychain, written by `cooldeck setup` or `cooldeck auth add` - **recommended** |
 | `command` | Runs an external command and reads the token from stdout (e.g. `["op", "read", "op://…"]`) |
 | `env` | Reads a named environment variable |
-| `plaintext` | Token in the config file (mode `0600`) — last resort |
+| `plaintext` | Token in the config file (mode `0600`) - last resort |
 
 ```bash
 cooldeck auth add production      # store a token in the keyring
@@ -283,11 +283,11 @@ cooldeck version                  version, commit, build date
 
 ## 🔒 Security
 
-- **Tokens stay out of sight**: never rendered in the UI, never written to logs, toasts or the diagnostics export — [`internal/logging/redact.go`](internal/logging/redact.go) enforces the log side, and the diagnostics dump is secret-free by construction.
+- **Tokens stay out of sight**: never rendered in the UI, never written to logs, toasts or the diagnostics export - [`internal/logging/redact.go`](internal/logging/redact.go) enforces the log side, and the diagnostics dump is secret-free by construction.
 - **Log output is sanitised**: raw ANSI control sequences from a remote log stream cannot repaint your terminal.
 - **Only `http`/`https`** URLs are ever handed to the browser.
 - **Deleting an instance** removes the *local* config entry and its keyring item. It never touches anything in Coolify.
-- **Permissions degrade gracefully**: Coolify has no permission-introspection endpoint, so CoolDeck assumes full capabilities and switches individual features off on a `403` — showing them disabled with a reason rather than hiding them.
+- **Permissions degrade gracefully**: Coolify has no permission-introspection endpoint, so CoolDeck assumes full capabilities and switches individual features off on a `403` - showing them disabled with a reason rather than hiding them.
 
 Reporting a vulnerability: [SECURITY.md](SECURITY.md).
 
@@ -323,7 +323,7 @@ shipping.
 ### Development
 
 ```bash
-make check               # fmt-check + vet + test + build — run this before every PR
+make check               # fmt-check + vet + test + build - run this before every PR
 make run                 # go run ./cmd/cooldeck --demo
 make test-race
 make test-update-golden  # refresh the TUI snapshots, then *read the diff*
@@ -350,7 +350,7 @@ databases and servers, and an MCP adapter sitting on the same `app.Service`.
 
 ## 🤝 Contributing
 
-Bug reports, feature requests and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the
+Bug reports, feature requests and PRs are welcome - see [CONTRIBUTING.md](CONTRIBUTING.md) for the
 local setup, the golden-test workflow and what `make check` expects before review.
 
 ## 📄 License
