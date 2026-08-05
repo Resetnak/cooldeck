@@ -7,7 +7,7 @@
 Deploymenty, logy, restarty a přepínání instancí pro [Coolify](https://coolify.io) -
 z terminálu, který stejně máte otevřený.
 
-*Žádná záložka v prohlížeči. Žádný MCP mezikrok. Žádný token na obrazovce. Záměrně.*
+*Žádná záložka v prohlížeči. Žádný démon. Žádný token na obrazovce. Záměrně.*
 
 <br>
 
@@ -23,7 +23,7 @@ z terminálu, který stejně máte otevřený.
 
 [English](README.md) · **Čeština**
 
-[Rychlý start](#-rychlý-start) · [Vlastnosti](#-hlavní-vlastnosti) · [Srovnání](#-srovnání) · [Klávesové zkratky](#-klávesové-zkratky) · [Instalace](#-instalace) · [Konfigurace](#-konfigurace) · [Bezpečnost](#-bezpečnost) · [Přispívání](CONTRIBUTING.md)
+[Rychlý start](#-rychlý-start) · [Vlastnosti](#-hlavní-vlastnosti) · [MCP](#-vaše-flotila-ve-vašem-agentovi) · [Srovnání](#-srovnání) · [Klávesové zkratky](#-klávesové-zkratky) · [Instalace](#-instalace) · [Konfigurace](#-konfigurace) · [Bezpečnost](#-bezpečnost) · [Přispívání](CONTRIBUTING.md)
 
 </div>
 
@@ -83,7 +83,40 @@ si přečte konfiguraci, vytáhne token z OS keyringu a vykreslí.
 - **⌨️ Klávesnice na prvním místě, myš volitelně**: vi-ovské zkratky vypůjčené z `lazygitu` a `k9s`, command palette (`:` / `Ctrl+K`) pro den, kdy si na jednu nevzpomenete, a `?` overlay, který vždy říká pravdu - všechny nápovědy se generují z jediné `KeyMap`.
 - **🎨 Osm témat, responzivní layout**: auto, dark, light, Dracula, Catppuccin, Nord, Gruvbox, Tokyo Night; tři panely od 150 sloupců, jeden sloupec v malém okně.
 - **🔐 Tokeny, které nikdy neuvidíte**: ve výchozím stavu OS keyring a tokeny se z principu nedostanou do UI, logů, toastů ani do exportu diagnostiky.
+- **🤖 MCP server ve stejné binárce**: `cooldeck mcp` předá vaši flotilu agentovi - dokud neřeknete jinak, jen ke čtení. Viz [Vaše flotila ve vašem agentovi](#-vaše-flotila-ve-vašem-agentovi).
 - **🧪 Offline demo režim**: `--demo` je plná implementace stejného service rozhraní - a je to zároveň to, co vykreslují golden snapshot testy.
+
+---
+
+## 🤖 Vaše flotila ve vašem agentovi
+
+`cooldeck mcp` mluví [Model Context Protocolem](https://modelcontextprotocol.io) přes stdin/stdout,
+takže se agent může zeptat, co běží, proč spadl build a co říkají logy - přes stejné use case, které
+používá TUI. Žádný druhý HTTP klient, žádný zvláštní token, žádný démon.
+
+<p align="center">
+  <img src="assets/mcp.gif" alt="Skutečná MCP relace proti CoolDecku v demo režimu: handshake, šest read-only nástrojů, výpis flotily se stavy, runtime logy degradované aplikace odhalující timeout na upstreamu a čtyři mutační nástroje, které se objeví až s --allow-mutations" width="900">
+
+  <sub>Skutečná JSON-RPC relace proti <code>--demo</code> - handshake, výpis nástrojů, dvě volání a pak ten opt-in. Vykresleno z <a href="mcp.tape">mcp.tape</a>.</sub>
+</p>
+
+**Ve výchozím stavu vám na produkci nesáhne.** Read-only povrch tvoří `list_applications`,
+`get_application`, `list_deployments`, `get_runtime_logs`, `get_deployment_logs` a
+`get_instance_info`. `--allow-mutations` přidá `deploy_application`, `restart_application`,
+`start_application` a `stop_application` - a nic za nimi se neptá na potvrzení, protože agent nemá
+koho se zeptat. Povolujte to vědomě a raději s tokenem omezeným na instanci, kterou jste ochotni
+nechat agenta obsluhovat.
+
+```jsonc
+// Namiřte libovolného MCP klienta na binárku, kterou už máte:
+{ "mcpServers": { "cooldeck": { "command": "cooldeck", "args": ["mcp"] } } }
+```
+
+Vyzkoušejte si to dřív, než to zapojíte: `cooldeck mcp --demo` nabídne stejné nástroje nad offline
+demo flotilou, takže se můžete dívat, jak agent pracuje, bez jediné Coolify instance.
+
+📖 **[Kompletní návod: docs/mcp.md](docs/mcp.md)** - nastavení klientů, všechny nástroje i jejich
+argumenty, co si rozmyslet před povolením mutací a řešení potíží.
 
 ---
 
@@ -272,6 +305,9 @@ cooldeck --instance production    start na konkrétní instanci
 cooldeck --theme catppuccin       přebití tématu pro tento běh
 cooldeck --debug                  strukturovaný debug log (redigovaný)
 
+cooldeck mcp                      nabídne instanci agentovi přes MCP (jen ke čtení)
+cooldeck mcp --allow-mutations    ... a nechá ho i deployovat, restartovat, spouštět a zastavovat
+
 cooldeck setup                    průvodce prvním spuštěním: URL, token, keyring
 cooldeck theme                    interaktivní výběr tématu s živým náhledem
 cooldeck auth add|status|delete <instance>
@@ -295,14 +331,15 @@ Hlášení zranitelností: [SECURITY.md](SECURITY.md).
 
 ## 🏗️ Architektura
 
-Rozvrstvené tak, aby stejné use case mohly obsloužit TUI, CLI podpříkaz i budoucí MCP adaptér:
+Rozvrstvené tak, že stejné use case obsluhují TUI, CLI podpříkaz i MCP server:
 
 ```text
-cmd/cooldeck → internal/cli      cobra, flagy, konfigurace, sestavení služby
-             → internal/tui      Bubble Tea model + views (jen prezentace, žádné I/O)
-             → internal/app      rozhraní Service = use case
-               ├── app/demo      deterministická fake služba (demo režim + golden testy)
-               └── coolify       HTTP klient + mapování DTO → doména
+cmd/cooldeck → internal/cli        cobra, flagy, konfigurace, sestavení služby
+             → internal/tui        Bubble Tea model + views (jen prezentace, žádné I/O)
+             → internal/mcpserver  MCP nástroje přes stdio (žádný HTTP klient, žádné importy z tui)
+             → internal/app        rozhraní Service = use case
+               ├── app/demo        deterministická fake služba (demo režim + golden testy)
+               └── coolify         HTTP klient + mapování DTO → doména
              → internal/domain, config, credentials, logging, platform, version
 ```
 
@@ -313,8 +350,9 @@ vypustila ven.
 | Dokument | |
 | :--- | :--- |
 | [Architektura](docs/architecture.md) | Vrstvy, tok zpráv, asynchronní životní cyklus |
-| [Rozhodnutí](docs/decisions/) | Pět ADR: Go + Charm, přímé REST místo MCP, oddělení domény a DTO, ukládání přihlašovacích údajů, responzivní layout |
+| [Rozhodnutí](docs/decisions/) | Šest ADR: Go + Charm, přímé REST místo MCP, oddělení domény a DTO, ukládání přihlašovacích údajů, responzivní layout, MCP server |
 | [Coolify API](docs/coolify-api.md) | Které endpointy se používají a jak |
+| [MCP server](docs/mcp.md) | Připojení agenta: klienti, nástroje, bezpečnost, řešení potíží |
 | [Konfigurace](docs/configuration.md) | Kompletní reference schématu |
 | [Klávesové zkratky](docs/keybindings.md) | Celá mapa kláves |
 | [Řešení problémů](docs/troubleshooting.md) | Časté chyby a co znamenají |
@@ -340,11 +378,12 @@ běží v jednorázovém `COOLDECK_CONFIG_DIR` pod `/tmp` a ničeho vašeho se n
 
 ## 🗺️ Roadmapa
 
-**Hotovo:** dashboard aplikací, detail s logy, potvrzované mutace, fronta deploymentů, správa více
-instancí, diagnostika, osm témat, demo režim, golden testy, CI na více OS.
+**Hotovo:** dashboard aplikací, detail s logy, potvrzované mutace, fronta deploymentů, upozornění na
+výsledek deploye, správa více instancí, diagnostika, osm témat, demo režim, MCP server nad stejným
+`app.Service`, golden testy, CI na více OS.
 
 **Dál:** bohatší zdroje tokenu přímo v TUI mimo keyring, volitelné read-only pohledy na services,
-databáze a servery a MCP adaptér nad stejným `app.Service`.
+databáze a servery a neinteraktivní CLI pro skripty a CI.
 
 ---
 

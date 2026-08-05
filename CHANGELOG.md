@@ -21,6 +21,8 @@ releases begin.
 - Diagnostics section with copy and file export
 - Interactive `cooldeck setup` and `cooldeck theme` wizards
 - Theme set: auto, dark, light, Dracula, Catppuccin, Nord, Gruvbox, Tokyo Night
+- MCP server (`cooldeck mcp`): six read-only tools over stdio, mutations behind `--allow-mutations`
+- Toast notifications when a deployment settles: failures always, successes for deploys this session started
 - Demo mode (`--demo`) with deterministic fixtures
 - OS keyring credential helpers (`cooldeck auth …`)
 - Golden snapshot tests (`make test-update-golden`)

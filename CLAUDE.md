@@ -38,14 +38,15 @@ Layered so the same use cases can back the TUI, a CLI subcommand, or a future MC
 ```
 cmd/cooldeck → internal/cli (cobra, flags, config load, service construction)
              → internal/tui (Bubble Tea model + views; presentation only)
+             → internal/mcpserver (MCP tools over stdio; `cooldeck mcp`)
              → internal/app (Service interface = the use cases)
                ├── internal/app/demo    deterministic fake Service
                └── internal/coolify     HTTP client + DTO → domain mapping
              → internal/domain, config, credentials, logging, platform, version
 ```
 
-`docs/architecture.md` has the full picture; `docs/decisions/` holds five ADRs (Go+Charm v2,
-direct REST instead of MCP, domain/DTO split, credential storage, responsive layout).
+`docs/architecture.md` has the full picture; `docs/decisions/` holds six ADRs (Go+Charm v2,
+direct REST instead of MCP, domain/DTO split, credential storage, responsive layout, MCP server).
 `CLAUDE_CODE_COOLIFY_TUI_SPEC.md` is the original full product spec.
 
 ### Key invariants
