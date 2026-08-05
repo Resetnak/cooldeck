@@ -202,33 +202,19 @@ Kompletní mapa: v aplikaci `?`, nebo [docs/keybindings.md](docs/keybindings.md)
 
 ## 📦 Instalace
 
-**Požadavek:** Go **1.26.5+** pro build. Bez CGO, bez runtime závislostí - výsledkem je jedna statická
-binárka.
+**Žádné runtime závislosti.** Každá varianta níž vám dá jednu statickou binárku; toolchain
+potřebuje jen build ze zdrojáků (Go **1.26.5+**, bez CGO).
 
-### Varianta 1: Build ze zdrojáků (zatím ta správná cesta)
-
-```bash
-git clone https://github.com/Resetnak/cooldeck.git
-cd cooldeck
-make build          # -> bin/cooldeck, s vloženou verzí/commitem/datem
-./bin/cooldeck --demo
-```
-
-Pak si ji dejte někam do `PATH`:
+### Varianta 1: Homebrew (macOS a Linux)
 
 ```bash
-install -m 0755 bin/cooldeck ~/.local/bin/cooldeck    # macOS / Linux
+brew install resetnak/tap/cooldeck
+cooldeck --demo
 ```
 
-### Varianta 2: `go install`
+Aktualizace pak chodí přes `brew upgrade` jako u čehokoli jiného.
 
-```bash
-go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
-```
-
-> ℹ️ Bude fungovat, jakmile bude repozitář veřejný; do té doby použijte variantu 1.
-
-### Varianta 3: Release binárky
+### Varianta 2: Release binárky
 
 Stáhněte si archiv pro svou platformu z [Releases](https://github.com/Resetnak/cooldeck/releases/latest),
 rozbalte ho a dejte `cooldeck` do `PATH`:
@@ -248,6 +234,22 @@ shasum -a 256 -c checksums.txt --ignore-missing
 
 Archivy pro Linux, macOS a Windows (`amd64` & `arm64`) staví [GoReleaser](.goreleaser.yaml) z tagů
 `v*`.
+
+### Varianta 3: `go install`
+
+```bash
+go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
+```
+
+### Varianta 4: Build ze zdrojáků
+
+```bash
+git clone https://github.com/Resetnak/cooldeck.git
+cd cooldeck
+make build          # -> bin/cooldeck, s verzí/commitem/datem zabudovaným dovnitř
+./bin/cooldeck --demo
+install -m 0755 bin/cooldeck ~/.local/bin/cooldeck
+```
 
 ---
 

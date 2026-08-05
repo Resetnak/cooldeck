@@ -25,3 +25,7 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Publishing the Homebrew cask writes to Resetnak/homebrew-tap, which
+          # the workflow's own GITHUB_TOKEN cannot reach: it is scoped to this
+          # repository. A fine-grained PAT limited to the tap fills the gap.
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}

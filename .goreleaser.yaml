@@ -51,3 +51,26 @@ changelog:
 release:
   draft: false
   prerelease: auto
+
+# Homebrew: a cask rather than a formula, because what ships here is a
+# pre-built binary, not something Homebrew compiles. Pushing to the tap needs a
+# token that can write to another repository, which the workflow's own
+# GITHUB_TOKEN cannot - hence HOMEBREW_TAP_GITHUB_TOKEN.
+homebrew_casks:
+  - name: cooldeck
+    repository:
+      owner: Resetnak
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/Resetnak/cooldeck
+    description: Keyboard-first terminal dashboard for Coolify
+    # Strip the quarantine flag Gatekeeper adds to downloaded archives, so the
+    # first run does not die with "cannot be opened because the developer
+    # cannot be verified".
+    hooks:
+      post:
+        install: |
+          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/cooldeck"]
+          end
