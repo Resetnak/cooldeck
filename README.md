@@ -24,7 +24,7 @@ from the terminal you already have open.
 
 **English** · [Čeština](README.cs.md)
 
-[Quick Start](#-quick-start) · [Features](#-key-features) · [MCP](#-your-fleet-in-your-agent) · [Comparison](#-how-it-compares) · [Keyboard Shortcuts](#-keyboard-shortcuts) · [Installation](#-installation) · [Configuration](#-configuration) · [Security](#-security) · [Contributing](CONTRIBUTING.md)
+[Quick Start](#-quick-start) · [Features](#-key-features) · [Fleet tail](#-fleet-tail) · [MCP](#-your-fleet-in-your-agent) · [Comparison](#-how-it-compares) · [Keyboard Shortcuts](#-keyboard-shortcuts) · [Installation](#-installation) · [Configuration](#-configuration) · [Security](#-security) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -34,7 +34,16 @@ from the terminal you already have open.
   <sub>One degraded app, start to finish: <code>/</code> to filter, <code>enter</code> for the detail, <code>l</code> for runtime logs, <code>d</code> to redeploy behind a confirmation, <code>2</code> <code>a</code> to watch it land in the active queue. Rendered from <a href="cassette.tape">cassette.tape</a>.</sub>
 </div>
 
-> **v0.1.0 is out.** Grab a binary from [Releases](https://github.com/Resetnak/cooldeck/releases/latest), or build from source in one command. Unit and golden tests run on Linux, macOS and Windows in CI; `--demo` needs no Coolify instance at all, so you can judge the whole UI before you hand it a token.
+**Try the whole UI in one line - no Coolify instance, no token, no network:**
+
+```bash
+brew install resetnak/tap/cooldeck && cooldeck --demo
+```
+
+Prefer Go? `go install github.com/resetnak/cooldeck/cmd/cooldeck@latest`. Prefer a binary? Every
+[release](https://github.com/Resetnak/cooldeck/releases/latest) ships Linux, macOS and Windows
+archives plus `.deb`/`.rpm`/`.apk`. `--demo` runs against deterministic sample data - the same data
+the golden tests render - so you can judge the product before you hand it a token.
 
 ---
 
@@ -87,6 +96,27 @@ your config, pulls a token out of your OS keyring, and renders.
 - **🔐 Tokens you never see**: OS keyring by default, and tokens are kept out of the UI, the logs, the toasts and the diagnostics export by construction.
 - **🤖 An MCP server in the same binary**: `cooldeck mcp` hands your fleet to an agent - read-only until you say otherwise. See [Your fleet, in your agent](#-your-fleet-in-your-agent).
 - **🧪 Offline demo mode**: `--demo` is a full implementation of the same service interface, which is also what the golden snapshot tests render.
+
+---
+
+## 🛰️ Fleet Tail
+
+**The one view Coolify's web UI cannot give you.** Mark the applications you care about with
+`space`, press `t`, and their runtime logs arrive interleaved in a single buffer - every line named
+and coloured by the application it came from. One incident, one screen, instead of a browser tab per
+service.
+
+<p align="center">
+  <img src="assets/tail.gif" alt="Three applications marked with space in the CoolDeck fleet list, then t: their runtime logs interleaved in one buffer, each line prefixed and coloured by its application, searched with / and wrapped with w" width="900">
+
+  <sub>Three services marked, one buffer: <code>space</code> to mark, <code>t</code> to tail, <code>/</code> to search across all of them, <code>w</code> to wrap. Rendered from <a href="tail.tape">tail.tape</a>.</sub>
+</p>
+
+`f` follows, `space` pauses, `c` copies the merged buffer, `esc` goes back. Coolify serves runtime
+logs as whole snapshots rather than a stream, so CoolDeck polls one request per marked application
+every 4 seconds, staggers them, and merges the replies by timestamp - up to five applications at a
+time, and it says so when it drops the rest. The concurrency model is
+[ADR 0007](docs/decisions/0007-fleet-tail-concurrency.md).
 
 ---
 
@@ -223,24 +253,31 @@ curl -fsSL https://raw.githubusercontent.com/Resetnak/cooldeck/main/install.sh |
 ```
 
 Detects your platform, **verifies the checksum**, and drops the binary in `~/.local/bin`. Override
-with `COOLDECK_INSTALL_DIR`, or pin a version with `COOLDECK_VERSION=v0.1.1`. Read it first if you
+with `COOLDECK_INSTALL_DIR`, or pin a version with `COOLDECK_VERSION=v0.2.0`. Read it first if you
 would rather not pipe a script into a shell - [it is short](install.sh).
 
 ### Option 3: Linux packages
 
 ```bash
+# Resolve the newest tag once, then pick your package manager:
+VER=$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
+  https://github.com/Resetnak/cooldeck/releases/latest | sed 's|.*/v||')
+BASE=https://github.com/Resetnak/cooldeck/releases/download/v$VER
+
 # Debian / Ubuntu
-curl -fsSLO https://github.com/Resetnak/cooldeck/releases/latest/download/cooldeck_0.1.2_linux_amd64.deb
-sudo dpkg -i cooldeck_0.1.2_linux_amd64.deb
+curl -fsSLO "$BASE/cooldeck_${VER}_linux_amd64.deb"
+sudo dpkg -i "cooldeck_${VER}_linux_amd64.deb"
 
 # Fedora / RHEL
-sudo rpm -i https://github.com/Resetnak/cooldeck/releases/latest/download/cooldeck_0.1.2_linux_amd64.rpm
+sudo rpm -i "$BASE/cooldeck_${VER}_linux_amd64.rpm"
 
 # Alpine
-sudo apk add --allow-untrusted cooldeck_0.1.2_linux_amd64.apk
+curl -fsSLO "$BASE/cooldeck_${VER}_linux_amd64.apk"
+sudo apk add --allow-untrusted "cooldeck_${VER}_linux_amd64.apk"
 ```
 
-`.deb`, `.rpm` and `.apk` are built for `amd64` and `arm64` on every release.
+`.deb`, `.rpm` and `.apk` are built for `amd64` and `arm64` on every release - swap `amd64` for
+`arm64` above if that is your machine.
 
 ### Option 4: Release binaries
 
@@ -368,6 +405,7 @@ cooldeck version                  version, commit, build date
 - **Only `http`/`https`** URLs are ever handed to the browser.
 - **Deleting an instance** removes the *local* config entry and its keyring item. It never touches anything in Coolify.
 - **Permissions degrade gracefully**: Coolify has no permission-introspection endpoint, so CoolDeck assumes full capabilities and switches individual features off on a `403` - showing them disabled with a reason rather than hiding them.
+- **What it does not protect you from**: the config file is written `0600` but a `plaintext` token source still puts the token on disk; `insecure_skip_verify = true` really does disable TLS verification for that instance; and an MCP client started with `--allow-mutations` can deploy, restart, start and stop without a confirmation, because an agent has nobody to ask. All three are opt-in, and all three are worth a second thought.
 
 Reporting a vulnerability: [SECURITY.md](SECURITY.md).
 

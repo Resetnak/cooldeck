@@ -30,6 +30,22 @@ Requires Go version from `go.mod`.
    make check
    ```
 
+## Demo media
+
+The GIFs and the social preview are rendered from the `*.tape` files in the repository root with
+[VHS](https://github.com/charmbracelet/vhs). Each tape rebuilds `bin/cooldeck` first and runs
+against `--demo` in a throwaway `COOLDECK_CONFIG_DIR`, so a recording never touches a real instance:
+
+```bash
+vhs cassette.tape   # assets/demo.gif   - one degraded app, start to finish
+vhs tail.tape       # assets/tail.gif   - fleet tail across three applications
+vhs outage.tape     # assets/outage.gif - stale data and recovery
+vhs mcp.tape        # assets/mcp.gif    - an MCP session over stdio
+vhs social.tape     # assets/social-preview.png - 1280x640 GitHub social preview
+```
+
+CI does not regenerate them; refresh the affected tape by hand when you change what it shows.
+
 ## Project layout
 
 | Path | Role |

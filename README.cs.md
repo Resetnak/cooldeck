@@ -24,7 +24,7 @@ z terminálu, který stejně máte otevřený.
 
 [English](README.md) · **Čeština**
 
-[Rychlý start](#-rychlý-start) · [Vlastnosti](#-hlavní-vlastnosti) · [MCP](#-vaše-flotila-ve-vašem-agentovi) · [Srovnání](#-srovnání) · [Klávesové zkratky](#-klávesové-zkratky) · [Instalace](#-instalace) · [Konfigurace](#-konfigurace) · [Bezpečnost](#-bezpečnost) · [Přispívání](CONTRIBUTING.md)
+[Rychlý start](#-rychlý-start) · [Vlastnosti](#-hlavní-vlastnosti) · [Fleet tail](#-fleet-tail) · [MCP](#-vaše-flotila-ve-vašem-agentovi) · [Srovnání](#-srovnání) · [Klávesové zkratky](#-klávesové-zkratky) · [Instalace](#-instalace) · [Konfigurace](#-konfigurace) · [Bezpečnost](#-bezpečnost) · [Přispívání](CONTRIBUTING.md)
 
 </div>
 
@@ -34,7 +34,16 @@ z terminálu, který stejně máte otevřený.
   <sub>Jedna degradovaná aplikace od začátku do konce: <code>/</code> filtr, <code>enter</code> detail, <code>l</code> runtime logy, <code>d</code> redeploy s potvrzením, <code>2</code> <code>a</code> a je vidět v aktivní frontě. Vyrenderováno z <a href="cassette.tape">cassette.tape</a>.</sub>
 </div>
 
-> **v0.1.0 je venku.** Stáhněte si binárku z [Releases](https://github.com/Resetnak/cooldeck/releases/latest), nebo si ji sestavte ze zdrojáků jedním příkazem. Jednotkové a golden testy běží v CI na Linuxu, macOS i Windows; `--demo` nepotřebuje žádnou instanci Coolify, takže si celé UI můžete prohlédnout dřív, než mu dáte token.
+**Celé UI vyzkoušíte jedním řádkem - bez instance Coolify, bez tokenu, bez sítě:**
+
+```bash
+brew install resetnak/tap/cooldeck && cooldeck --demo
+```
+
+Máte radši Go? `go install github.com/resetnak/cooldeck/cmd/cooldeck@latest`. Chcete binárku? Každé
+[vydání](https://github.com/Resetnak/cooldeck/releases/latest) obsahuje archivy pro Linux, macOS
+i Windows a k tomu `.deb`/`.rpm`/`.apk`. `--demo` běží na deterministických ukázkových datech - těch
+samých, která renderují golden testy - takže si produkt osaháte dřív, než mu dáte token.
 
 ---
 
@@ -87,6 +96,27 @@ si přečte konfiguraci, vytáhne token z OS keyringu a vykreslí.
 - **🔐 Tokeny, které nikdy neuvidíte**: ve výchozím stavu OS keyring a tokeny se z principu nedostanou do UI, logů, toastů ani do exportu diagnostiky.
 - **🤖 MCP server ve stejné binárce**: `cooldeck mcp` předá vaši flotilu agentovi - dokud neřeknete jinak, jen ke čtení. Viz [Vaše flotila ve vašem agentovi](#-vaše-flotila-ve-vašem-agentovi).
 - **🧪 Offline demo režim**: `--demo` je plná implementace stejného service rozhraní - a je to zároveň to, co vykreslují golden snapshot testy.
+
+---
+
+## 🛰️ Fleet tail
+
+**Pohled, který vám webové UI Coolify nedá.** Označte klávesou `space` aplikace, které vás zajímají,
+zmáčkněte `t` a jejich runtime logy dorazí proložené v jednom bufferu - každý řádek pojmenovaný
+a obarvený podle aplikace, ze které přišel. Jeden incident, jedna obrazovka, místo záložky
+v prohlížeči na každou službu.
+
+<p align="center">
+  <img src="assets/tail.gif" alt="Tři aplikace označené klávesou space v seznamu flotily, pak t: jejich runtime logy proložené v jednom bufferu, každý řádek s prefixem a barvou své aplikace, hledání přes / a zalomení přes w" width="900">
+
+  <sub>Tři služby označené, jeden buffer: <code>space</code> označí, <code>t</code> spustí tail, <code>/</code> hledá napříč všemi, <code>w</code> zalomí řádky. Vykresleno z <a href="tail.tape">tail.tape</a>.</sub>
+</p>
+
+`f` zapíná follow, `space` pauzu, `c` zkopíruje sloučený buffer, `esc` se vrátí zpět. Coolify servíruje
+runtime logy jako celé snapshoty, ne jako stream, takže CoolDeck posílá jeden požadavek na každou
+označenou aplikaci každé 4 sekundy, rozprostře je v čase a odpovědi slučuje podle časových razítek -
+najednou nejvýš pět aplikací, a když nějaké vynechá, řekne to. Model souběžnosti popisuje
+[ADR 0007](docs/decisions/0007-fleet-tail-concurrency.md).
 
 ---
 
@@ -223,24 +253,31 @@ curl -fsSL https://raw.githubusercontent.com/Resetnak/cooldeck/main/install.sh |
 ```
 
 Rozpozná platformu, **ověří kontrolní součet** a binárku uloží do `~/.local/bin`. Cíl přepíšete přes
-`COOLDECK_INSTALL_DIR`, konkrétní verzi vynutíte přes `COOLDECK_VERSION=v0.1.1`. Jestli se vám nechce
+`COOLDECK_INSTALL_DIR`, konkrétní verzi vynutíte přes `COOLDECK_VERSION=v0.2.0`. Jestli se vám nechce
 pouštět skript rovnou do shellu, [přečtěte si ho](install.sh) - je krátký.
 
 ### Varianta 3: Linuxové balíčky
 
 ```bash
+# Nejdřív si zjistěte poslední tag, pak si vyberte správce balíčků:
+VER=$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
+  https://github.com/Resetnak/cooldeck/releases/latest | sed 's|.*/v||')
+BASE=https://github.com/Resetnak/cooldeck/releases/download/v$VER
+
 # Debian / Ubuntu
-curl -fsSLO https://github.com/Resetnak/cooldeck/releases/latest/download/cooldeck_0.1.2_linux_amd64.deb
-sudo dpkg -i cooldeck_0.1.2_linux_amd64.deb
+curl -fsSLO "$BASE/cooldeck_${VER}_linux_amd64.deb"
+sudo dpkg -i "cooldeck_${VER}_linux_amd64.deb"
 
 # Fedora / RHEL
-sudo rpm -i https://github.com/Resetnak/cooldeck/releases/latest/download/cooldeck_0.1.2_linux_amd64.rpm
+sudo rpm -i "$BASE/cooldeck_${VER}_linux_amd64.rpm"
 
 # Alpine
-sudo apk add --allow-untrusted cooldeck_0.1.2_linux_amd64.apk
+curl -fsSLO "$BASE/cooldeck_${VER}_linux_amd64.apk"
+sudo apk add --allow-untrusted "cooldeck_${VER}_linux_amd64.apk"
 ```
 
-`.deb`, `.rpm` i `.apk` se staví pro `amd64` a `arm64` při každém vydání.
+`.deb`, `.rpm` i `.apk` se staví pro `amd64` a `arm64` při každém vydání - pokud máte `arm64`,
+zaměňte v příkazech `amd64`.
 
 ### Varianta 4: Release binárky
 
@@ -369,6 +406,8 @@ cooldeck version                  verze, commit, datum buildu
 - **Do prohlížeče jdou jen `http`/`https`** URL.
 - **Smazání instance** odstraní *lokální* záznam v konfiguraci a jeho položku v keyringu. V Coolify se nedotkne ničeho.
 - **Oprávnění degradují elegantně**: Coolify nemá endpoint pro introspekci oprávnění, takže CoolDeck předpokládá plné schopnosti a jednotlivé funkce vypíná až na `403` - zobrazí je zakázané i s důvodem, místo aby je skryl.
+
+- **Před čím vás neochrání**: konfigurační soubor se zapisuje s právy `0600`, ale token uložený jako `plaintext` je pořád na disku; `insecure_skip_verify = true` opravdu vypne ověřování TLS pro danou instanci; a MCP klient spuštěný s `--allow-mutations` může deployovat, restartovat, spouštět a zastavovat bez potvrzení, protože agent nemá koho se zeptat. Všechno tři jsou volby, které musíte zapnout sami - a všechny tři stojí za rozmyšlenou.
 
 Hlášení zranitelností: [SECURITY.md](SECURITY.md).
 
