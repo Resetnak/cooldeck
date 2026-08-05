@@ -56,6 +56,7 @@ func (m *Model) applyInstanceSwitch(msg instanceSwitchedMsg) tea.Cmd {
 	m.apps = views.NewApplications()
 	m.detail = views.NewDetail()
 	m.deployments = views.NewDeployments()
+	m.forgetDeploymentStates()
 	m.screen = screenList
 	m.section = SectionApplications
 	m.focus = focusContent
