@@ -62,6 +62,10 @@ type Applications struct {
 	selected     int
 	offset       int
 
+	// marked holds the applications picked for the fleet tail, keyed by UUID so
+	// a refresh that reorders or filters the table cannot lose the selection.
+	marked map[string]bool
+
 	loaded   bool
 	loadedAt time.Time
 }
@@ -137,6 +141,45 @@ func (v *Applications) At(i int) (domain.Application, bool) {
 		return domain.Application{}, false
 	}
 	return v.visible[i], true
+}
+
+// ToggleMark marks or unmarks the selected application and returns the new
+// state. Marks survive filtering and sorting because they are keyed by UUID.
+func (v *Applications) ToggleMark() (marked bool, ok bool) {
+	a, ok := v.Selected()
+	if !ok {
+		return false, false
+	}
+	if v.marked == nil {
+		v.marked = map[string]bool{}
+	}
+	if v.marked[a.UUID] {
+		delete(v.marked, a.UUID)
+		return false, true
+	}
+	v.marked[a.UUID] = true
+	return true, true
+}
+
+// ClearMarks drops every mark.
+func (v *Applications) ClearMarks() { v.marked = nil }
+
+// MarkCount returns how many applications are marked.
+func (v *Applications) MarkCount() int { return len(v.marked) }
+
+// Marked returns the marked applications in display order, so the tail shows
+// them in the order the table does rather than in map order.
+func (v *Applications) Marked() []domain.Application {
+	if len(v.marked) == 0 {
+		return nil
+	}
+	out := make([]domain.Application, 0, len(v.marked))
+	for _, a := range v.all {
+		if v.marked[a.UUID] {
+			out = append(out, a)
+		}
+	}
+	return out
 }
 
 // ActiveDeployment returns the in-flight deployment for an application.
@@ -297,6 +340,11 @@ func (v *Applications) cells(th *theme.Theme, a domain.Application, now time.Tim
 	}
 
 	name := a.Name
+	if v.marked[a.UUID] {
+		// Same treatment as the production bullet below: a glyph, never colour
+		// alone, and in front of it so a marked production app shows both.
+		name = th.Accent.Render(th.Sym.Check) + " " + name
+	}
 	if a.IsProduction() {
 		// Production is marked with a glyph rather than colour alone.
 		name = th.Danger.Render(th.Sym.Bullet) + " " + name

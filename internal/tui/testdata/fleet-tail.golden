@@ -1,0 +1,40 @@
+ COOLDECK  Demo   o connected    DEMO                                                                                            12 apps  |  refreshed just now
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ RESOURCES               │FLEET TAIL
+                         │18 lines  shipyard-api  shipyard-web  billing-api  just now  follow
+ > Applications      12  │
+   Deployments        0  │>shipyard-api 2026-08-04T11:56:28Z INFO  INFO  GET /healthz 200 in 2ms
+   Instances          1  │>shipyard-web 2026-08-04T11:56:28Z INFO  INFO  GET /healthz 200 in 2ms
+   Diagnostics           │>shipyard-api 2026-08-04T11:56:35Z INFO  INFO  GET /api/v1/entries 200 in 31ms
+                         │>shipyard-web 2026-08-04T11:56:35Z INFO  INFO  GET /api/v1/entries 200 in 31ms
+                         │>shipyard-api 2026-08-04T11:56:42Z WARN  WARN  slow query detected: SELECT * FROM entries took 812ms
+                         │>shipyard-web 2026-08-04T11:56:42Z WARN  WARN  slow query detected: SELECT * FROM entries took 812ms
+                         │>shipyard-api 2026-08-04T11:56:49Z INFO  INFO  POST /api/v1/entries 201 in 64ms
+                         │>shipyard-web 2026-08-04T11:56:49Z INFO  INFO  POST /api/v1/entries 201 in 64ms
+                         │>billing-api  2026-08-04T11:56:49Z INFO  INFO  POST /api/v1/entries 201 in 64ms
+                         │>shipyard-api 2026-08-04T11:56:56Z INFO  INFO  GET /healthz 200 in 2ms
+                         │>shipyard-web 2026-08-04T11:56:56Z INFO  INFO  GET /healthz 200 in 2ms
+                         │>billing-api  2026-08-04T11:56:56Z INFO  INFO  GET /healthz 200 in 2ms
+                         │>shipyard-api 2026-08-04T11:57:03Z DEBUG DEBUG scheduled job 'digest' skipped, not due yet
+                         │>shipyard-web 2026-08-04T11:57:03Z DEBUG DEBUG scheduled job 'digest' skipped, not due yet
+                         │>billing-api  2026-08-04T11:57:03Z DEBUG DEBUG scheduled job 'digest' skipped, not due yet
+                         │>billing-api  2026-08-04T11:57:10Z WARN  WARN  health check /health returned 503
+                         │>billing-api  2026-08-04T11:57:17Z ERROR ERROR upstream dependency timed out after 5s
+                         │>billing-api  2026-08-04T11:57:24Z WARN  WARN  health check /health returned 503
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ↑↓  navigate   enter  details   d  deploy   r  restart   s  start/stop   /  filter   S  sort: status   b  open domain   R  refresh   ?  more             1/12

@@ -72,6 +72,7 @@ type screen int
 const (
 	screenList screen = iota
 	screenDetail
+	screenTail
 )
 
 // focusTarget is the pane keystrokes are routed to.
@@ -161,14 +162,19 @@ type Model struct {
 	deployments *views.Deployments
 	instances   *views.Instances
 	diagnostics *views.Diagnostics
+	tail        *views.Tail
 
 	// Sequence numbers and cancel functions implement request supersession:
 	// starting a new request of a kind cancels the previous one and bumps the
 	// sequence, so a late reply is both stopped and ignored.
-	connectSeq           uint64
-	dashboardSeq         uint64
-	detailSeq            uint64
-	runtimeLogsSeq       uint64
+	connectSeq     uint64
+	dashboardSeq   uint64
+	detailSeq      uint64
+	runtimeLogsSeq uint64
+	// tailSeq identifies one fleet-tail session. Every source's replies carry
+	// it, so leaving the tail orphans all of them at once without having to
+	// track a cancel function per application.
+	tailSeq              uint64
 	deploymentLogsSeq    uint64
 	operationSeq         uint64
 	cancelDashboard      context.CancelFunc
@@ -200,6 +206,9 @@ type Model struct {
 	// logLines is the session override of config.LogLines. +/- on the log
 	// view changes it without writing config back to disk.
 	logLines int
+
+	tailSearching  bool
+	tailSearchText string
 
 	paletteOpen     bool
 	paletteQuery    string
@@ -259,6 +268,7 @@ func New(opts Options) *Model {
 		deployments: views.NewDeployments(),
 		instances:   views.NewInstances(),
 		diagnostics: views.NewDiagnostics(),
+		tail:        views.NewTail(),
 		logLines:    logLines,
 		// Until the terminal reports its background colour, assume dark: it is
 		// by far the more common terminal configuration, so the wrong guess is
@@ -419,6 +429,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		return m, m.pushToast(components.ToastError, msg.Err.Title, msg.Err.Message)
+
+	case tailTickMsg:
+		if msg.Seq != m.tailSeq || m.screen != screenTail || m.tail.Paused() {
+			return m, nil
+		}
+		return m, m.loadTailLogs(msg.AppUUID)
+
+	case tailLoadedMsg:
+		return m, m.applyTailLoaded(msg)
+
+	case tailFailedMsg:
+		return m, m.applyTailFailed(msg)
 
 	case runtimeLogsTickMsg:
 		if !m.runtimeLogsVisible(msg.AppUUID) {
@@ -761,7 +783,11 @@ func (m *Model) filterPrompt(width int) string {
 func (m *Model) logSearchPrompt(width int) string {
 	th := m.theme
 	prompt := th.FilterPrompt.Render("/ ")
-	text := th.FilterText.Render(m.logSearchText) + th.FilterPrompt.Render("▏")
+	query := m.logSearchText
+	if m.tailSearching {
+		query = m.tailSearchText
+	}
+	text := th.FilterText.Render(query) + th.FilterPrompt.Render("▏")
 	hint := th.FilterHint.Render("  enter apply  " + th.Sym.Separator + "  esc close")
 	line := prompt + text
 	if components.Width(line)+components.Width(hint) <= width {

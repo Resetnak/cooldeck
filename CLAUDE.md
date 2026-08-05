@@ -45,8 +45,9 @@ cmd/cooldeck → internal/cli (cobra, flags, config load, service construction)
              → internal/domain, config, credentials, logging, platform, version
 ```
 
-`docs/architecture.md` has the full picture; `docs/decisions/` holds six ADRs (Go+Charm v2,
-direct REST instead of MCP, domain/DTO split, credential storage, responsive layout, MCP server).
+`docs/architecture.md` has the full picture; `docs/decisions/` holds seven ADRs (Go+Charm v2,
+direct REST instead of MCP, domain/DTO split, credential storage, responsive layout, MCP server,
+fleet-tail concurrency).
 `CLAUDE_CODE_COOLIFY_TUI_SPEC.md` is the original full product spec.
 
 ### Key invariants
@@ -74,6 +75,10 @@ Each request kind (dashboard, detail, runtime logs, deployment logs, connect, op
 cancels the previous one; replies whose seq is stale are dropped. Mutating operations are serialised
 via `operationInFlight`. Failed refreshes keep the last good snapshot on screen plus a stale banner -
 they never wipe the list. Instance switch clears app/detail/deployment caches so fleets cannot mix.
+
+The fleet tail is the one deliberate exception: it runs one request per tailed application at once,
+identified by a single `tailSeq` rather than a cancel function each. Leaving the tail bumps the
+sequence, which orphans every reply still in flight at once (ADR 0007).
 
 `requestTimeout` (20s) bounds every API call; `frameInterval` (500ms) drives spinner and relative times.
 
