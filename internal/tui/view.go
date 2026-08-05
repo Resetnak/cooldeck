@@ -341,6 +341,21 @@ func (m *Model) footerHints() []components.KeyHint {
 			{Key: "?", Desc: "help"},
 		}
 
+	case m.screen == screenTail:
+		pause := "pause"
+		if m.tail.Paused() {
+			pause = "resume"
+		}
+		return []components.KeyHint{
+			{Key: "space", Desc: pause},
+			{Key: "f", Desc: "follow"},
+			{Key: "w", Desc: "wrap"},
+			{Key: "/", Desc: "search"},
+			{Key: "c", Desc: "copy"},
+			{Key: "↑↓", Desc: "scroll"},
+			{Key: "esc", Desc: "back"},
+		}
+
 	case m.section == SectionDeployments:
 		return []components.KeyHint{
 			{Key: "↑↓", Desc: "select"},

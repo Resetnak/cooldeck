@@ -101,7 +101,8 @@ func DefaultKeyMap() KeyMap {
 		Theme:   key.NewBinding(key.WithKeys("ctrl+t"), key.WithHelp("ctrl+t", "toggle theme")),
 		Compact: key.NewBinding(key.WithKeys("ctrl+w"), key.WithHelp("ctrl+w", "compact mode")),
 
-		Mark: key.NewBinding(key.WithKeys(" "), key.WithHelp("space", "mark for tail")),
+		// Bubble Tea v2 renders the spacebar as "space", never as a literal " ".
+		Mark: key.NewBinding(key.WithKeys("space"), key.WithHelp("space", "mark for tail")),
 		Tail: key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "tail marked")),
 
 		SectionApplications: key.NewBinding(key.WithKeys("1"), key.WithHelp("1", "applications")),
