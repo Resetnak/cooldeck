@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/) once tagged
 releases begin.
 
+## [Unreleased]
+
+### Added
+
+- Fleet tail: mark applications with `space`, press `t`, and read their runtime logs interleaved in one buffer
+
 ## [0.1.2] - 2026-08-05
 
 Packaging only - the binary is identical to 0.1.0.

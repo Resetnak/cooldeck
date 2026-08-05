@@ -1,7 +1,6 @@
 package views
 
 import (
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -508,69 +507,13 @@ func (v *Detail) renderRuntimeLogs(th *theme.Theme, width, height int, now time.
 	)
 }
 
-type logContent struct {
-	title       string
-	meta        string
-	lines       []domain.LogLine
-	wrap        bool
-	follow      bool
-	trackScroll bool
-	search      string
-}
-
 func (v *Detail) renderLogs(th *theme.Theme, width, height int, content logContent) string {
-	lines := []string{th.Title.Render(content.title), th.Subtle.Render(content.meta), ""}
-	var search *regexp.Regexp
-	if content.search != "" {
-		search = regexp.MustCompile("(?i)" + regexp.QuoteMeta(content.search))
-	}
-	for _, line := range content.lines {
-		timestamp := line.TimestampText
-		if timestamp == "" && !line.Timestamp.IsZero() {
-			timestamp = line.Timestamp.Format("15:04:05")
-		}
-		prefix := ""
-		if timestamp != "" {
-			prefix = th.Subtle.Render(timestamp) + " "
-		}
-		if label := line.Level.Label(); label != "" {
-			prefix += logLevelStyle(th, line.Level).Render(components.Pad(label, 5)) + " "
-		}
-		text := prefix + line.Text
-		if search != nil {
-			text = search.ReplaceAllStringFunc(text, func(match string) string {
-				return th.FilterPrompt.Render(match)
-			})
-		}
-		if content.wrap {
-			lines = append(lines, strings.Split(components.Wrap(text, width), "\n")...)
-		} else {
-			lines = append(lines, components.Truncate(text, width, th.Sym.Ellipsis))
-		}
-	}
-
-	maxScroll := max(len(lines)-height, 0)
+	body, scroll, maxScroll := renderLogBlock(th, width, height, content, v.scroll)
 	if content.trackScroll {
 		v.logMaxScroll = maxScroll
 	}
-	if content.follow {
-		v.scroll = maxScroll
-	}
-	v.scroll = min(v.scroll, maxScroll)
-	return components.FitBlock(strings.Join(lines[v.scroll:], "\n"), width, height)
-}
-
-func logLevelStyle(th *theme.Theme, level domain.LogLevel) lipgloss.Style {
-	switch level {
-	case domain.LogLevelWarn:
-		return th.Attention
-	case domain.LogLevelError, domain.LogLevelFatal:
-		return th.Danger
-	case domain.LogLevelInfo:
-		return th.Note
-	default:
-		return th.Subtle
-	}
+	v.scroll = scroll
+	return body
 }
 
 func joinLogLines(lines []domain.LogLine) string {
