@@ -44,6 +44,18 @@ func markFirst(t *testing.T, model *Model, n int) []string {
 	return uuids
 }
 
+// The spacebar arrives as Code KeySpace and stringifies to "space"; a binding on
+// a literal " " silently never matches and the whole tail becomes unreachable.
+func TestSpacebarMarksTheSelectedApplication(t *testing.T) {
+	model := tailModel(t)
+
+	model.handleApplicationsKey(tea.KeyPressMsg{Code: ' ', Text: " "})
+
+	if len(model.apps.Marked()) != 1 {
+		t.Fatalf("space marked %d applications, want 1", len(model.apps.Marked()))
+	}
+}
+
 func TestTailNeedsSomethingMarked(t *testing.T) {
 	model := tailModel(t)
 
