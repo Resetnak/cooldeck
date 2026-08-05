@@ -97,15 +97,22 @@ instead of hiding features.
 without restarting the process. The CLI supplies a factory that reloads config,
 resolves credentials, and constructs `coolify.Service`.
 
-## Future MCP adapter
+## MCP adapter
 
-An MCP server should implement tools against `app.Service` only:
+`internal/mcpserver` serves the use cases over the Model Context Protocol on
+stdio (`cooldeck mcp`). It implements tools against `app.Service` only:
 
 - no duplicate HTTP client
 - no TUI imports
-- same domain errors and capability rules
+- same domain errors, surfaced with their title and suggestion so an agent gets
+  the actionable half rather than a bare status code
 
-The TUI remains one of several adapters over the use-case layer.
+The TUI is one of several adapters over the use-case layer, not the layer
+itself. Adding a tool means adding a `Service` method, never an HTTP call here.
+
+Mutating tools are registered only under `--allow-mutations`. The TUI gates
+mutations behind a confirmation dialog; an agent has no one to confirm with, so
+the gate moves to the operator launching the server.
 
 ## Performance notes
 
