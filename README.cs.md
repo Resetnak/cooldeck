@@ -4,7 +4,7 @@
 
 **Vaše Coolify flotila na jedno stisknutí klávesy.**
 
-Deploymenty, logy, restarty a přepínání instancí pro [Coolify](https://coolify.io) —
+Deploymenty, logy, restarty a přepínání instancí pro [Coolify](https://coolify.io) -
 z terminálu, který stejně máte otevřený.
 
 *Žádná záložka v prohlížeči. Žádný MCP mezikrok. Žádný token na obrazovce. Záměrně.*
@@ -33,15 +33,15 @@ z terminálu, který stejně máte otevřený.
   <sub>Jedna degradovaná aplikace od začátku do konce: <code>/</code> filtr, <code>enter</code> detail, <code>l</code> runtime logy, <code>d</code> redeploy s potvrzením, <code>2</code> <code>a</code> a je vidět v aktivní frontě. Vyrenderováno z <a href="cassette.tape">cassette.tape</a>.</sub>
 </div>
 
-> ⚠️ **Pre-release.** Zatím neexistuje otagovaný release — build ze zdrojáků je na jeden příkaz. Jednotkové a golden testy běží v CI na Linuxu, macOS i Windows; `--demo` nepotřebuje žádnou instanci Coolify, takže si celé UI můžete prohlédnout dřív, než mu dáte token.
+> ⚠️ **Pre-release.** Zatím neexistuje otagovaný release - build ze zdrojáků je na jeden příkaz. Jednotkové a golden testy běží v CI na Linuxu, macOS i Windows; `--demo` nepotřebuje žádnou instanci Coolify, takže si celé UI můžete prohlédnout dřív, než mu dáte token.
 
 ---
 
 ## 💡 Proč CoolDeck?
 
 Ověřit, jestli deploy prošel, by nemělo stát záložku v prohlížeči, přihlášení a tři prokliky
-dashboardem. **CoolDeck** dává stejnou flotilu — stavy, historii deploymentů, runtime logy i tlačítko
-deploy — do terminálového okna, které si můžete nechat otevřené vedle editoru, a všechno ovládá
+dashboardem. **CoolDeck** dává stejnou flotilu - stavy, historii deploymentů, runtime logy i tlačítko
+deploy - do terminálového okna, které si můžete nechat otevřené vedle editoru, a všechno ovládá
 z klávesnice.
 
 Mluví přímo s Coolify REST API. Žádná proxy, žádný agent, žádný daemon: jedna statická binárka, která
@@ -65,7 +65,7 @@ si přečte konfiguraci, vytáhne token z OS keyringu a vykreslí.
 
 ## 🚀 Rychlý start
 
-1. **Nejdřív se podívejte**: `cooldeck --demo` — celé UI nad deterministickými fake daty, offline.
+1. **Nejdřív se podívejte**: `cooldeck --demo` - celé UI nad deterministickými fake daty, offline.
 2. **Vytvořte Coolify API token**: v Coolify *profil → API tokens*. Dejte mu nejmenší oprávnění, se kterými se dá žít (`read` plus jen ty write scope, které opravdu chcete).
 3. **Připojte se**: `cooldeck setup` vás provede URL, tokenem a uložením do keyringu.
 4. **Používejte**: `cooldeck`. `?` zobrazí mapu kláves, `:` command palette, `/` filtr.
@@ -77,28 +77,28 @@ si přečte konfiguraci, vytáhne token z OS keyringu a vykreslí.
 - **🖥️ Celá flotila na jedné obrazovce**: stav, projekt/prostředí, branch, poslední deploy a doména u každé aplikace, s filtrem (`/`) a řazením (`S`).
 - **🔎 Detail bez přepínání kontextu**: přehled, historie deploymentů, runtime logy a konfigurace jako záložky na téže obrazovce.
 - **📜 Logy, které se dají číst**: follow, pauza, zalamování, hledání v bufferu s `n`/`N`, kopírování nálezu, vyčištění bufferu, `+`/`-` pro rozšíření nebo zúžení okna řádků.
-- **🚀 Operace jen s potvrzením**: deploy, force deploy, restart, start/stop — každá destruktivní akce se nejdřív zeptá a najednou běží vždy jen jedna mutace.
+- **🚀 Operace jen s potvrzením**: deploy, force deploy, restart, start/stop - každá destruktivní akce se nejdřív zeptá a najednou běží vždy jen jedna mutace.
 - **🛟 Poctivé k výpadkům**: neúspěšný refresh nechá na obrazovce poslední dobrá data pod „stale“ bannerem, místo aby seznam vymazal. Viz [Když Coolify zamrká](#-když-coolify-zamrká).
 - **🔀 Víc instancí v jedné session**: přepnutí flotily klávesou `3` bez restartu; přidání, úprava i smazání lokálních záznamů instancí přímo v TUI.
-- **⌨️ Klávesnice na prvním místě, myš volitelně**: vi-ovské zkratky vypůjčené z `lazygitu` a `k9s`, command palette (`:` / `Ctrl+K`) pro den, kdy si na jednu nevzpomenete, a `?` overlay, který vždy říká pravdu — všechny nápovědy se generují z jediné `KeyMap`.
+- **⌨️ Klávesnice na prvním místě, myš volitelně**: vi-ovské zkratky vypůjčené z `lazygitu` a `k9s`, command palette (`:` / `Ctrl+K`) pro den, kdy si na jednu nevzpomenete, a `?` overlay, který vždy říká pravdu - všechny nápovědy se generují z jediné `KeyMap`.
 - **🎨 Osm témat, responzivní layout**: auto, dark, light, Dracula, Catppuccin, Nord, Gruvbox, Tokyo Night; tři panely od 150 sloupců, jeden sloupec v malém okně.
 - **🔐 Tokeny, které nikdy neuvidíte**: ve výchozím stavu OS keyring a tokeny se z principu nedostanou do UI, logů, toastů ani do exportu diagnostiky.
-- **🧪 Offline demo režim**: `--demo` je plná implementace stejného service rozhraní — a je to zároveň to, co vykreslují golden snapshot testy.
+- **🧪 Offline demo režim**: `--demo` je plná implementace stejného service rozhraní - a je to zároveň to, co vykreslují golden snapshot testy.
 
 ---
 
 ## 🧭 Srovnání
 
-CoolDeck nenahrazuje webové UI Coolify — je to rychlá cesta k té hrstce věcí, které děláte dvacetkrát
+CoolDeck nenahrazuje webové UI Coolify - je to rychlá cesta k té hrstce věcí, které děláte dvacetkrát
 denně.
 
 | Nástroj | V čem je dobrý | V čem se CoolDeck liší |
 | :--- | :--- | :--- |
-| **Webové UI Coolify** | Ve všem — zakládání zdrojů, editace env proměnných, správa serverů | CoolDeck jen čte a operuje, zato se dostanete od „běží to?“ k „přenasazeno“ na pár kláves a bez přepnutí záložky |
-| **`curl` + `jq`** | Skriptování, jednorázové dotazy | CoolDeck dává stejné API jako živý pohled se stavy, historií a logy — a nedovolí, aby překlep spustil produkční deploy bez potvrzení |
-| **k9s / lazydocker** | Kontejnerová vrstva pod tím | CoolDeck mluví modelem Coolify — aplikace, projekty, prostředí, deploymenty — ne syrovými kontejnery |
+| **Webové UI Coolify** | Ve všem - zakládání zdrojů, editace env proměnných, správa serverů | CoolDeck jen čte a operuje, zato se dostanete od „běží to?“ k „přenasazeno“ na pár kláves a bez přepnutí záložky |
+| **`curl` + `jq`** | Skriptování, jednorázové dotazy | CoolDeck dává stejné API jako živý pohled se stavy, historií a logy - a nedovolí, aby překlep spustil produkční deploy bez potvrzení |
+| **k9s / lazydocker** | Kontejnerová vrstva pod tím | CoolDeck mluví modelem Coolify - aplikace, projekty, prostředí, deploymenty - ne syrovými kontejnery |
 
-Všechno, co dělá, je běžné volání Coolify API, takže vás to nikam nezamyká — ani ven z webového UI.
+Všechno, co dělá, je běžné volání Coolify API, takže vás to nikam nezamyká - ani ven z webového UI.
 
 ---
 
@@ -106,7 +106,7 @@ Všechno, co dělá, je běžné volání Coolify API, takže vás to nikam neza
 
 Dashboard, který při první neúspěšné odpovědi vymaže obrazovku, je během incidentu horší než žádný.
 Neúspěšný refresh v CoolDecku ponechá poslední dobrý snímek, označí ho jako zastaralý a řekne, jak je
-starý. Jakmile je instance zpátky, další refresh to spraví — bez restartu a bez ztráty pozice
+starý. Jakmile je instance zpátky, další refresh to spraví - bez restartu a bez ztráty pozice
 v seznamu.
 
 <p align="center">
@@ -148,7 +148,7 @@ odpovědi z překonaného požadavku se zahodí místo vykreslení.
 ### 🔍 Filtr, hledání a nápověda
 | Zkratka | Akce |
 | :--- | :--- |
-| `/` | Filtr aplikací (`status:`, `project:`, `env:`, `branch:`, volný text) — nebo hledání v log bufferu |
+| `/` | Filtr aplikací (`status:`, `project:`, `env:`, `branch:`, volný text) - nebo hledání v log bufferu |
 | `:` / `Ctrl+K` | Command palette; zakázané příkazy ukážou *proč* |
 | `?` | Overlay s kompletní mapou kláves |
 | `Ctrl+T` / `Ctrl+W` | Cyklovat téma / přepnout kompaktní layout |
@@ -169,7 +169,7 @@ Kompletní mapa: v aplikaci `?`, nebo [docs/keybindings.md](docs/keybindings.md)
 
 ## 📦 Instalace
 
-**Požadavek:** Go **1.26.5+** pro build. Bez CGO, bez runtime závislostí — výsledkem je jedna statická
+**Požadavek:** Go **1.26.5+** pro build. Bez CGO, bez runtime závislostí - výsledkem je jedna statická
 binárka.
 
 ### Varianta 1: Build ze zdrojáků (zatím ta správná cesta)
@@ -198,14 +198,14 @@ go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
 ### Varianta 3: Release binárky
 
 Archivy pro Linux, macOS a Windows (`amd64` & `arm64`) staví [GoReleaser](.goreleaser.yaml) z tagů
-`v*`, včetně `checksums.txt`. Zatím není vypuštěný žádný tag, takže dnes není co stahovat — sledujte
+`v*`, včetně `checksums.txt`. Zatím není vypuštěný žádný tag, takže dnes není co stahovat - sledujte
 [Releases](https://github.com/Resetnak/cooldeck/releases).
 
 ---
 
 ## ⚙️ Konfigurace
 
-CoolDeck čte jediný TOML soubor. Najdete ho — a zkontrolujete — takto:
+CoolDeck čte jediný TOML soubor. Najdete ho - a zkontrolujete - takto:
 
 ```bash
 cooldeck config path
@@ -240,7 +240,7 @@ token_source = "keyring"             # keyring|command|env|plaintext
 token_key = "production"
 ```
 
-`COOLDECK_CONFIG_DIR` přesune celý adresář — hodí se, když chcete držet pokusy dál od ostrého
+`COOLDECK_CONFIG_DIR` přesune celý adresář - hodí se, když chcete držet pokusy dál od ostrého
 nastavení. Kompletní reference: [docs/configuration.md](docs/configuration.md).
 
 ### 🔑 Zdroje tokenu
@@ -250,10 +250,10 @@ Vyhodnocují se v tomto pořadí: `COOLDECK_TOKEN` v prostředí vždy vyhraje, 
 
 | Zdroj | Chování |
 | :--- | :--- |
-| **`keyring`** | OS klíčenka, zapisuje ji `cooldeck setup` nebo `cooldeck auth add` — **doporučeno** |
+| **`keyring`** | OS klíčenka, zapisuje ji `cooldeck setup` nebo `cooldeck auth add` - **doporučeno** |
 | `command` | Spustí externí příkaz a přečte token ze stdout (např. `["op", "read", "op://…"]`) |
 | `env` | Přečte pojmenovanou proměnnou prostředí |
-| `plaintext` | Token v konfiguračním souboru (režim `0600`) — až jako poslední možnost |
+| `plaintext` | Token v konfiguračním souboru (režim `0600`) - až jako poslední možnost |
 
 ```bash
 cooldeck auth add production      # uložit token do keyringu
@@ -283,11 +283,11 @@ cooldeck version                  verze, commit, datum buildu
 
 ## 🔒 Bezpečnost
 
-- **Tokeny zůstávají mimo dohled**: nikdy se nevykreslí v UI, nikdy nejdou do logů, toastů ani do exportu diagnostiky — logovací stranu hlídá [`internal/logging/redact.go`](internal/logging/redact.go) a diagnostický výpis je bez tajemství z principu.
+- **Tokeny zůstávají mimo dohled**: nikdy se nevykreslí v UI, nikdy nejdou do logů, toastů ani do exportu diagnostiky - logovací stranu hlídá [`internal/logging/redact.go`](internal/logging/redact.go) a diagnostický výpis je bez tajemství z principu.
 - **Výstup logů se sanitizuje**: syrové ANSI řídicí sekvence ze vzdáleného log streamu vám nepřekreslí terminál.
 - **Do prohlížeče jdou jen `http`/`https`** URL.
 - **Smazání instance** odstraní *lokální* záznam v konfiguraci a jeho položku v keyringu. V Coolify se nedotkne ničeho.
-- **Oprávnění degradují elegantně**: Coolify nemá endpoint pro introspekci oprávnění, takže CoolDeck předpokládá plné schopnosti a jednotlivé funkce vypíná až na `403` — zobrazí je zakázané i s důvodem, místo aby je skryl.
+- **Oprávnění degradují elegantně**: Coolify nemá endpoint pro introspekci oprávnění, takže CoolDeck předpokládá plné schopnosti a jednotlivé funkce vypíná až na `403` - zobrazí je zakázané i s důvodem, místo aby je skryl.
 
 Hlášení zranitelností: [SECURITY.md](SECURITY.md).
 
@@ -323,10 +323,10 @@ vypustila ven.
 ### Vývoj
 
 ```bash
-make check               # fmt-check + vet + test + build — pusťte před každým PR
+make check               # fmt-check + vet + test + build - pusťte před každým PR
 make run                 # go run ./cmd/cooldeck --demo
 make test-race
-make test-update-golden  # obnovit TUI snapshoty — a pak si *přečíst diff*
+make test-update-golden  # obnovit TUI snapshoty - a pak si *přečíst diff*
 make lint                # staticcheck
 make bench               # benchmarky vykreslování
 make vuln                # govulncheck
@@ -350,7 +350,7 @@ databáze a servery a MCP adaptér nad stejným `app.Service`.
 
 ## 🤝 Přispívání
 
-Hlášení chyb, návrhy funkcí i PR jsou vítané — v [CONTRIBUTING.md](CONTRIBUTING.md) najdete lokální
+Hlášení chyb, návrhy funkcí i PR jsou vítané - v [CONTRIBUTING.md](CONTRIBUTING.md) najdete lokální
 setup, workflow golden testů a co má projít před review přes `make check`.
 
 ## 📄 Licence
