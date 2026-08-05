@@ -214,7 +214,33 @@ cooldeck --demo
 
 Upgrades come with `brew upgrade` like anything else.
 
-### Option 2: Release binaries
+### Option 2: Install script (macOS & Linux)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Resetnak/cooldeck/main/install.sh | sh
+```
+
+Detects your platform, **verifies the checksum**, and drops the binary in `~/.local/bin`. Override
+with `COOLDECK_INSTALL_DIR`, or pin a version with `COOLDECK_VERSION=v0.1.1`. Read it first if you
+would rather not pipe a script into a shell - [it is short](install.sh).
+
+### Option 3: Linux packages
+
+```bash
+# Debian / Ubuntu
+curl -fsSLO https://github.com/Resetnak/cooldeck/releases/latest/download/cooldeck_0.1.2_linux_amd64.deb
+sudo dpkg -i cooldeck_0.1.2_linux_amd64.deb
+
+# Fedora / RHEL
+sudo rpm -i https://github.com/Resetnak/cooldeck/releases/latest/download/cooldeck_0.1.2_linux_amd64.rpm
+
+# Alpine
+sudo apk add --allow-untrusted cooldeck_0.1.2_linux_amd64.apk
+```
+
+`.deb`, `.rpm` and `.apk` are built for `amd64` and `arm64` on every release.
+
+### Option 4: Release binaries
 
 Download an archive for your platform from [Releases](https://github.com/Resetnak/cooldeck/releases/latest),
 unpack it, and put `cooldeck` on your `PATH`:
@@ -234,13 +260,13 @@ shasum -a 256 -c checksums.txt --ignore-missing
 Archives for Linux, macOS and Windows (`amd64` & `arm64`) are built by
 [GoReleaser](.goreleaser.yaml) from `v*` tags.
 
-### Option 3: `go install`
+### Option 5: `go install`
 
 ```bash
 go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
 ```
 
-### Option 4: Build from source
+### Option 6: Build from source
 
 ```bash
 git clone https://github.com/Resetnak/cooldeck.git
