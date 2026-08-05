@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/) once tagged
 releases begin.
 
+## [0.1.2] - 2026-08-05
+
+Packaging only - the binary is identical to 0.1.0.
+
+### Added
+
+- Linux packages: `.deb`, `.rpm` and `.apk` for amd64 and arm64 on every release
+- `install.sh`: one-line install for macOS and Linux that verifies the checksum before installing
+
 ## [0.1.1] - 2026-08-05
 
 Packaging only - the binary is identical to 0.1.0.
@@ -48,5 +57,6 @@ Packaging only - the binary is identical to 0.1.0.
 - Tokens excluded from logs, toasts, and diagnostics
 - Browser open restricted to http(s) URLs
 
+[0.1.2]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.0
