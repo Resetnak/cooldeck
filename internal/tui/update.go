@@ -161,7 +161,9 @@ func (m *Model) handleFilterKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	if text := msg.String(); len([]rune(text)) == 1 {
+	// String() renders space as "space"; Text carries the literal input,
+	// and is empty for keys that produce none.
+	if text := msg.Key().Text; text != "" {
 		m.filterText += text
 		m.apps.SetFilter(m.filterText)
 	}
@@ -183,7 +185,9 @@ func (m *Model) handleLogSearchKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "ctrl+u":
 		m.logSearchText = ""
 	default:
-		if text := msg.String(); len([]rune(text)) == 1 {
+		// String() renders space as "space"; Text carries the literal input,
+		// and is empty for keys that produce none.
+		if text := msg.Key().Text; text != "" {
 			m.logSearchText += text
 		}
 	}

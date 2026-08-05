@@ -262,9 +262,33 @@ func TestRuntimeLogSearchConsumesTextAndAppliesQuery(t *testing.T) {
 	}
 	model.handleKey(tea.KeyPressMsg{Code: 'e', Text: "e"})
 	model.handleKey(tea.KeyPressMsg{Code: 'r', Text: "r"})
+	// Space arrives as Code KeySpace, whose String() is "space", not " ".
+	model.handleKey(tea.KeyPressMsg{Code: tea.KeySpace, Text: " "})
+	model.handleKey(tea.KeyPressMsg{Code: '1', Text: "1"})
 	model.handleKey(tea.KeyPressMsg{Code: tea.KeyEnter})
-	if model.logSearching || model.detail.RuntimeSearch() != "er" {
+	if model.logSearching || model.detail.RuntimeSearch() != "er 1" {
 		t.Fatalf("runtime search = %q, editing = %v", model.detail.RuntimeSearch(), model.logSearching)
+	}
+}
+
+func TestFilterKeepsSpacesBetweenTerms(t *testing.T) {
+	model := New(Options{Config: config.Default(), Service: demo.New(demo.Options{}), Demo: true, ASCII: true})
+
+	model.handleKey(tea.KeyPressMsg{Code: '/', Text: "/"})
+	if !model.filtering {
+		t.Fatal("/ did not open the filter")
+	}
+	for _, k := range []tea.KeyPressMsg{
+		{Code: 'a', Text: "a"},
+		// Space separates filter terms, and arrives as KeySpace whose
+		// String() is "space", not " ".
+		{Code: tea.KeySpace, Text: " "},
+		{Code: 'b', Text: "b"},
+	} {
+		model.handleKey(k)
+	}
+	if got := model.apps.Filter().Raw; got != "a b" {
+		t.Fatalf("filter = %q, want %q", got, "a b")
 	}
 }
 
