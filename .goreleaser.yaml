@@ -74,3 +74,26 @@ homebrew_casks:
           if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/cooldeck"]
           end
+
+# Linux packages, built from the same binaries as the archives. A server
+# operator who reaches for apt or dnf should not have to unpack a tarball and
+# pick a directory to put it in.
+nfpms:
+  - id: packages
+    package_name: cooldeck
+    vendor: Resetnak
+    homepage: https://github.com/Resetnak/cooldeck
+    maintainer: Alexandr Resetnak <mail@resetnak.cz>
+    description: |-
+      Keyboard-first terminal dashboard for Coolify.
+      Deployments, logs, restarts and instance switching from the terminal.
+    license: MIT
+    formats: [deb, rpm, apk]
+    bindir: /usr/bin
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/cooldeck/LICENSE
+      - src: README.md
+        dst: /usr/share/doc/cooldeck/README.md
+      - src: CHANGELOG.md
+        dst: /usr/share/doc/cooldeck/CHANGELOG.md
