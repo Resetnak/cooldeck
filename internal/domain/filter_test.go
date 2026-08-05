@@ -8,30 +8,30 @@ import (
 func testApps() []Application {
 	return []Application{
 		{
-			UUID: "a1", Name: "stimustop-api", Branch: "main",
+			UUID: "a1", Name: "shipyard-api", Branch: "main",
 			Status:      ParseStatus("running:healthy"),
-			FQDNs:       []string{"api.stimustop.com"},
-			Project:     ResourceRef{Name: "StimuStop"},
+			FQDNs:       []string{"api.shipyard.example"},
+			Project:     ResourceRef{Name: "Shipyard"},
 			Environment: ResourceRef{Name: "production"},
 			Server:      ResourceRef{Name: "hetzner-1"},
 		},
 		{
-			UUID: "a2", Name: "resetnak-web", Branch: "main",
+			UUID: "a2", Name: "landing-web", Branch: "main",
 			Status:      ParseStatus("in_progress"),
-			FQDNs:       []string{"resetnak.cz", "www.resetnak.cz"},
+			FQDNs:       []string{"landing.example", "www.landing.example"},
 			Project:     ResourceRef{Name: "Personal"},
 			Environment: ResourceRef{Name: "production"},
 		},
 		{
-			UUID: "a3", Name: "maintenea-worker", Branch: "develop",
+			UUID: "a3", Name: "billing-worker", Branch: "develop",
 			Status:      ParseStatus("failed"),
-			Project:     ResourceRef{Name: "Maintenea"},
+			Project:     ResourceRef{Name: "Billing"},
 			Environment: ResourceRef{Name: "staging"},
 		},
 		{
-			UUID: "a4", Name: "stimustop-cron", Branch: "main",
+			UUID: "a4", Name: "shipyard-cron", Branch: "main",
 			Status:      ParseStatus("running:unhealthy"),
-			Project:     ResourceRef{Name: "StimuStop"},
+			Project:     ResourceRef{Name: "Shipyard"},
 			Environment: ResourceRef{Name: "production"},
 		},
 	}
@@ -53,37 +53,37 @@ func TestFilterMatching(t *testing.T) {
 		query string
 		want  []string
 	}{
-		{"", []string{"stimustop-api", "resetnak-web", "maintenea-worker", "stimustop-cron"}},
-		{"stimustop", []string{"stimustop-api", "stimustop-cron"}},
-		{"status:failed", []string{"maintenea-worker"}},
-		{"status:running", []string{"stimustop-api"}},
+		{"", []string{"shipyard-api", "landing-web", "billing-worker", "shipyard-cron"}},
+		{"shipyard", []string{"shipyard-api", "shipyard-cron"}},
+		{"status:failed", []string{"billing-worker"}},
+		{"status:running", []string{"shipyard-api"}},
 		// A degraded app is not "running"; it needs its own bucket.
-		{"status:degraded", []string{"stimustop-cron"}},
-		{"status:unhealthy", []string{"stimustop-cron"}},
-		{"project:stimustop", []string{"stimustop-api", "stimustop-cron"}},
-		{"env:production", []string{"stimustop-api", "resetnak-web", "stimustop-cron"}},
-		{"branch:main", []string{"stimustop-api", "resetnak-web", "stimustop-cron"}},
-		{"domain:resetnak.cz", []string{"resetnak-web"}},
+		{"status:degraded", []string{"shipyard-cron"}},
+		{"status:unhealthy", []string{"shipyard-cron"}},
+		{"project:shipyard", []string{"shipyard-api", "shipyard-cron"}},
+		{"env:production", []string{"shipyard-api", "landing-web", "shipyard-cron"}},
+		{"branch:main", []string{"shipyard-api", "landing-web", "shipyard-cron"}},
+		{"domain:landing.example", []string{"landing-web"}},
 		// Terms combine with AND.
-		{"project:stimustop status:failed", nil},
-		{"branch:main env:production", []string{"stimustop-api", "resetnak-web", "stimustop-cron"}},
+		{"project:shipyard status:failed", nil},
+		{"branch:main env:production", []string{"shipyard-api", "landing-web", "shipyard-cron"}},
 		// Negation excludes.
-		{"-status:running", []string{"resetnak-web", "maintenea-worker", "stimustop-cron"}},
-		{"project:stimustop -status:degraded", []string{"stimustop-api"}},
+		{"-status:running", []string{"landing-web", "billing-worker", "shipyard-cron"}},
+		{"project:shipyard -status:degraded", []string{"shipyard-api"}},
 		// Free text searches every relevant column.
-		{"hetzner-1", []string{"stimustop-api"}},
-		{"a3", []string{"maintenea-worker"}},
+		{"hetzner-1", []string{"shipyard-api"}},
+		{"a3", []string{"billing-worker"}},
 		// Case is irrelevant.
-		{"STATUS:FAILED", []string{"maintenea-worker"}},
+		{"STATUS:FAILED", []string{"billing-worker"}},
 		// Aliases.
-		{"p:personal", []string{"resetnak-web"}},
-		{"s:failed", []string{"maintenea-worker"}},
+		{"p:personal", []string{"landing-web"}},
+		{"s:failed", []string{"billing-worker"}},
 		// Synonyms.
-		{"status:bad", []string{"maintenea-worker", "stimustop-cron"}},
-		{"status:busy", []string{"resetnak-web"}},
-		{"status:down", []string{"maintenea-worker"}},
+		{"status:bad", []string{"billing-worker", "shipyard-cron"}},
+		{"status:busy", []string{"landing-web"}},
+		{"status:down", []string{"billing-worker"}},
 		// A half-typed scoped term must not blank the list.
-		{"status:", []string{"stimustop-api", "resetnak-web", "maintenea-worker", "stimustop-cron"}},
+		{"status:", []string{"shipyard-api", "landing-web", "billing-worker", "shipyard-cron"}},
 		// An unknown prefix falls back to free text and matches nothing here.
 		{"colour:red", nil},
 	}

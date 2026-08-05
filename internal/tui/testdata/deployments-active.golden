@@ -5,8 +5,8 @@
    Applications      12  │
  > Deployments        2  │  STATUS       APPLICATION                    COMMIT   STARTED    DURATION   PROGRESS          TRIGGER  MESSAGE
    Instances          1  │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   Diagnostics           │> * Running    resetnak-web                   6c880be  21s ago    21s        #------- ~2m 2s   api      fix: handle empty response fr.
-                         │  . Queued     shredloq                       a5f785b  just now   4s         -------- ~1m 4s   api      refactor: extract deployment .
+   Diagnostics           │> * Running    landing-web                    6c880be  21s ago    21s        #------- ~2m 2s   api      fix: handle empty response fr.
+                         │  . Queued     vault-web                      a5f785b  just now   4s         -------- ~1m 4s   api      refactor: extract deployment .
                          │
                          │
                          │

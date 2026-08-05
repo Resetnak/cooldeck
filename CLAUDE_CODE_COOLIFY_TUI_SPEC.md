@@ -746,7 +746,7 @@ Podporuj jednoduché tokeny:
 ```text
 status:failed
 status:running
-project:stimustop
+project:shipyard
 env:production
 branch:main
 ```
@@ -911,9 +911,9 @@ Wide varianta:
 
 ```text
  STATUS      APPLICATION        PROJECT / ENV       BRANCH       DEPLOYED       DOMAIN
- ● Running   stimustop-api      StimuStop / prod    main         3m ago         stimustop.com
- ◐ Building  resetnak-web       Personal / prod     main         21s            resetnak.cz
- × Failed    maintenea-worker   Maintenea / prod    main         2h ago         -
+ ● Running   shipyard-api      Shipyard / prod    main         3m ago         shipyard.example
+ ◐ Building  landing-web       Personal / prod     main         21s            landing.example
+ × Failed    billing-worker   Billing / prod    main         2h ago         -
 ```
 
 Požadavky:
@@ -1193,7 +1193,7 @@ Modal příklad:
 ```text
 Restart application?
 
-maintenea-api · Production
+billing-api · Production
 Active requests may be interrupted.
 
 [Esc] Cancel                 [Enter] Restart

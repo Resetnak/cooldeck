@@ -57,7 +57,7 @@ Sleep 1400ms
 # --- / narrows 12 apps down to one project; enter applies the filter ---
 Type "/"
 Sleep 500ms
-Type "maintenea"
+Type "billing"
 Sleep 1800ms
 Enter
 Sleep 1400ms
