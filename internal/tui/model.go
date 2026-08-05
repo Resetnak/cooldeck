@@ -214,6 +214,14 @@ type Model struct {
 	pendingAction     *pendingAction
 	operationInFlight bool
 
+	// deployStates is the deployment status seen on the previous refresh, keyed
+	// by deployment UUID. It is rebuilt from every snapshot, so it cannot grow
+	// past what the instance itself reports.
+	deployStates map[string]domain.DeploymentStatus
+	// ownDeploys marks deployments this session triggered. Their success is
+	// worth announcing; someone else's is not.
+	ownDeploys map[string]bool
+
 	toasts     []components.Toast
 	nextToast  int
 	spinnerIdx int
@@ -259,6 +267,8 @@ func New(opts Options) *Model {
 		connection:   components.ConnectionConnecting,
 		loading:      true,
 		capabilities: app.FullCapabilities(),
+		deployStates: map[string]domain.DeploymentStatus{},
+		ownDeploys:   map[string]bool{},
 	}
 	m.forceCompact = opts.Config.UI.CompactMode == config.TristateOn
 	m.rebuildTheme()
@@ -353,7 +363,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.deployments.SetItems(recent, msg.Snapshot.LoadedAt)
 		m.syncDetailFromList()
 		m.refreshDiagnostics()
-		var cmds []tea.Cmd
+		cmds := m.deploymentOutcomes(msg.Snapshot)
 		for _, w := range msg.Snapshot.Warnings {
 			cmds = append(cmds, m.pushToast(components.ToastWarning, w, ""))
 		}
@@ -436,6 +446,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.operationInFlight = false
 		m.cancelOperation = nil
 		m.capabilities = m.service.Capabilities()
+		if msg.Result.DeploymentUUID != "" {
+			// Remember it so the outcome is announced, not just the acceptance.
+			m.ownDeploys[msg.Result.DeploymentUUID] = true
+		}
 		return m, tea.Batch(
 			m.pushToast(components.ToastSuccess, "Action queued", "Coolify accepted the "+msg.Result.Operation+" request."),
 			m.manualRefresh(),
