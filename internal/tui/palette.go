@@ -485,7 +485,9 @@ func (m *Model) handlePaletteKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	if text := msg.String(); len([]rune(text)) == 1 && unicode.IsPrint([]rune(text)[0]) {
+	// String() renders space as "space"; Text carries the literal input,
+	// and is empty for keys that produce none.
+	if text := msg.Key().Text; text != "" {
 		m.paletteQuery += text
 		m.paletteSelected = 0
 	}
@@ -544,10 +546,7 @@ func (m *Model) renderPaletteRow(item rankedCommand, active bool, width int) str
 	reason := item.reason
 
 	// Leave room for the shortcut column on the right.
-	shortcutW := components.Width(shortcut) + 1
-	if shortcutW < 4 {
-		shortcutW = 4
-	}
+	shortcutW := max(components.Width(shortcut)+1, 4)
 	titleW := max(width-shortcutW, 8)
 
 	var left string
