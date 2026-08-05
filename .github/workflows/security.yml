@@ -23,9 +23,13 @@ jobs:
       - name: Scan reachable vulnerabilities
         run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
+  # Dependency review reads the dependency graph API, which private repositories
+  # only get with GitHub Advanced Security. Without it the action fails the
+  # workflow on every pull request, so it is opt-in like CodeQL below.
+  # govulncheck above already scans the same modules for reachable CVEs.
   dependency-review:
     name: Dependency review
-    if: github.event_name == 'pull_request'
+    if: ${{ github.event_name == 'pull_request' && vars.ENABLE_DEPENDENCY_REVIEW == 'true' }}
     permissions:
       contents: read
       pull-requests: write
