@@ -388,26 +388,42 @@ func (v *Detail) renderDeployments(th *theme.Theme, width, height int, now time.
 		)
 	}
 
+	showProgress := anyDeploymentActive(v.deployments)
+
 	rows := make([]components.Row, 0, len(v.deployments))
 	for _, deployment := range v.deployments {
-		rows = append(rows, components.Row{Cells: []string{
+		cells := []string{
 			th.DeploymentStatusText(deployment.Status),
 			components.OrDash(deployment.ShortCommit()),
 			domain.HumanizeAge(deployment.CreatedAt, now),
 			domain.HumanizeDuration(deployment.Duration(now)),
+		}
+		if showProgress {
+			cells = append(cells, deploymentProgressCell(th, deployment, v.deployments, now))
+		}
+		cells = append(cells,
 			components.OrDash(deployment.Trigger),
 			components.OrDash(deployment.CommitMessage),
-		}})
+		)
+		rows = append(rows, components.Row{Cells: cells})
 	}
+
+	columns := []components.Column{
+		{Title: "Status", MinWidth: 12, Priority: 0},
+		{Title: "Commit", MinWidth: 8, Priority: 0},
+		{Title: "Started", MinWidth: 10, Priority: 1},
+		{Title: "Duration", MinWidth: 10, Priority: 2},
+	}
+	if showProgress {
+		columns = append(columns, progressColumn)
+	}
+	columns = append(columns,
+		components.Column{Title: "Trigger", MinWidth: 8, Priority: 3},
+		components.Column{Title: "Message", MinWidth: 18, Flex: 1, Priority: 4},
+	)
+
 	table := components.Table{
-		Columns: []components.Column{
-			{Title: "Status", MinWidth: 12, Priority: 0},
-			{Title: "Commit", MinWidth: 8, Priority: 0},
-			{Title: "Started", MinWidth: 10, Priority: 1},
-			{Title: "Duration", MinWidth: 10, Priority: 2},
-			{Title: "Trigger", MinWidth: 8, Priority: 3},
-			{Title: "Message", MinWidth: 18, Flex: 1, Priority: 4},
-		},
+		Columns:  columns,
 		Rows:     rows,
 		Selected: v.deploymentSelected,
 		Focused:  true,

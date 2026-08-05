@@ -21,6 +21,8 @@ type SymbolSet struct {
 	Error   string
 	Info    string
 
+	BarFull    string
+	BarEmpty   string
 	Bullet     string
 	ArrowRight string
 	ArrowUp    string
@@ -54,6 +56,8 @@ var UnicodeSymbols = SymbolSet{
 	Error:   "×",
 	Info:    "·",
 
+	BarFull:    "█",
+	BarEmpty:   "░",
 	Bullet:     "•",
 	ArrowRight: "→",
 	ArrowUp:    "↑",
@@ -87,6 +91,8 @@ var ASCIISymbols = SymbolSet{
 	Error:   "x",
 	Info:    "-",
 
+	BarFull:    "#",
+	BarEmpty:   "-",
 	Bullet:     "*",
 	ArrowRight: "->",
 	ArrowUp:    "^",
