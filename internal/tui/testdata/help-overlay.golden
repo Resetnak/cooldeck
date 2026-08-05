@@ -3,17 +3,17 @@
   Applications|                                                                      |m  |  Deployme
   STATUS      |  cooldeck help                                                       |N
 ──────────────|  A fast and polished terminal dashboard for monitoring and           |──────────────
-> ! Degraded  |  operating Coolify deployments.                                      |aintenea.dev
+> ! Degraded  |  operating Coolify deployments.                                      |illing.example
   * Restarting|  esc close  ·  ↑↓ scroll                                             |
-  * Running   |                                                                      |nak.cz
-  . Queued    |  Global                                                              |loq.com
+  * Running   |                                                                      |ng.example
+  . Queued    |  Global                                                              |.example
   # Stopped   |  ↑↓ / j k            move selection                                  |
-  # Stopped   |  g / G               first / last                                    |ng.weektraq.ap
-  o Running   |  ctrl+d / ctrl+u     page down / up                                  |t.logen.examp.
-  o Running   |  enter               open / confirm                                  |ko.app
-  o Running   |  esc / q             back / quit                                     |timustop.com
-  o Running   |  tab / shift+tab     next / previous pane                            |stop.com
-  o Running   |  /                   filter or search                                |ng-api.weektr.
+  # Stopped   |  g / G               first / last                                    |ng.metrics.ex.
+  o Running   |  ctrl+d / ctrl+u     page down / up                                  |t.example-wit.
+  o Running   |  enter               open / confirm                                  |ng-api.metric.
+  o Running   |  esc / q             back / quit                                     |.example
+  o Running   |  tab / shift+tab     next / previous pane                            |hipyard.exampl
+  o Running   |  /                   filter or search                                |ard.example
   ? Unknown   |  : / ctrl+k          command palette                                 |
               |  ?                   this help                                       |
               |  R                   manual refresh                                  |
