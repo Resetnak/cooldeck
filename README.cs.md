@@ -214,7 +214,33 @@ cooldeck --demo
 
 Aktualizace pak chodí přes `brew upgrade` jako u čehokoli jiného.
 
-### Varianta 2: Release binárky
+### Varianta 2: Instalační skript (macOS a Linux)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Resetnak/cooldeck/main/install.sh | sh
+```
+
+Rozpozná platformu, **ověří kontrolní součet** a binárku uloží do `~/.local/bin`. Cíl přepíšete přes
+`COOLDECK_INSTALL_DIR`, konkrétní verzi vynutíte přes `COOLDECK_VERSION=v0.1.1`. Jestli se vám nechce
+pouštět skript rovnou do shellu, [přečtěte si ho](install.sh) - je krátký.
+
+### Varianta 3: Linuxové balíčky
+
+```bash
+# Debian / Ubuntu
+curl -fsSLO https://github.com/Resetnak/cooldeck/releases/latest/download/cooldeck_0.1.2_linux_amd64.deb
+sudo dpkg -i cooldeck_0.1.2_linux_amd64.deb
+
+# Fedora / RHEL
+sudo rpm -i https://github.com/Resetnak/cooldeck/releases/latest/download/cooldeck_0.1.2_linux_amd64.rpm
+
+# Alpine
+sudo apk add --allow-untrusted cooldeck_0.1.2_linux_amd64.apk
+```
+
+`.deb`, `.rpm` i `.apk` se staví pro `amd64` a `arm64` při každém vydání.
+
+### Varianta 4: Release binárky
 
 Stáhněte si archiv pro svou platformu z [Releases](https://github.com/Resetnak/cooldeck/releases/latest),
 rozbalte ho a dejte `cooldeck` do `PATH`:
@@ -235,13 +261,13 @@ shasum -a 256 -c checksums.txt --ignore-missing
 Archivy pro Linux, macOS a Windows (`amd64` & `arm64`) staví [GoReleaser](.goreleaser.yaml) z tagů
 `v*`.
 
-### Varianta 3: `go install`
+### Varianta 5: `go install`
 
 ```bash
 go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
 ```
 
-### Varianta 4: Build ze zdrojáků
+### Varianta 6: Build ze zdrojáků
 
 ```bash
 git clone https://github.com/Resetnak/cooldeck.git
