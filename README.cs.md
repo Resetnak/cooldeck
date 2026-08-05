@@ -220,7 +220,7 @@ Stáhněte si archiv pro svou platformu z [Releases](https://github.com/Resetnak
 rozbalte ho a dejte `cooldeck` do `PATH`:
 
 ```bash
-tar xzf cooldeck_0.1.0_Darwin_arm64.tar.gz     # nebo Linux_x86_64, Linux_arm64, Darwin_x86_64
+tar xzf cooldeck_*_Darwin_arm64.tar.gz     # nebo Linux_x86_64, Linux_arm64, Darwin_x86_64
 sudo mv cooldeck /usr/local/bin/
 cooldeck version
 ```
