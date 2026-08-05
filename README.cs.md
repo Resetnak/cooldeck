@@ -253,7 +253,7 @@ curl -fsSL https://raw.githubusercontent.com/Resetnak/cooldeck/main/install.sh |
 ```
 
 Rozpozná platformu, **ověří kontrolní součet** a binárku uloží do `~/.local/bin`. Cíl přepíšete přes
-`COOLDECK_INSTALL_DIR`, konkrétní verzi vynutíte přes `COOLDECK_VERSION=v0.2.0`. Jestli se vám nechce
+`COOLDECK_INSTALL_DIR`, konkrétní verzi vynutíte přes `COOLDECK_VERSION=v0.2.1`. Jestli se vám nechce
 pouštět skript rovnou do shellu, [přečtěte si ho](install.sh) - je krátký.
 
 ### Varianta 3: Linuxové balíčky
