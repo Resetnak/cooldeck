@@ -202,33 +202,19 @@ Full map: press `?` in the app, or read [docs/keybindings.md](docs/keybindings.m
 
 ## 📦 Installation
 
-**Requirements:** Go **1.26.5+** to build. No CGO, no runtime dependencies - the result is a single
-static binary.
+**No runtime dependencies.** Every option below leaves you with a single static binary; only building
+from source needs a toolchain (Go **1.26.5+**, no CGO).
 
-### Option 1: Build from source (the way, for now)
-
-```bash
-git clone https://github.com/Resetnak/cooldeck.git
-cd cooldeck
-make build          # -> bin/cooldeck, with version/commit/date baked in
-./bin/cooldeck --demo
-```
-
-Then put it somewhere on your `PATH`:
+### Option 1: Homebrew (macOS & Linux)
 
 ```bash
-install -m 0755 bin/cooldeck ~/.local/bin/cooldeck    # macOS / Linux
+brew install resetnak/tap/cooldeck
+cooldeck --demo
 ```
 
-### Option 2: `go install`
+Upgrades come with `brew upgrade` like anything else.
 
-```bash
-go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
-```
-
-> ℹ️ This works once the repository is public; until then, use Option 1.
-
-### Option 3: Release binaries
+### Option 2: Release binaries
 
 Download an archive for your platform from [Releases](https://github.com/Resetnak/cooldeck/releases/latest),
 unpack it, and put `cooldeck` on your `PATH`:
@@ -247,6 +233,22 @@ shasum -a 256 -c checksums.txt --ignore-missing
 
 Archives for Linux, macOS and Windows (`amd64` & `arm64`) are built by
 [GoReleaser](.goreleaser.yaml) from `v*` tags.
+
+### Option 3: `go install`
+
+```bash
+go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
+```
+
+### Option 4: Build from source
+
+```bash
+git clone https://github.com/Resetnak/cooldeck.git
+cd cooldeck
+make build          # -> bin/cooldeck, with version/commit/date baked in
+./bin/cooldeck --demo
+install -m 0755 bin/cooldeck ~/.local/bin/cooldeck
+```
 
 ---
 
