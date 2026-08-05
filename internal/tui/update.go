@@ -567,13 +567,7 @@ func (m *Model) adjustLogLines(direction int) tea.Cmd {
 	if m.screen != screenDetail || m.detail.Tab() != views.TabRuntimeLogs {
 		return nil
 	}
-	next := m.logLines + direction*logLinesStep
-	if next < minSessionLogLines {
-		next = minSessionLogLines
-	}
-	if next > maxSessionLogLines {
-		next = maxSessionLogLines
-	}
+	next := min(max(m.logLines+direction*logLinesStep, minSessionLogLines), maxSessionLogLines)
 	if next == m.logLines {
 		return m.pushToast(components.ToastInfo, "Log lines already at "+strconv.Itoa(m.logLines), "")
 	}

@@ -43,7 +43,7 @@ func TestLoadedDashboardRendersAcrossBreakpoints(t *testing.T) {
 		if !ok || !strings.Contains(plain, selected.Name) {
 			t.Fatalf("%dx%d render omitted application name:\n%s", size.width, size.height, plain)
 		}
-		for _, line := range strings.Split(plain, "\n") {
+		for line := range strings.SplitSeq(plain, "\n") {
 			if ansi.StringWidth(line) > size.width {
 				t.Fatalf(
 					"%dx%d render overflowed to %d cells: %q",
