@@ -746,7 +746,7 @@ Podporuj jednoduché tokeny:
 ```text
 status:failed
 status:running
-project:stimustop
+project:shipyard
 env:production
 branch:main
 ```
@@ -911,9 +911,9 @@ Wide varianta:
 
 ```text
  STATUS      APPLICATION        PROJECT / ENV       BRANCH       DEPLOYED       DOMAIN
- ● Running   stimustop-api      StimuStop / prod    main         3m ago         stimustop.com
- ◐ Building  resetnak-web       Personal / prod     main         21s            resetnak.cz
- × Failed    maintenea-worker   Maintenea / prod    main         2h ago         —
+ ● Running   shipyard-api      Shipyard / prod    main         3m ago         shipyard.example
+ ◐ Building  landing-web       Personal / prod     main         21s            landing.example
+ × Failed    billing-worker   Billing / prod    main         2h ago         -
 ```
 
 Požadavky:
@@ -1193,7 +1193,7 @@ Modal příklad:
 ```text
 Restart application?
 
-maintenea-api · Production
+billing-api · Production
 Active requests may be interrupted.
 
 [Esc] Cancel                 [Enter] Restart
@@ -1696,7 +1696,7 @@ Hodnoty injectuj přes `-ldflags`.
 
 Implementuj v tomto pořadí.
 
-## Milestone 0 — Repository foundation
+## Milestone 0 - Repository foundation
 
 - Go module,
 - základní adresářová struktura,
@@ -1719,7 +1719,7 @@ go build ./cmd/cooldeck
 
 musí fungovat.
 
-## Milestone 1 — Configuration and authentication
+## Milestone 1 - Configuration and authentication
 
 - config loader,
 - config validation,
@@ -1735,7 +1735,7 @@ musí fungovat.
 
 Uživatel dokáže bezpečně uložit token, ověřit připojení a token se nikde nevypíše.
 
-## Milestone 2 — Coolify read API
+## Milestone 2 - Coolify read API
 
 - API client,
 - list applications,
@@ -1751,7 +1751,7 @@ Uživatel dokáže bezpečně uložit token, ověřit připojení a token se nik
 
 API vrstva je kompletně testovatelná přes `httptest.Server` bez reálného Coolify.
 
-## Milestone 3 — TUI shell and design system
+## Milestone 3 - TUI shell and design system
 
 - root model,
 - responsive layout,
@@ -1768,7 +1768,7 @@ API vrstva je kompletně testovatelná přes `httptest.Server` bez reálného Co
 
 Aplikace se spustí s fake daty a je vizuálně konzistentní ve wide, standard a compact režimu.
 
-## Milestone 4 — Applications dashboard
+## Milestone 4 - Applications dashboard
 
 - seznam aplikací,
 - selection,
@@ -1783,7 +1783,7 @@ Aplikace se spustí s fake daty a je vizuálně konzistentní ve wide, standard 
 
 Dashboard funguje s reálným API i fake clientem a zvládne 200 aplikací.
 
-## Milestone 5 — Logs and deployments
+## Milestone 5 - Logs and deployments
 
 - deployments table,
 - runtime logs,
@@ -1796,7 +1796,7 @@ Dashboard funguje s reálným API i fake clientem a zvládne 200 aplikací.
 
 Log view nebliká, respektuje ruční scroll a nezpracuje escape sekvence jako terminálové příkazy.
 
-## Milestone 6 — Mutating operations
+## Milestone 6 - Mutating operations
 
 - deploy,
 - force deploy,
@@ -1813,7 +1813,7 @@ Log view nebliká, respektuje ruční scroll a nezpracuje escape sekvence jako t
 
 Žádná nebezpečná operace se nespustí jediným náhodným stiskem bez jasného kontextu a potvrzení.
 
-## Milestone 7 — Onboarding and polish
+## Milestone 7 - Onboarding and polish
 
 - first-run wizard,
 - instances management,
@@ -1829,7 +1829,7 @@ Log view nebliká, respektuje ruční scroll a nezpracuje escape sekvence jako t
 
 Nový uživatel dokáže aplikaci nainstalovat, přidat instanci a dostat se na dashboard bez ruční editace configu.
 
-## Milestone 8 — Optional read-only resources
+## Milestone 8 - Optional read-only resources
 
 Až po kvalitním dokončení Applications:
 

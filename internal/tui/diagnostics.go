@@ -37,7 +37,7 @@ func (m *Model) buildDiagnosticFields() []views.DiagnosticField {
 		{Label: "ID", Value: m.service.InstanceID()},
 		{Label: "URL", Value: firstNonEmpty(m.lastConnection.BaseURL, activeInstance(m).URL, "(unknown)")},
 		{Label: "Coolify", Value: firstNonEmpty(m.coolifyVer, "(unknown)")},
-		{Label: "Team", Value: firstNonEmpty(m.lastConnection.TeamName, "—")},
+		{Label: "Team", Value: firstNonEmpty(m.lastConnection.TeamName, "-")},
 		{Label: "Connection", Value: connectionStateLabel(m.connection)},
 		{Label: "Latency", Value: formatLatency(m.lastConnection.Latency)},
 		{Label: "Demo mode", Value: strconv.FormatBool(m.opts.Demo)},
@@ -103,7 +103,7 @@ func connectionStateLabel(state components.ConnectionState) string {
 
 func formatLatency(d time.Duration) string {
 	if d <= 0 {
-		return "—"
+		return "-"
 	}
 	return d.Round(time.Millisecond).String()
 }

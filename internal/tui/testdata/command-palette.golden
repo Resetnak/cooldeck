@@ -3,18 +3,18 @@
   Applications [48|                                                              |5m   |  Deployme
   STATUS       APP|  Commands                                                    |OMAIN
 ──────────────────|  > ▏                                                         |──────────────────
-> ! Degraded   * m|  type to filter · enter run · esc close                      |pi.maintenea.dev
-  * Restarting log|                                                              |
-  * Running    * r|  Actions                                                     |esetnak.cz
-  . Queued     * s|  Deploy selected application                                 |hredloq.com
-  # Stopped    * m|  d                                                           |
-  # Stopped    wee|  Force deploy selected application                           |taging.weektraq.ap
-  o Running    * l|  D                                                           |ngest.logen.examp.
-  o Running    * n|  Restart application                                         |osmoko.app
-  o Running    * s|  r                                                           |pi.stimustop.com
-  o Running    * s|  Start or stop application                                   |timustop.com
-  o Running    wee|  s                                                           |taging-api.weektr.
-  ? Unknown    mpd|  Navigate                                                    |
+> ! Degraded   * b|  type to filter · enter run · esc close                      |pi.billing.example
+  * Restarting ing|                                                              |
+  * Running    * l|  Actions                                                     |anding.example
+  . Queued     * v|  Deploy selected application                                 |ault.example
+  # Stopped    * b|  d                                                           |
+  # Stopped    met|  Force deploy selected application                           |taging.metrics.ex.
+  o Running    * i|  D                                                           |ngest.example-wit.
+  o Running    met|  Restart application                                         |taging-api.metric.
+  o Running    * n|  r                                                           |otes.example
+  o Running    * s|  Start or stop application                                   |pi.shipyard.exampl
+  o Running    * s|  s                                                           |hipyard.example
+  ? Unknown    san|  Navigate                                                    |
                   |  Open runtime logs                                           |
                   |  l                                                           |
                   |  Open deployments                                            |

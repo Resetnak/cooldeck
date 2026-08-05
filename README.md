@@ -50,13 +50,13 @@ your config, pulls a token out of your OS keyring, and renders.
 ```text
  COOLDECK  Demo   ● connected   DEMO                              12 apps  |  refreshed just now
 ────────────────────────────────────────────────────────────────────────────────────────────────
- RESOURCES        │ STATUS       APPLICATION       PROJECT / ENV     BRANCH   DEPLOYED │ maintenea-api
-                  │ ▲ Degraded   maintenea-api     Maintenea / prod  main      47m ago │ ▲ Degraded
- > Applications 12│ ◐ Restarting logen-dashboard   Logen / preview   feat/…  1m 30s ago│
-   Deployments  33│ ● Running    resetnak-web      Personal / prod   main         21s  │  PRODUCTION
-   Instances     1│ ○ Queued     shredloq          Personal / prod   main          4s  │
-   Diagnostics    │ ■ Stopped    maintenea-worker  Maintenea / prod  main       2h ago │ Project  Maintenea
-                  │ ● Running    stimustop-api     StimuStop / prod  main       3m ago │ Branch   main
+ RESOURCES        │ STATUS       APPLICATION       PROJECT / ENV     BRANCH    DEPLOYED │ billing-api
+                  │ ▲ Degraded   billing-api       Billing / prod    main       47m ago │ ▲ Degraded
+ > Applications 12│ ◐ Restarting ingest-dashboard  Ingest / preview  feat/…  1m 30s ago │
+   Deployments  33│ ● Running    landing-web       Personal / prod   main           21s │  PRODUCTION
+   Instances     1│ ○ Queued     vault-web         Personal / prod   main            4s │
+   Diagnostics    │ ■ Stopped    billing-worker    Billing / prod    main        2h ago │ Project  Billing
+                  │ ● Running    shipyard-api      Shipyard / prod   main        3m ago │ Branch   main
 ────────────────────────────────────────────────────────────────────────────────────────────────
   ↑↓ navigate   enter details   d deploy   r restart   s start/stop   / filter   ? more     1/12
 ```

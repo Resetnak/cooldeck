@@ -3,18 +3,18 @@
   Applications  12   |  Deployme
   STATUS       APPLICATION            PROJECT / ENV        BRANCH       DEPLOYED DOMAIN
 ────────────────────────────────────────────────────────────────────────────────────────────────────
-> ! Degraded   * maintenea-api        Maintenea / produ... main          47m ago api.maintenea.dev
-  * Restarting logen-dashboard        Logen / preview      feat/ch... 1m 30s ago —
-  * Running    * resetnak-web         Personal / produc... main              21s resetnak.cz
-  . Queued     * shredloq             Personal / produc... main               4s shredloq.com
-  # Stopped    * mainte+----------------------------------------------------+ago —
-  # Stopped    weektraq|                                                    |ago staging.weektraq.ap
-  o Running    * logen-|  Deploy application?                               |ago ingest.logen.examp.
-  o Running    * nosmok|                                                    |ago nosmoko.app
-  o Running    * stimus|  Application: stimustop-api                        |ago api.stimustop.com
-  o Running    * stimus|                                                    |ago stimustop.com
-  o Running    weektraq|    enter confirm      esc cancel                   |ago staging-api.weektr.
-  ? Unknown    mpd-api |                                                    |  — —
+> ! Degraded   * billing-api          Billing / production main          47m ago api.billing.example
+  * Restarting ingest-dashboard       Ingest / preview     feat/ch... 1m 30s ago -
+  * Running    * landing-web          Personal / produc... main              21s landing.example
+  . Queued     * vault-web            Personal / produc... main               4s vault.example
+  # Stopped    * billin+----------------------------------------------------+ago -
+  # Stopped    metrics-|                                                    |ago staging.metrics.ex.
+  o Running    * ingest|  Deploy application?                               |ago ingest.example-wit.
+  o Running    metrics-|                                                    |ago staging-api.metric.
+  o Running    * notes-|  Application: shipyard-api                         |ago notes.example
+  o Running    * shipya|                                                    |ago api.shipyard.exampl
+  o Running    * shipya|    enter confirm      esc cancel                   |ago shipyard.example
+  ? Unknown    sandbox-|                                                    |  - -
                        +----------------------------------------------------+
 
 

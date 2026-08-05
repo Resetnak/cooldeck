@@ -33,7 +33,7 @@ func TestServiceConnectAndDashboard(t *testing.T) {
 			_, _ = fmt.Fprint(w, `[{
 				"uuid":"app-1","name":"api","status":"running:unhealthy",
 				"fqdn":"https://api.example.com,https://www.example.com",
-				"git_repository":"resetnak/api","git_branch":"main",
+				"git_repository":"acme/api","git_branch":"main",
 				"git_commit_sha":"1234567890","build_pack":"nixpacks",
 				"environment_id":3,"destination_id":7
 			}]`)

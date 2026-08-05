@@ -1,6 +1,6 @@
-# cassette.tape — VHS script that renders the README demo (assets/demo.gif).
+# cassette.tape - VHS script that renders the README demo (assets/demo.gif).
 # Regenerate from the repo root:  vhs cassette.tape
-# Needs: vhs, bash and go — the hidden setup below rebuilds bin/cooldeck, so the
+# Needs: vhs, bash and go - the hidden setup below rebuilds bin/cooldeck, so the
 # recording always shows the working tree rather than a stale binary.
 # Everything runs against `--demo`: no Coolify instance, no network, no token.
 # COOLDECK_CONFIG_DIR points at a throwaway directory under /tmp, so your real
@@ -57,7 +57,7 @@ Sleep 1400ms
 # --- / narrows 12 apps down to one project; enter applies the filter ---
 Type "/"
 Sleep 500ms
-Type "maintenea"
+Type "billing"
 Sleep 1800ms
 Enter
 Sleep 1400ms
