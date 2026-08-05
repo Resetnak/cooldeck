@@ -92,21 +92,32 @@ func (m *Model) renderBody() string {
 	}
 	contentHeight := max(m.layout.ContentHeight-extra, 1)
 
-	main := m.renderMain(m.layout.ContentWidth, contentHeight)
+	// Only the applications list has a preview, so anywhere else the reserved
+	// column is handed back to the main content instead of left blank.
+	contentWidth := m.layout.ContentWidth
+	var preview string
+	if m.layout.ShowPreview {
+		preview = m.previewContent(m.layout.PreviewWidth, contentHeight)
+	}
+	if preview == "" {
+		contentWidth += m.layout.PreviewWidth
+	}
+
+	main := m.renderMain(contentWidth, contentHeight)
 
 	var content string
 	if m.layout.ShowSidebar {
 		parts := []string{
 			components.Sidebar(m.theme, m.sections(), int(m.section),
 				m.layout.SidebarWidth, contentHeight, m.focus == focusSidebar),
-			components.FitBlock(main, m.layout.ContentWidth, contentHeight),
+			components.FitBlock(main, contentWidth, contentHeight),
 		}
-		if m.layout.ShowPreview {
-			parts = append(parts, m.renderPreview(m.layout.PreviewWidth, contentHeight))
+		if preview != "" {
+			parts = append(parts, components.FitBlock(preview, m.layout.PreviewWidth, contentHeight))
 		}
 		content = lipgloss.JoinHorizontal(lipgloss.Top, parts...)
 	} else {
-		content = components.FitBlock(main, m.layout.ContentWidth, contentHeight)
+		content = components.FitBlock(main, contentWidth, contentHeight)
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Left, append(banners, content)...)
@@ -159,17 +170,18 @@ func (m *Model) renderDetail(width, height int, now time.Time) string {
 		components.Pad(crumb, width), tabs, "", body)
 }
 
-// renderPreview draws the side panel next to the table on wide terminals.
-func (m *Model) renderPreview(width, height int) string {
+// previewContent renders the side panel next to the table on wide terminals.
+// An empty result means there is nothing worth a column, and the caller widens
+// the main content instead.
+func (m *Model) previewContent(width, height int) string {
 	if m.section != SectionApplications || m.screen == screenDetail {
-		return components.FitBlock("", width, height)
+		return ""
 	}
 	a, ok := m.apps.Selected()
 	if !ok {
-		return components.FitBlock("", width, height)
+		return ""
 	}
-	return components.FitBlock(
-		views.Preview(m.theme, a, width, height, m.now()), width, height)
+	return views.Preview(m.theme, a, width, height, m.now())
 }
 
 // overlayToasts splices the notification stack over the frame, above the

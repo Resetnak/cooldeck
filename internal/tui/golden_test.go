@@ -157,6 +157,23 @@ func TestGoldenViews(t *testing.T) {
 			},
 		},
 		{
+			// Wide enough for the preview strip, which this section does not
+			// use — the table has to spread into it.
+			name: "deployments-wide", width: 160, height: 40,
+			setup: func(m *Model) {
+				m.apps.SetApplications(snapshot.Applications, snapshot.ActiveDeployments, now)
+				m.section = SectionDeployments
+				m.deployments.SetItems(snapshot.RecentDeployments, now)
+			},
+		},
+		{
+			name: "instances-wide", width: 160, height: 40,
+			setup: func(m *Model) {
+				m.apps.SetApplications(snapshot.Applications, snapshot.ActiveDeployments, now)
+				m.section = SectionInstances
+			},
+		},
+		{
 			name: "diagnostics", width: 100, height: 28,
 			setup: func(m *Model) {
 				m.apps.SetApplications(snapshot.Applications, snapshot.ActiveDeployments, now)
