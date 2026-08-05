@@ -1,6 +1,7 @@
 package views
 
 import (
+	"slices"
 	"strconv"
 	"time"
 
@@ -33,6 +34,12 @@ func (v *Deployments) SetItems(items []domain.Deployment, at time.Time) {
 		keep = d.UUID
 	}
 	v.items = append([]domain.Deployment{}, items...)
+	// A queue leads with what is happening now. Coolify returns newest first,
+	// which buries an in-flight build under yesterday's history the moment the
+	// history is longer than the screen - and that build is the row the user
+	// opened this section to look at. Sorting here rather than in visible()
+	// means it costs one pass per refresh instead of one per frame.
+	slices.SortStableFunc(v.items, activeFirst)
 	v.loaded = true
 	v.loadedAt = at
 	v.selected = 0
