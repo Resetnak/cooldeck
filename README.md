@@ -220,7 +220,7 @@ Download an archive for your platform from [Releases](https://github.com/Resetna
 unpack it, and put `cooldeck` on your `PATH`:
 
 ```bash
-tar xzf cooldeck_0.1.0_Darwin_arm64.tar.gz     # or Linux_x86_64, Linux_arm64, Darwin_x86_64
+tar xzf cooldeck_*_Darwin_arm64.tar.gz     # or Linux_x86_64, Linux_arm64, Darwin_x86_64
 sudo mv cooldeck /usr/local/bin/
 cooldeck version
 ```
