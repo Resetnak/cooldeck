@@ -5,13 +5,14 @@
    Applications      12  │
  > Deployments       33  │  STATUS       APPLICATION                    COMMIT   STARTED    DURATION   PROGRESS          TRIGGER  MESSAGE
    Instances          1  │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   Diagnostics           │> + Finished   stimustop-api                  6b3514c  3m ago     1m 12s                       api      chore(deps): bump base image .
+   Diagnostics           │> * Running    resetnak-web                   6c880be  21s ago    21s        #------- ~2m 2s   api      fix: handle empty response fr.
+                         │  . Queued     shredloq                       a5f785b  just now   4s         -------- ~1m 4s   api      refactor: extract deployment .
+                         │  + Finished   stimustop-api                  6b3514c  3m ago     1m 12s                       api      chore(deps): bump base image .
                          │  + Finished   stimustop-api                  9aa0731  13h 3m ago 1m 13s                       webhook  refactor: extract deployment .
                          │  + Finished   stimustop-api                  83f3008  3d 1h ago  1m 52s                       webhook  fix: handle empty response fr.
                          │  + Finished   stimustop-web                  4392015  3m ago     57s                          api      chore(deps): bump base image .
                          │  + Finished   stimustop-web                  f5ef120  1d 19h ago 1m 21s                       manual   chore(deps): bump base image .
                          │  + Finished   stimustop-web                  ccafa8b  2d 2h ago  1m 37s                       manual   chore(deps): bump base image .
-                         │  * Running    resetnak-web                   6c880be  21s ago    21s        #------- ~2m 2s   api      fix: handle empty response fr.
                          │  x Failed     resetnak-web                   f54ced3  18h ago    1m 31s                       manual   fix: handle empty response fr.
                          │  + Finished   resetnak-web                   0134d36  2d 13h ago 2m 2s                        api      chore(deps): bump base image .
                          │  x Failed     maintenea-worker               73e71c6  2h ago     1m 9s                        manual   fix: correct timezone handlin.
@@ -35,6 +36,5 @@
                          │  + Finished   nosmoko                        a900640  11d ago    1m 52s                       webhook  fix: handle empty response fr.
                          │  + Finished   nosmoko                        35d4a45  13d 17h... 32s                          manual   feat: add weekly summary endp.
                          │  + Finished   nosmoko                        63538d5  15d 2h ago 36s                          manual   fix: correct timezone handlin.
-                         │  . Queued     shredloq                       a5f785b  just now   4s         -------- ~1m 4s   api      refactor: extract deployment .
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
   ↑↓  select   enter  open log   a  active filter   c  copy UUID   R  refresh   1  apps   ?  help                                                          1/33

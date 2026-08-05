@@ -25,6 +25,20 @@ var progressColumn = components.Column{
 	Priority:   2,
 }
 
+// activeFirst orders in-flight deployments ahead of settled ones. It is only
+// ever used with a stable sort, so everything else keeps the order Coolify
+// returned it in - newest first.
+func activeFirst(a, b domain.Deployment) int {
+	switch {
+	case a.Status.IsActive() == b.Status.IsActive():
+		return 0
+	case a.Status.IsActive():
+		return -1
+	default:
+		return 1
+	}
+}
+
 // anyDeploymentActive reports whether the Progress column would carry anything.
 func anyDeploymentActive(deployments []domain.Deployment) bool {
 	for _, d := range deployments {
