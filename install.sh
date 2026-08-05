@@ -5,7 +5,7 @@
 #
 # Reads nothing, writes one binary, and verifies its checksum before doing so.
 # Override the destination with COOLDECK_INSTALL_DIR, or pin a version with
-# COOLDECK_VERSION=v0.1.1.
+# COOLDECK_VERSION=v0.2.0.
 #
 # POSIX sh on purpose: this has to run on a stock Alpine container as readily
 # as on a Mac.

@@ -11,6 +11,12 @@ import (
 	"github.com/resetnak/cooldeck/internal/tui/theme"
 )
 
+// leadingLevelPattern matches a severity word at the head of a line. The badge
+// in front of the line already says INFO, so leaving it in the body renders
+// "INFO INFO GET /healthz" on every screen that shows logs.
+var leadingLevelPattern = regexp.MustCompile(
+	`(?i)^[\[\(]?(TRACE|DEBUG|DBG|INFO|INFORMATION|NOTICE|WARN|WARNING|ERROR|ERR|FATAL|CRITICAL|PANIC|EMERGENCY)[\]\)]?[:\-|]?(?:\s+|$)`)
+
 // logContent is one rendered log buffer. The detail screen and the fleet tail
 // share it so their ergonomics - follow, wrap, search highlighting - cannot
 // drift apart.
@@ -50,11 +56,13 @@ func renderLogBlock(th *theme.Theme, width, height int, content logContent, scro
 		if timestamp != "" {
 			prefix += th.Subtle.Render(timestamp) + " "
 		}
+		body := line.Text
 		if label := line.Level.Label(); label != "" {
 			prefix += logLevelStyle(th, line.Level).Render(components.Pad(label, 5)) + " "
+			body = leadingLevelPattern.ReplaceAllString(body, "")
 		}
 
-		text := prefix + line.Text
+		text := prefix + body
 		if search != nil {
 			text = search.ReplaceAllStringFunc(text, func(match string) string {
 				return th.FilterPrompt.Render(match)

@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/) once tagged
 releases begin.
 
+## [Unreleased]
+
+### Fixed
+
+- `space` now marks an application for the fleet tail. The binding was declared as a literal `" "`,
+  which Bubble Tea v2 never matches, so the whole fleet tail was unreachable from the keyboard
+- Log lines no longer print their severity twice (`INFO  INFO  GET /healthz`) when the source
+  already begins with the level
+- The fleet tail footer shows its own keys (pause, follow, wrap, search, copy) instead of the
+  applications list's deploy and restart hints
+- Linux package install commands pointed at `/releases/latest/download/cooldeck_0.1.2_…`, a URL that
+  404s after any release; they now resolve the current tag first
+
 ## [0.2.0] - 2026-08-05
 
 ### Added
