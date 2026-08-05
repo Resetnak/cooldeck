@@ -1,12 +1,12 @@
-# mcp.tape — VHS script that renders the MCP demo (assets/mcp.gif).
+# mcp.tape - VHS script that renders the MCP demo (assets/mcp.gif).
 # Regenerate from the repo root:  vhs mcp.tape
-# Needs: vhs, bash, go and jq — the hidden setup rebuilds bin/cooldeck, so the
+# Needs: vhs, bash, go and jq - the hidden setup rebuilds bin/cooldeck, so the
 # recording always shows the working tree rather than a stale binary. jq only
 # pretty-prints the responses; the protocol traffic itself is unedited.
 # Everything runs against `--demo`: no Coolify instance, no network, no token.
 # COOLDECK_CONFIG_DIR points at a throwaway directory under /tmp, so your real
 # config and keyring entries are never read or written.
-# The JSON-RPC frames typed on screen are what an MCP client sends — a real
+# The JSON-RPC frames typed on screen are what an MCP client sends - a real
 # handshake against the real server, not a mock.
 # VHS: https://github.com/charmbracelet/vhs
 

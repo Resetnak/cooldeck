@@ -18,7 +18,7 @@ func newMCPCommand(opts *options) *cobra.Command {
 The server is read-only by default: an agent can list applications, read runtime
 and deployment logs and inspect the instance, but cannot change anything. Pass
 --allow-mutations to also expose deploy, restart, start and stop. There is no
-confirmation prompt behind those — whatever drives the server can run them
+confirmation prompt behind those - whatever drives the server can run them
 unattended.
 
 Run it against --demo to try the tools offline with deterministic fake data.

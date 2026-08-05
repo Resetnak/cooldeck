@@ -129,7 +129,7 @@ func (m *Model) runDeleteInstance(action pendingAction) tea.Cmd {
 	m.refreshDiagnostics()
 
 	// Defer the follow-up (toast + optional switch) to a message so switchInstance
-	// is not started while building a tea.Batch — that would set operationInFlight
+	// is not started while building a tea.Batch - that would set operationInFlight
 	// before the event loop runs the command.
 	next := ""
 	empty := false

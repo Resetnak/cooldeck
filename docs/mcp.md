@@ -2,7 +2,7 @@
 
 `cooldeck mcp` serves your Coolify instance to an agent over the
 [Model Context Protocol](https://modelcontextprotocol.io), on stdin/stdout. It is the same binary,
-the same config file and the same token the TUI uses — there is no second service to install and
+the same config file and the same token the TUI uses - there is no second service to install and
 nothing listening on a port.
 
 **It is read-only until you say otherwise.** An agent can see what is running and read logs; it
@@ -17,7 +17,7 @@ cannot deploy, restart, start or stop anything unless you launch the server with
 cooldeck mcp --demo
 ```
 
-This serves the deterministic demo fleet — no Coolify instance, no network, no token. The process
+This serves the deterministic demo fleet - no Coolify instance, no network, no token. The process
 waits on stdin and speaks JSON-RPC, so a bare terminal will look like it hangs: that is correct, and
 `Ctrl+C` exits. To see it answer, point a client at it (below) or send it a request by hand:
 
@@ -40,7 +40,7 @@ claude mcp add cooldeck -- cooldeck mcp
 ```
 
 Add `--scope user` to make it available in every project rather than only the current one, and see
-`claude mcp --help` for the rest. To let the agent operate as well as observe, append the flag —
+`claude mcp --help` for the rest. To let the agent operate as well as observe, append the flag -
 everything after `--` is the command Claude Code runs:
 
 ```bash
@@ -61,7 +61,7 @@ claude mcp add cooldeck -- cooldeck mcp --allow-mutations
 ```
 
 `command` must be resolvable by the client, which does not necessarily inherit your shell's `PATH`.
-If the server fails to start, use an absolute path — `which cooldeck` will tell you it.
+If the server fails to start, use an absolute path - `which cooldeck` will tell you it.
 
 ### Several instances at once
 
@@ -87,12 +87,12 @@ That pairing is worth copying: production observed, staging operated.
 
 | Tool | Arguments | Returns |
 | :--- | :--- | :--- |
-| `list_applications` | — | Every application with status, project, environment and last deployment, plus the deployments in flight. **Start here** — the other tools take the UUIDs it returns. |
+| `list_applications` | - | Every application with status, project, environment and last deployment, plus the deployments in flight. **Start here** - the other tools take the UUIDs it returns. |
 | `get_application` | `application_uuid` | Full detail for one application: configuration, domains, health check, recent deployments. |
 | `list_deployments` | `application_uuid`, `limit` *(optional, default 20, max 200)* | Deployment history, newest first, with status, commit and duration. |
 | `get_runtime_logs` | `application_uuid`, `lines` *(optional, default 100, max 2000)* | What the running container is printing now. |
-| `get_deployment_logs` | `deployment_uuid` | The build log — where a failed deployment explains itself. |
-| `get_instance_info` | — | URL, version, team, measured latency and which operations the token is allowed to perform. Never includes the token. |
+| `get_deployment_logs` | `deployment_uuid` | The build log - where a failed deployment explains itself. |
+| `get_instance_info` | - | URL, version, team, measured latency and which operations the token is allowed to perform. Never includes the token. |
 
 ### Only with `--allow-mutations`
 
@@ -147,10 +147,10 @@ Swap `--demo` for your real flags once you trust it.
 | :--- | :--- |
 | Client reports the server failed to start | `command` is not on the client's `PATH`. Use the absolute path from `which cooldeck`. |
 | `no configuration file found` | The server loads the same config as the TUI. Run `cooldeck setup` first, or pass `--config`, or try `--demo`. |
-| Only six tools are listed | That is the read-only default. Add `--allow-mutations` to the launch command and restart the client — the tool list is sent once, at connection. |
+| Only six tools are listed | That is the read-only default. Add `--allow-mutations` to the launch command and restart the client - the tool list is sent once, at connection. |
 | A tool answers "Permission denied" | The token lacks that scope. The error carries Coolify's own suggestion; fix it in Coolify's *profile → API tokens* rather than in cooldeck. |
 | A tool answers "Request timed out" | Every call is bounded at 20 seconds, the same as in the TUI. A Coolify instance that slow will show the same symptom in the dashboard. |
-| Responses look truncated | The counts are capped (see the table above). Ask for a narrower window — a specific deployment's log rather than 2000 runtime lines. |
+| Responses look truncated | The counts are capped (see the table above). Ask for a narrower window - a specific deployment's log rather than 2000 runtime lines. |
 | Garbled output or a client that cannot parse anything | Something wrote to stdout, which is the protocol transport. cooldeck writes diagnostics to stderr by design; a wrapper script that echoes to stdout will corrupt the session. |
 
 For anything else, `cooldeck mcp --help`, or the
@@ -161,7 +161,7 @@ connection rather than MCP.
 
 ## How it fits
 
-The server lives in `internal/mcpserver` and implements tools against `app.Service` only — the same
+The server lives in `internal/mcpserver` and implements tools against `app.Service` only - the same
 use cases the TUI drives, with no HTTP client of its own and no imports from the TUI. Adding a tool
 means adding a `Service` method, never an API call in the adapter. See
 [architecture.md](architecture.md).

@@ -63,7 +63,7 @@ func HumanizeDuration(d time.Duration) string {
 // HumanizeTime renders an absolute local time for detail screens.
 func HumanizeTime(t time.Time) string {
 	if t.IsZero() {
-		return "—"
+		return "-"
 	}
 	return t.Local().Format("2006-01-02 15:04:05")
 }
