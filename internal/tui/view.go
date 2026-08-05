@@ -76,7 +76,7 @@ func (m *Model) renderBody() string {
 	if m.filtering {
 		banners = append(banners, m.filterPrompt(m.layout.Width))
 	}
-	if m.logSearching {
+	if m.logSearching || m.tailSearching {
 		banners = append(banners, m.logSearchPrompt(m.layout.Width))
 	}
 	if stale := m.staleFor(); stale > 0 {
@@ -139,6 +139,9 @@ func (m *Model) renderMain(width, height int) string {
 		})
 	}
 
+	if m.screen == screenTail {
+		return m.tail.Render(th, width, height, now)
+	}
 	if m.screen == screenDetail {
 		return m.renderDetail(width, height, now)
 	}
@@ -174,7 +177,8 @@ func (m *Model) renderDetail(width, height int, now time.Time) string {
 // An empty result means there is nothing worth a column, and the caller widens
 // the main content instead.
 func (m *Model) previewContent(width, height int) string {
-	if m.section != SectionApplications || m.screen == screenDetail {
+	// Both the detail screen and the fleet tail take the full content area.
+	if m.section != SectionApplications || m.screen != screenList {
 		return ""
 	}
 	a, ok := m.apps.Selected()

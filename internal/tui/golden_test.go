@@ -178,6 +178,30 @@ func TestGoldenViews(t *testing.T) {
 			},
 		},
 		{
+			// Three applications interleaved: the tag colours and the shared
+			// log ergonomics are the whole point of the screen.
+			name: "fleet-tail", width: 160, height: 40,
+			setup: func(m *Model) {
+				m.apps.SetApplications(snapshot.Applications, snapshot.ActiveDeployments, now)
+				for _, uuid := range []string{
+					snapshot.Applications[0].UUID,
+					snapshot.Applications[1].UUID,
+					snapshot.Applications[4].UUID,
+				} {
+					m.apps.SelectUUID(uuid)
+					m.apps.ToggleMark()
+				}
+				m.openTail()
+				for _, a := range m.apps.Marked() {
+					lines, err := service.RuntimeLogs(t.Context(), a.UUID, 6)
+					if err != nil {
+						t.Fatal(err)
+					}
+					m.tail.SetLines(a.UUID, lines.Lines, now)
+				}
+			},
+		},
+		{
 			name: "instances-wide", width: 160, height: 40,
 			setup: func(m *Model) {
 				m.apps.SetApplications(snapshot.Applications, snapshot.ActiveDeployments, now)

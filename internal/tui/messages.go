@@ -79,6 +79,26 @@ type actionFailedMsg struct {
 	Err *domain.Error
 }
 
+// tailTickMsg schedules one fleet-tail source. Unlike the other request kinds
+// several are in flight at once, so the sequence number is what tells a live
+// reply from one that belongs to a tail the user has already left.
+type tailTickMsg struct {
+	Seq     uint64
+	AppUUID string
+}
+
+type tailLoadedMsg struct {
+	Seq      uint64
+	AppUUID  string
+	Snapshot app.LogSnapshot
+}
+
+type tailFailedMsg struct {
+	Seq     uint64
+	AppUUID string
+	Err     *domain.Error
+}
+
 type runtimeLogsTickMsg struct {
 	AppUUID string
 }

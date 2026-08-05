@@ -43,6 +43,8 @@ behaviour, footer hints, and the help overlay together.
 | `b` / `o` | Open primary domain / repository |
 | `c` | Copy application UUID |
 | `S` | Cycle sort (status → name → last deploy) |
+| `space` | Mark / unmark for the fleet tail |
+| `t` | Tail the marked applications |
 | `/` | Filter (`status:`, `project:`, `env:`, `branch:`, free text) |
 
 ## Detail & logs
@@ -67,6 +69,17 @@ behaviour, footer hints, and the help overlay together.
 | `Enter` | Open build log for selected deployment |
 | `a` | Toggle active-only / recent history |
 | `c` | Copy deployment UUID |
+
+## Fleet tail
+
+| Keys | Action |
+|------|--------|
+| `space` | Pause / resume polling |
+| `f` | Follow the newest line |
+| `w` | Wrap long lines |
+| `/` | Search the merged buffer |
+| `c` | Copy the buffer |
+| `esc` / `q` | Back to applications |
 
 ## Instances
 
