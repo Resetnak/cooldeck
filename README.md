@@ -253,7 +253,7 @@ curl -fsSL https://raw.githubusercontent.com/Resetnak/cooldeck/main/install.sh |
 ```
 
 Detects your platform, **verifies the checksum**, and drops the binary in `~/.local/bin`. Override
-with `COOLDECK_INSTALL_DIR`, or pin a version with `COOLDECK_VERSION=v0.2.0`. Read it first if you
+with `COOLDECK_INSTALL_DIR`, or pin a version with `COOLDECK_VERSION=v0.2.1`. Read it first if you
 would rather not pipe a script into a shell - [it is short](install.sh).
 
 ### Option 3: Linux packages
