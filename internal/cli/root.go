@@ -66,6 +66,7 @@ func newRootCommand(opts *options) *cobra.Command {
 	cmd.AddCommand(newAuthCommand(opts))
 	cmd.AddCommand(newSetupCommand())
 	cmd.AddCommand(newThemeCommand(opts))
+	cmd.AddCommand(newMCPCommand(opts))
 	return cmd
 }
 
