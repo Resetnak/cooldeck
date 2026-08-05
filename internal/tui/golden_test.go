@@ -167,6 +167,17 @@ func TestGoldenViews(t *testing.T) {
 			},
 		},
 		{
+			// The active-only queue is where the progress bars live: every row
+			// is in flight, so every row has one.
+			name: "deployments-active", width: 160, height: 40,
+			setup: func(m *Model) {
+				m.apps.SetApplications(snapshot.Applications, snapshot.ActiveDeployments, now)
+				m.section = SectionDeployments
+				m.deployments.SetItems(snapshot.RecentDeployments, now)
+				m.deployments.ToggleActiveOnly()
+			},
+		},
+		{
 			name: "instances-wide", width: 160, height: 40,
 			setup: func(m *Model) {
 				m.apps.SetApplications(snapshot.Applications, snapshot.ActiveDeployments, now)

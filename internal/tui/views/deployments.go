@@ -1,6 +1,7 @@
 package views
 
 import (
+	"slices"
 	"strconv"
 	"time"
 
@@ -33,6 +34,12 @@ func (v *Deployments) SetItems(items []domain.Deployment, at time.Time) {
 		keep = d.UUID
 	}
 	v.items = append([]domain.Deployment{}, items...)
+	// A queue leads with what is happening now. Coolify returns newest first,
+	// which buries an in-flight build under yesterday's history the moment the
+	// history is longer than the screen - and that build is the row the user
+	// opened this section to look at. Sorting here rather than in visible()
+	// means it costs one pass per refresh instead of one per frame.
+	slices.SortStableFunc(v.items, activeFirst)
 	v.loaded = true
 	v.loadedAt = at
 	v.selected = 0
@@ -153,21 +160,32 @@ func (v *Deployments) Render(th *theme.Theme, width, height int, focused bool, n
 		)
 	}
 
+	// The baseline is taken from the whole loaded history, not just the visible
+	// rows, so filtering to active-only does not remove the very deployments the
+	// expectation is computed from.
+	showProgress := anyDeploymentActive(visible)
+
 	rows := make([]components.Row, 0, len(visible))
 	for _, d := range visible {
 		name := d.ApplicationName
 		if name == "" {
 			name = d.ApplicationUUID
 		}
-		rows = append(rows, components.Row{Cells: []string{
+		cells := []string{
 			th.DeploymentStatusText(d.Status),
 			components.OrDash(name),
 			components.OrDash(d.ShortCommit()),
 			domain.HumanizeAge(d.CreatedAt, now),
 			domain.HumanizeDuration(d.Duration(now)),
+		}
+		if showProgress {
+			cells = append(cells, deploymentProgressCell(th, d, v.items, now))
+		}
+		cells = append(cells,
 			components.OrDash(d.Trigger),
 			components.OrDash(d.CommitMessage),
-		}})
+		)
+		rows = append(rows, components.Row{Cells: cells})
 	}
 
 	header := th.Title.Render("DEPLOYMENTS")
@@ -177,16 +195,23 @@ func (v *Deployments) Render(th *theme.Theme, width, height int, focused bool, n
 	}
 	meta := th.Subtle.Render(strconv.Itoa(len(visible)) + " shown  ·  " +
 		strconv.Itoa(v.ActiveCount()) + " active  ·  " + mode + "  ·  a toggle")
+	columns := []components.Column{
+		{Title: "Status", MinWidth: 12, Priority: 0},
+		{Title: "Application", MinWidth: 14, Flex: 1, Priority: 0},
+		{Title: "Commit", MinWidth: 8, Priority: 1},
+		{Title: "Started", MinWidth: 10, Priority: 2},
+		{Title: "Duration", MinWidth: 10, Priority: 2},
+	}
+	if showProgress {
+		columns = append(columns, progressColumn)
+	}
+	columns = append(columns,
+		components.Column{Title: "Trigger", MinWidth: 8, Priority: 3},
+		components.Column{Title: "Message", MinWidth: 16, Flex: 1, Priority: 4},
+	)
+
 	table := components.Table{
-		Columns: []components.Column{
-			{Title: "Status", MinWidth: 12, Priority: 0},
-			{Title: "Application", MinWidth: 14, Flex: 1, Priority: 0},
-			{Title: "Commit", MinWidth: 8, Priority: 1},
-			{Title: "Started", MinWidth: 10, Priority: 2},
-			{Title: "Duration", MinWidth: 10, Priority: 2},
-			{Title: "Trigger", MinWidth: 8, Priority: 3},
-			{Title: "Message", MinWidth: 16, Flex: 1, Priority: 4},
-		},
+		Columns:  columns,
 		Rows:     rows,
 		Selected: v.selected,
 		Focused:  focused,
