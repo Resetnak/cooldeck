@@ -1,0 +1,40 @@
+ COOLDECK  Demo   o connected    DEMO                                                                                            12 apps  |  refreshed just now
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ RESOURCES               │DEPLOYMENTS
+                         │33 shown  ·  2 active  ·  recent history  ·  a toggle
+   Applications      12  │
+ > Deployments       33  │  STATUS       APPLICATION                             COMMIT   STARTED    DURATION   TRIGGER  MESSAGE
+   Instances          1  │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   Diagnostics           │> + Finished   stimustop-api                           6b3514c  3m ago     1m 12s     api      chore(deps): bump base image to alpine.
+                         │  + Finished   stimustop-api                           9aa0731  13h 3m ago 1m 13s     webhook  refactor: extract deployment mapper
+                         │  + Finished   stimustop-api                           83f3008  3d 1h ago  1m 52s     webhook  fix: handle empty response from upstrea
+                         │  + Finished   stimustop-web                           4392015  3m ago     57s        api      chore(deps): bump base image to alpine.
+                         │  + Finished   stimustop-web                           f5ef120  1d 19h ago 1m 21s     manual   chore(deps): bump base image to alpine.
+                         │  + Finished   stimustop-web                           ccafa8b  2d 2h ago  1m 37s     manual   chore(deps): bump base image to alpine.
+                         │  * Running    resetnak-web                            6c880be  21s ago    21s        api      fix: handle empty response from upstrea
+                         │  x Failed     resetnak-web                            f54ced3  18h ago    1m 31s     manual   fix: handle empty response from upstrea
+                         │  + Finished   resetnak-web                            0134d36  2d 13h ago 2m 2s      api      chore(deps): bump base image to alpine.
+                         │  x Failed     maintenea-worker                        73e71c6  2h ago     1m 9s      manual   fix: correct timezone handling in repor
+                         │  + Finished   maintenea-worker                        9e42a27  1d 17h ago 28s        webhook  docs: document the new environment var.
+                         │  + Finished   maintenea-worker                        555fb7e  4d 5h ago  1m 46s     webhook  fix: correct timezone handling in repor
+                         │  + Finished   maintenea-api                           2099246  47m ago    1m 43s     manual   docs: document the new environment var.
+                         │  + Finished   maintenea-api                           09d4602  18h 47m... 56s        manual   docs: document the new environment var.
+                         │  + Finished   maintenea-api                           6868979  2d 4h ago  1m 21s     webhook  docs: document the new environment var.
+                         │  + Finished   weektraq-api                            b87b02d  1d 2h ago  1m 39s     manual   ci: run tests on arm64 too
+                         │  + Finished   weektraq-api                            848012c  3d 9h ago  2m 28s     api      docs: document the new environment var.
+                         │  x Failed     weektraq-api                            50a86d8  4d 15h ago 1m 32s     manual   docs: document the new environment var.
+                         │  + Finished   weektraq-web                            c7633a1  1d 2h ago  1m 44s     manual   feat: add weekly summary endpoint
+                         │  + Finished   weektraq-web                            3c74e2d  2d 23h ago 2m 18s     api      feat: add weekly summary endpoint
+                         │  + Finished   weektraq-web                            2ca98cc  4d ago     2m 31s     api      docs: document the new environment var.
+                         │  + Finished   logen-ingest-service-with-a-very-lon... 0327dec  5d ago     2m 18s     webhook  chore(deps): bump base image to alpine.
+                         │  x Failed     logen-ingest-service-with-a-very-lon... aa044e8  5d 8h ago  2m 22s     webhook  docs: document the new environment var.
+                         │  + Finished   logen-ingest-service-with-a-very-lon... 6ad87f2  6d 12h ago 1m 41s     webhook  refactor: extract deployment mapper
+                         │  + Finished   logen-dashboard                         7d1e6e8  1m 30s ago 50s        api      chore(deps): bump base image to alpine.
+                         │  + Finished   logen-dashboard                         cb97e32  10h 1m ago 54s        api      refactor: extract deployment mapper
+                         │  + Finished   logen-dashboard                         dbb3ba7  1d 21h ago 2m 21s     api      fix: handle empty response from upstrea
+                         │  + Finished   nosmoko                                 a900640  11d ago    1m 52s     webhook  fix: handle empty response from upstrea
+                         │  + Finished   nosmoko                                 35d4a45  13d 17h... 32s        manual   feat: add weekly summary endpoint
+                         │  + Finished   nosmoko                                 63538d5  15d 2h ago 36s        manual   fix: correct timezone handling in repor
+                         │  . Queued     shredloq                                a5f785b  just now   4s         api      refactor: extract deployment mapper
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ↑↓  select   enter  open log   a  active filter   c  copy UUID   R  refresh   1  apps   ?  help                                                          1/33
