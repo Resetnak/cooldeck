@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/) once tagged
 releases begin.
 
-## [Unreleased]
+## [0.2.1] - 2026-08-05
 
 ### Fixed
 
@@ -18,6 +18,13 @@ releases begin.
   applications list's deploy and restart hints
 - Linux package install commands pointed at `/releases/latest/download/cooldeck_0.1.2_…`, a URL that
   404s after any release; they now resolve the current tag first
+
+### Added
+
+- `assets/tail.gif` and a dedicated fleet tail section in both READMEs, rendered from `tail.tape`
+- `assets/social-preview.png`, rendered from `social.tape`
+- The security section now states what CoolDeck does not protect you from: a `plaintext` token
+  source, `insecure_skip_verify`, and MCP mutations running without a confirmation
 
 ## [0.2.0] - 2026-08-05
 
@@ -78,6 +85,7 @@ Packaging only - the binary is identical to 0.1.0.
 - Tokens excluded from logs, toasts, and diagnostics
 - Browser open restricted to http(s) URLs
 
+[0.2.1]: https://github.com/Resetnak/cooldeck/releases/tag/v0.2.1
 [0.2.0]: https://github.com/Resetnak/cooldeck/releases/tag/v0.2.0
 [0.1.2]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.1
