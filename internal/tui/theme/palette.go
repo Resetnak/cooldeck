@@ -47,9 +47,10 @@ type Palette struct {
 	SelectionDim color.Color
 }
 
-// DarkPalette is tuned for dark terminals. Contrast ratios for text on
-// Background are kept above 7:1, and above 4.5:1 for muted text, so the UI
-// stays readable on a dimmed laptop screen over SSH.
+// DarkPalette is tuned for dark terminals, so the UI stays readable on a
+// dimmed laptop screen over SSH. Every foreground/background pair the UI
+// actually renders clears WCAG AA (4.5:1); TestPaletteContrast enforces that
+// against the real pair list rather than leaving it to a comment.
 var DarkPalette = Palette{
 	Background:    lipgloss.Color("#0B0E14"),
 	Surface:       lipgloss.Color("#11161F"),
@@ -62,7 +63,7 @@ var DarkPalette = Palette{
 
 	Text:       lipgloss.Color("#DCE3EE"),
 	TextMuted:  lipgloss.Color("#8B97AC"),
-	TextSubtle: lipgloss.Color("#5A6579"),
+	TextSubtle: lipgloss.Color("#7E8BA3"),
 	TextInvert: lipgloss.Color("#0B0E14"),
 
 	Primary:   lipgloss.Color("#A78BFA"),
@@ -92,7 +93,7 @@ var LightPalette = Palette{
 
 	Text:       lipgloss.Color("#151A22"),
 	TextMuted:  lipgloss.Color("#5B6472"),
-	TextSubtle: lipgloss.Color("#8C95A4"),
+	TextSubtle: lipgloss.Color("#636C7B"),
 	TextInvert: lipgloss.Color("#FFFFFF"),
 
 	Primary:   lipgloss.Color("#6D4AFF"),
@@ -109,6 +110,11 @@ var LightPalette = Palette{
 
 // DraculaPalette implements the Dracula colour scheme.
 // Reference: https://draculatheme.com/contribute
+//
+// Deviation: TextSubtle is Dracula's "Comment" #6272A4 lightened to #96A1C2.
+// The published value is 2.51:1 on SurfaceRaised, and TextSubtle carries real
+// data here (log timestamps, counters, the disabled-capability marker), so
+// legibility wins over exact fidelity. Every other value is upstream's.
 var DraculaPalette = Palette{
 	Background:    lipgloss.Color("#282A36"),
 	Surface:       lipgloss.Color("#2D303D"),
@@ -121,7 +127,7 @@ var DraculaPalette = Palette{
 
 	Text:       lipgloss.Color("#F8F8F2"),
 	TextMuted:  lipgloss.Color("#BFBFBF"),
-	TextSubtle: lipgloss.Color("#6272A4"),
+	TextSubtle: lipgloss.Color("#96A1C2"),
 	TextInvert: lipgloss.Color("#282A36"),
 
 	Primary:   lipgloss.Color("#BD93F9"),
@@ -138,6 +144,10 @@ var DraculaPalette = Palette{
 
 // CatppuccinPalette implements the Catppuccin Mocha flavour.
 // Reference: https://github.com/catppuccin/catppuccin
+//
+// Deviation: TextSubtle is Mocha's "overlay0" #6C7086 lightened to #989BAA,
+// which the published value reaches only 2.57:1 on SurfaceRaised. Everything
+// else is upstream's.
 var CatppuccinPalette = Palette{
 	Background:    lipgloss.Color("#1E1E2E"),
 	Surface:       lipgloss.Color("#232334"),
@@ -150,7 +160,7 @@ var CatppuccinPalette = Palette{
 
 	Text:       lipgloss.Color("#CDD6F4"),
 	TextMuted:  lipgloss.Color("#A6ADC8"),
-	TextSubtle: lipgloss.Color("#6C7086"),
+	TextSubtle: lipgloss.Color("#989BAA"),
 	TextInvert: lipgloss.Color("#1E1E2E"),
 
 	Primary:   lipgloss.Color("#CBA6F7"),
@@ -167,6 +177,12 @@ var CatppuccinPalette = Palette{
 
 // NordPalette implements the Nord colour scheme.
 // Reference: https://www.nordtheme.com/docs/colors-and-palettes
+//
+// Deviations: Nord is the dimmest scheme cooldeck ships, and four tokens fall
+// below 4.5:1 on this background. TextSubtle #737D8C -> #A9AFB8 (2.42:1),
+// Secondary nord9 #81A1C1 -> #98B2CC (3.74:1), Error nord11 #BF616A ->
+// #D08A91 (3.05:1) and Info nord10 #5E81AC -> #849FC0 (3.10:1). Error and
+// Info also back the filled badges, so the same lift fixes both.
 var NordPalette = Palette{
 	Background:    lipgloss.Color("#2E3440"),
 	Surface:       lipgloss.Color("#333946"),
@@ -179,15 +195,15 @@ var NordPalette = Palette{
 
 	Text:       lipgloss.Color("#ECEFF4"),
 	TextMuted:  lipgloss.Color("#D8DEE9"),
-	TextSubtle: lipgloss.Color("#737D8C"),
+	TextSubtle: lipgloss.Color("#A9AFB8"),
 	TextInvert: lipgloss.Color("#2E3440"),
 
 	Primary:   lipgloss.Color("#88C0D0"),
-	Secondary: lipgloss.Color("#81A1C1"),
+	Secondary: lipgloss.Color("#98B2CC"),
 	Success:   lipgloss.Color("#A3BE8C"),
 	Warning:   lipgloss.Color("#EBCB8B"),
-	Error:     lipgloss.Color("#BF616A"),
-	Info:      lipgloss.Color("#5E81AC"),
+	Error:     lipgloss.Color("#D08A91"),
+	Info:      lipgloss.Color("#849FC0"),
 
 	Selection:     lipgloss.Color("#434C5E"),
 	SelectionText: lipgloss.Color("#ECEFF4"),
@@ -196,6 +212,10 @@ var NordPalette = Palette{
 
 // GruvboxPalette implements the Gruvbox Dark colour scheme.
 // Reference: https://github.com/morhetz/gruvbox
+//
+// Deviations: TextSubtle #7C6F64 -> #A9A199 (2.38:1), Secondary "dark aqua"
+// #458588 -> #7FABAD (2.74:1), and Error #FB4934 -> #FB5642, which only needed
+// nudging from 4.29:1. The rest is upstream's.
 var GruvboxPalette = Palette{
 	Background:    lipgloss.Color("#282828"),
 	Surface:       lipgloss.Color("#2D2D2D"),
@@ -208,14 +228,14 @@ var GruvboxPalette = Palette{
 
 	Text:       lipgloss.Color("#EBDBB2"),
 	TextMuted:  lipgloss.Color("#BDAE93"),
-	TextSubtle: lipgloss.Color("#7C6F64"),
+	TextSubtle: lipgloss.Color("#A9A199"),
 	TextInvert: lipgloss.Color("#282828"),
 
 	Primary:   lipgloss.Color("#D79921"),
-	Secondary: lipgloss.Color("#458588"),
+	Secondary: lipgloss.Color("#7FABAD"),
 	Success:   lipgloss.Color("#B8BB26"),
 	Warning:   lipgloss.Color("#FE8019"),
-	Error:     lipgloss.Color("#FB4934"),
+	Error:     lipgloss.Color("#FB5642"),
 	Info:      lipgloss.Color("#83A598"),
 
 	Selection:     lipgloss.Color("#504945"),
@@ -225,6 +245,10 @@ var GruvboxPalette = Palette{
 
 // TokyoNightPalette implements the Tokyo Night colour scheme.
 // Reference: https://github.com/enkia/tokyo-night-vscode-theme
+//
+// Deviation: TextSubtle #565F89 -> #898FAC. At 2.35:1 on SurfaceRaised the
+// published comment colour was the weakest pair in any palette cooldeck
+// ships. Everything else is upstream's.
 var TokyoNightPalette = Palette{
 	Background:    lipgloss.Color("#1A1B26"),
 	Surface:       lipgloss.Color("#1E2030"),
@@ -237,7 +261,7 @@ var TokyoNightPalette = Palette{
 
 	Text:       lipgloss.Color("#C0CAF5"),
 	TextMuted:  lipgloss.Color("#A9B1D6"),
-	TextSubtle: lipgloss.Color("#565F89"),
+	TextSubtle: lipgloss.Color("#898FAC"),
 	TextInvert: lipgloss.Color("#1A1B26"),
 
 	Primary:   lipgloss.Color("#7AA2F7"),

@@ -1,169 +1,358 @@
-# CoolDeck
+<div align="center">
 
-**A fast, keyboard-first terminal dashboard for [Coolify](https://coolify.io).**
+# 🎛️ CoolDeck
 
-Monitor deployments, open logs, restart apps, and switch instances — without leaving the terminal.
+**Your Coolify fleet, one keystroke away.**
 
-[![CI](https://github.com/resetnak/cooldeck/actions/workflows/ci.yml/badge.svg)](https://github.com/resetnak/cooldeck/actions/workflows/ci.yml)
-[![Go](https://img.shields.io/github/go-mod/go-version/resetnak/cooldeck)](go.mod)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+Deployments, logs, restarts and instance switching for [Coolify](https://coolify.io) —
+from the terminal you already have open.
 
-> 🇨🇿 **Česká verze:** [README.cs.md](README.cs.md)
+*No browser tab. No MCP hop. No token on screen. On purpose.*
+
+<br>
+
+[![CI](https://github.com/Resetnak/cooldeck/actions/workflows/ci.yml/badge.svg)](https://github.com/Resetnak/cooldeck/actions/workflows/ci.yml)
+[![Security](https://github.com/Resetnak/cooldeck/actions/workflows/security.yml/badge.svg)](https://github.com/Resetnak/cooldeck/actions/workflows/security.yml)
+[![Go](https://img.shields.io/badge/Go-1.26.5%2B-00ADD8?logo=go&logoColor=white)](go.mod)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platforms](https://img.shields.io/badge/tested-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-yellow)](.github/workflows/ci.yml)
+[![Coolify API](https://img.shields.io/badge/Coolify-API%20v1-8B5CF6)](docs/coolify-api.md)
+[![Status](https://img.shields.io/badge/status-pre--release-orange)](CHANGELOG.md)
+
+<br>
+
+**English** · [Čeština](README.cs.md)
+
+[Quick Start](#-quick-start) · [Features](#-key-features) · [Comparison](#-how-it-compares) · [Keyboard Shortcuts](#-keyboard-shortcuts) · [Installation](#-installation) · [Configuration](#-configuration) · [Security](#-security) · [Contributing](CONTRIBUTING.md)
+
+</div>
+
+<div align="center">
+  <img src="assets/demo.gif" alt="CoolDeck in demo mode: filtering a degraded application, searching its runtime logs, confirming a deploy, and watching the new deployment appear in the active queue" width="900">
+
+  <sub>One degraded app, start to finish: <code>/</code> to filter, <code>enter</code> for the detail, <code>l</code> for runtime logs, <code>d</code> to redeploy behind a confirmation, <code>2</code> <code>a</code> to watch it land in the active queue. Rendered from <a href="cassette.tape">cassette.tape</a>.</sub>
+</div>
+
+> ⚠️ **Pre-release.** There is no tagged release yet — build from source (it takes one command). Unit and golden tests run on Linux, macOS and Windows in CI; `--demo` needs no Coolify instance at all, so you can judge the whole UI before you hand it a token.
+
+---
+
+## 💡 Why CoolDeck?
+
+Checking whether a deploy went through should not cost you a browser tab, a login, and three clicks
+through a dashboard. **CoolDeck** puts the same fleet — statuses, deployment history, runtime logs and
+the deploy button — into a terminal window you can leave open next to your editor, and drives all of it
+from the keyboard.
+
+It talks to the Coolify REST API directly. No proxy, no agent, no daemon: one static binary that reads
+your config, pulls a token out of your OS keyring, and renders.
 
 ```text
-┌ cooldeck · production · online ────────────────────────── 12 apps · 3s ago ┐
-│ Applications │ Deployments │ Instances │ Diagnostics                        │
-│                                                                             │
-│  STATUS      APPLICATION         PROJECT / ENV     BRANCH    DEPLOYED       │
-│  ▶ Running   stimustop-api       StimuStop / prod  main      3m ago         │
-│    Failed    weektraq-web        Weektraq / stage  develop   2h ago         │
-│                                                                             │
-└ ↑↓ move  enter detail  / filter  d deploy  : commands  ? help ─────────────┘
+ COOLDECK  Demo   ● connected   DEMO                              12 apps  |  refreshed just now
+────────────────────────────────────────────────────────────────────────────────────────────────
+ RESOURCES        │ STATUS       APPLICATION       PROJECT / ENV     BRANCH   DEPLOYED │ maintenea-api
+                  │ ▲ Degraded   maintenea-api     Maintenea / prod  main      47m ago │ ▲ Degraded
+ > Applications 12│ ◐ Restarting logen-dashboard   Logen / preview   feat/…  1m 30s ago│
+   Deployments  33│ ● Running    resetnak-web      Personal / prod   main         21s  │  PRODUCTION
+   Instances     1│ ○ Queued     shredloq          Personal / prod   main          4s  │
+   Diagnostics    │ ■ Stopped    maintenea-worker  Maintenea / prod  main       2h ago │ Project  Maintenea
+                  │ ● Running    stimustop-api     StimuStop / prod  main       3m ago │ Branch   main
+────────────────────────────────────────────────────────────────────────────────────────────────
+  ↑↓ navigate   enter details   d deploy   r restart   s start/stop   / filter   ? more     1/12
 ```
 
-## Why CoolDeck?
+---
 
-| | |
-|--|--|
-| **Fast** | Direct Coolify REST API — no browser, no MCP hop |
-| **Safe** | Tokens in the OS keyring; destructive actions always confirm |
-| **Polished** | Charm v2 UI, themes, command palette, responsive layout |
-| **Demoable** | `cooldeck --demo` works offline with realistic data |
+## 🚀 Quick Start
 
-## Install
+1. **Look before you connect**: `cooldeck --demo` — the full UI on deterministic fake data, offline.
+2. **Create a Coolify API token**: in Coolify, *profile → API tokens*. Give it the least privilege you can live with (`read` plus only the write scopes you actually want).
+3. **Connect**: `cooldeck setup` walks you through URL, token and keyring storage.
+4. **Use it**: `cooldeck`. Press `?` for the key map, `:` for the command palette, `/` to filter.
 
-**Requirements:** Go **1.26.5+**
+---
+
+## ✨ Key Features
+
+- **🖥️ The whole fleet on one screen**: status, project/environment, branch, last deploy and domain for every application, with filtering (`/`) and sorting (`S`).
+- **🔎 Detail without a context switch**: overview, deployment history, runtime logs and configuration as tabs on the same screen.
+- **📜 Real log ergonomics**: follow, pause, wrap, in-buffer search with `n`/`N`, copy the match, clear the buffer, `+`/`-` to widen or narrow the line window.
+- **🚀 Operations behind a confirmation**: deploy, force deploy, restart, start/stop — every destructive action asks first, and only one mutation runs at a time.
+- **🛟 Honest about failure**: a refresh that fails keeps the last good data on screen behind a stale banner instead of blanking the list. See [When Coolify blinks](#-when-coolify-blinks).
+- **🔀 Several instances, one session**: switch fleets with `3` without restarting; add, edit and delete local instance entries from inside the TUI.
+- **⌨️ Keyboard-first, mouse-optional**: vi-flavoured bindings borrowed from `lazygit` and `k9s`, a command palette (`:` / `Ctrl+K`) for the day you forget one, and a `?` overlay that always shows the truth — every hint is generated from a single `KeyMap`.
+- **🎨 Eight themes, responsive layout**: auto, dark, light, Dracula, Catppuccin, Nord, Gruvbox, Tokyo Night; three-pane at 150+ columns, single column when the window is small.
+- **🔐 Tokens you never see**: OS keyring by default, and tokens are kept out of the UI, the logs, the toasts and the diagnostics export by construction.
+- **🧪 Offline demo mode**: `--demo` is a full implementation of the same service interface, which is also what the golden snapshot tests render.
+
+---
+
+## 🧭 How It Compares
+
+CoolDeck is not a replacement for the Coolify web UI — it is the fast path for the handful of things
+you do twenty times a day.
+
+| Tool | Great at | Where CoolDeck differs |
+| :--- | :--- | :--- |
+| **Coolify web UI** | Everything — creating resources, editing env vars, managing servers | CoolDeck is read-and-operate only, but gets you from "is it up?" to "redeployed" in a few keystrokes, with no tab switch |
+| **`curl` + `jq`** | Scripting, one-off queries | CoolDeck gives you the same API with statuses, history and logs in one live view, and refuses to let a typo trigger a production deploy without confirming |
+| **k9s / lazydocker** | The container layer underneath | CoolDeck speaks Coolify's model — applications, projects, environments, deployments — not raw containers |
+
+Everything it does is an ordinary Coolify API call, so nothing here locks you in or out of the web UI.
+
+---
+
+## 🛟 When Coolify Blinks
+
+Dashboards that clear the screen the moment a request fails are worse than useless during an incident.
+A failed refresh in CoolDeck keeps the last good snapshot, flags it as stale, and tells you how old it
+is. When the instance comes back, the next refresh heals it — no restart, and you keep your place in
+the list.
+
+<p align="center">
+  <img src="assets/outage.gif" alt="CoolDeck losing its connection: the applications list stays on screen behind an OFFLINE banner showing the age of the data, then recovers on the next refresh" width="900">
+
+  <sub>Command palette, a simulated outage (<code>F2</code> in demo mode), and the recovery. Rendered from <a href="outage.tape">outage.tape</a>.</sub>
+</p>
+
+Every API call is bounded by a 20-second timeout, every request kind is cancellable, and stale replies
+from a superseded request are dropped rather than rendered.
+
+---
+
+## 🎮 Keyboard Shortcuts
+
+### 🧭 Navigation
+| Shortcut | Action |
+| :--- | :--- |
+| `j` / `k` or `↑` / `↓` | Move selection |
+| `g` / `G` | First / last item |
+| `Ctrl+D` / `Ctrl+U` | Page down / up |
+| `Tab` / `Shift+Tab` | Next / previous pane |
+| `Enter` / `Esc` | Open / back |
+| `1` `2` `3` `4` | Applications · Deployments · Instances · Diagnostics |
+| `q` / `Ctrl+C` | Back or quit / force quit |
+
+### ⚡ Actions
+| Shortcut | Action |
+| :--- | :--- |
+| `d` / `D` | Deploy / force deploy (confirms) |
+| `r` | Restart (confirms) |
+| `s` | Start or stop (confirms) |
+| `l` / `L` | Runtime logs / build log |
+| `b` / `o` | Open primary domain / repository in the browser |
+| `c` | Copy application UUID |
+| `S` | Cycle sort: status → name → last deploy |
+| `R` | Manual refresh |
+
+### 🔍 Filter, Search & Help
+| Shortcut | Action |
+| :--- | :--- |
+| `/` | Filter applications (`status:`, `project:`, `env:`, `branch:`, free text) — or search the log buffer |
+| `:` / `Ctrl+K` | Command palette; disabled commands show *why* |
+| `?` | Help overlay with the complete key map |
+| `Ctrl+T` / `Ctrl+W` | Cycle theme / toggle compact layout |
+
+### 📜 Logs
+| Shortcut | Action |
+| :--- | :--- |
+| `Space` | Pause / resume polling |
+| `f` / `w` | Follow tail / wrap long lines |
+| `/` · `n` · `N` | Search · next match · previous match |
+| `c` | Copy the buffer, or the current match |
+| `+` / `-` | More / fewer lines fetched (this session) |
+| `Ctrl+L` | Clear the local buffer |
+
+Full map: press `?` in the app, or read [docs/keybindings.md](docs/keybindings.md).
+
+---
+
+## 📦 Installation
+
+**Requirements:** Go **1.26.5+** to build. No CGO, no runtime dependencies — the result is a single
+static binary.
+
+### Option 1: Build from source (the way, for now)
 
 ```bash
-git clone https://github.com/resetnak/cooldeck.git
+git clone https://github.com/Resetnak/cooldeck.git
 cd cooldeck
-make build
+make build          # -> bin/cooldeck, with version/commit/date baked in
 ./bin/cooldeck --demo
 ```
 
-Release binaries (Linux / macOS / Windows) ship via GoReleaser on `v*` tags.
+Then put it somewhere on your `PATH`:
 
 ```bash
-go install github.com/resetnak/cooldeck/cmd/cooldeck@latest   # when published
+install -m 0755 bin/cooldeck ~/.local/bin/cooldeck    # macOS / Linux
 ```
 
-## 60-second start
+### Option 2: `go install`
 
 ```bash
-# 1) Explore without Coolify
-cooldeck --demo
-
-# 2) Real instance — interactive wizard
-cooldeck setup
-
-# 3) Daily use
-cooldeck
-cooldeck --instance production
-cooldeck --theme catppuccin
+go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
 ```
 
-**Coolify token:** create an API token in Coolify (profile → API tokens). Prefer least privilege (`read` + only the write scopes you need).
+> ℹ️ This works once the repository is public; until then, use Option 1.
 
-## Features
+### Option 3: Release binaries
 
-- **Applications** — status, project/env, branch, last deploy, domain; filter & sort
-- **Detail** — overview, deployment history, runtime logs, configuration
-- **Logs** — follow / pause / wrap / search / copy / clear / `+/-` line window
-- **Actions** — deploy, force deploy, restart, start/stop (with confirmation)
-- **Deployments** — recent history + active-only filter (`a`)
-- **Instances** — mid-session switch, test connection, **add / edit / delete** local config
-- **Diagnostics** — environment dump; copy or export (no secrets)
-- **Command palette** (`:` / `Ctrl+K`) and **help** (`?`)
-- **Themes** — auto, dark, light, Dracula, Catppuccin, Nord, Gruvbox, Tokyo Night
+Release archives for Linux, macOS and Windows (`amd64` & `arm64`) are produced by
+[GoReleaser](.goreleaser.yaml) from `v*` tags, with a `checksums.txt` alongside them. No tag has been
+pushed yet, so there is nothing to download today — watch [Releases](https://github.com/Resetnak/cooldeck/releases).
 
-## Keybindings (essentials)
+---
 
-| Keys | Action |
-|:-----|:-------|
-| `j` `k` · `↑` `↓` | Move |
-| `enter` · `esc` | Open · back |
-| `/` | Filter or log search |
-| `:` · `Ctrl+K` | Command palette |
-| `?` | Help |
-| `1`–`4` | Apps · Deploys · Instances · Diagnostics |
-| `d` `D` `r` `s` | Deploy · force · restart · start/stop |
-| `l` `L` | Runtime logs · build log |
-| `c` | Copy UUID / logs |
-| `Ctrl+T` · `Ctrl+W` | Theme · compact mode |
+## ⚙️ Configuration
 
-Full map: in-app `?` or [docs/keybindings.md](docs/keybindings.md).
-
-## Configuration
+CoolDeck reads one TOML file. Find it — and check it — with:
 
 ```bash
 cooldeck config path
 cooldeck config validate
 ```
 
+| OS | Default directory |
+| :--- | :--- |
+| **Linux** | `$XDG_CONFIG_HOME/cooldeck` or `~/.config/cooldeck` |
+| **macOS** | `~/Library/Application Support/cooldeck` |
+| **Windows** | `%AppData%\cooldeck` |
+
 ```toml
-version = 1
+version = 1                          # schema version; a newer one is rejected, never guessed at
 default_instance = "production"
-theme = "auto"
-refresh_interval = "10s"
+theme = "auto"                       # auto|dark|light|dracula|catppuccin|nord|gruvbox|tokyo-night
+refresh_interval = "10s"             # dashboard poll (minimum 3s)
+log_refresh_interval = "2s"
+log_lines = 300                      # default log window (10–10000)
+confirm_destructive_actions = true
+confirm_deploy = false               # set true to confirm ordinary deploys too
+
+[ui]
+nerd_font = "auto"                   # auto|on|off
+compact_mode = "auto"
+mouse = true
 
 [instances.production]
 name = "Production"
 url = "https://coolify.example.com"
-token_source = "keyring"    # recommended
+token_source = "keyring"             # keyring|command|env|plaintext
 token_key = "production"
 ```
 
-Tokens: **keyring** (default via setup/auth) · `command` · `env` · `plaintext` (discouraged).  
-One-shot: `COOLDECK_TOKEN=… cooldeck`.
+`COOLDECK_CONFIG_DIR` moves the whole directory — handy for keeping experiments away from your real
+setup. Full reference: [docs/configuration.md](docs/configuration.md).
 
-Details: [docs/configuration.md](docs/configuration.md)
+### 🔑 Token sources
 
-## CLI
+Resolved in this order: `COOLDECK_TOKEN` in the environment always wins, otherwise the instance's
+`token_source` decides.
 
-```text
-cooldeck                 TUI dashboard
-cooldeck --demo          Offline demo data
-cooldeck setup           first-run wizard
-cooldeck theme           theme picker
-cooldeck auth add|status|delete <instance>
-cooldeck config path|validate
-cooldeck version
-```
-
-## Security
-
-- Tokens never appear in the UI, logs, toasts, or diagnostics
-- Log output is sanitised (no raw ANSI control sequences)
-- Only `http`/`https` URLs are opened in the browser
-- Deleting an instance removes **local** config (+ keyring entry), not Coolify resources
-
-See [SECURITY.md](SECURITY.md).
-
-## Development
+| Source | Behaviour |
+| :--- | :--- |
+| **`keyring`** | OS keychain, written by `cooldeck setup` or `cooldeck auth add` — **recommended** |
+| `command` | Runs an external command and reads the token from stdout (e.g. `["op", "read", "op://…"]`) |
+| `env` | Reads a named environment variable |
+| `plaintext` | Token in the config file (mode `0600`) — last resort |
 
 ```bash
-make check               # fmt + vet + test + build
-make test-race
-make test-update-golden  # refresh UI snapshots
-make run                 # --demo
-make bench
+cooldeck auth add production      # store a token in the keyring
+cooldeck auth status production   # is one there? (never prints it)
+COOLDECK_TOKEN=… cooldeck         # one-shot, nothing written anywhere
 ```
 
+---
+
+## 🖥️ CLI
+
+```text
+cooldeck                          the TUI dashboard
+cooldeck --demo                   offline demo data, no Coolify needed
+cooldeck --instance production    start on a specific instance
+cooldeck --theme catppuccin       theme override for this run
+cooldeck --debug                  structured debug log (redacted)
+
+cooldeck setup                    first-run wizard: URL, token, keyring
+cooldeck theme                    interactive theme picker with live preview
+cooldeck auth add|status|delete <instance>
+cooldeck config path|validate
+cooldeck version                  version, commit, build date
+```
+
+---
+
+## 🔒 Security
+
+- **Tokens stay out of sight**: never rendered in the UI, never written to logs, toasts or the diagnostics export — [`internal/logging/redact.go`](internal/logging/redact.go) enforces the log side, and the diagnostics dump is secret-free by construction.
+- **Log output is sanitised**: raw ANSI control sequences from a remote log stream cannot repaint your terminal.
+- **Only `http`/`https`** URLs are ever handed to the browser.
+- **Deleting an instance** removes the *local* config entry and its keyring item. It never touches anything in Coolify.
+- **Permissions degrade gracefully**: Coolify has no permission-introspection endpoint, so CoolDeck assumes full capabilities and switches individual features off on a `403` — showing them disabled with a reason rather than hiding them.
+
+Reporting a vulnerability: [SECURITY.md](SECURITY.md).
+
+---
+
+## 🏗️ Architecture
+
+Layered so that the same use cases can back the TUI, a CLI subcommand, or a future MCP adapter:
+
+```text
+cmd/cooldeck → internal/cli      cobra, flags, config, service construction
+             → internal/tui      Bubble Tea model + views (presentation only, no I/O)
+             → internal/app      Service interface = the use cases
+               ├── app/demo      deterministic fake service (demo mode + golden tests)
+               └── coolify       HTTP client + DTO → domain mapping
+             → internal/domain, config, credentials, logging, platform, version
+```
+
+Built on [Bubble Tea / Charm v2](https://github.com/charmbracelet/bubbletea). Every TUI screen is
+covered by golden snapshots rendered from the demo service, so a layout regression fails CI instead of
+shipping.
+
 | Doc | |
-|-----|--|
-| [Architecture](docs/architecture.md) | Layers & message flow |
-| [Coolify API](docs/coolify-api.md) | Integration notes |
-| [Troubleshooting](docs/troubleshooting.md) | Common failures |
-| [Contributing](CONTRIBUTING.md) | PR workflow |
-| [Changelog](CHANGELOG.md) | What shipped |
-| [Spec](CLAUDE_CODE_COOLIFY_TUI_SPEC.md) | Full product spec |
+| :--- | :--- |
+| [Architecture](docs/architecture.md) | Layers, message flow, async lifecycle |
+| [Decisions](docs/decisions/) | Five ADRs: Go + Charm, direct REST over MCP, domain/DTO split, credential storage, responsive layout |
+| [Coolify API](docs/coolify-api.md) | Which endpoints are used and how |
+| [Configuration](docs/configuration.md) | Full schema reference |
+| [Keybindings](docs/keybindings.md) | The complete key map |
+| [Troubleshooting](docs/troubleshooting.md) | Common failures and what they mean |
+| [Changelog](CHANGELOG.md) | What has shipped |
 
-## Roadmap
+### Development
 
-**Now:** dashboard, logs, mutations, instances (switch/add/edit/delete), diagnostics, goldens, CI.
+```bash
+make check               # fmt-check + vet + test + build — run this before every PR
+make run                 # go run ./cmd/cooldeck --demo
+make test-race
+make test-update-golden  # refresh the TUI snapshots, then *read the diff*
+make lint                # staticcheck
+make bench               # view rendering benchmarks
+make vuln                # govulncheck
+```
 
-**Next:** richer in-TUI token sources beyond keyring, optional read-only services/databases/servers, MCP adapter over the same `app.Service`.
+The two GIFs in this README are generated, not hand-recorded: `vhs cassette.tape` and
+`vhs outage.tape` rebuild the binary and re-record against `--demo`, so they cannot drift from the
+working tree. Both run in a throwaway `COOLDECK_CONFIG_DIR` under `/tmp` and touch nothing of yours.
 
-## License
+---
 
-[MIT](LICENSE) · contributions welcome.
+## 🗺️ Roadmap
+
+**Shipped:** applications dashboard, detail with logs, confirmed mutations, deployments queue,
+multi-instance management, diagnostics, eight themes, demo mode, golden tests, multi-OS CI.
+
+**Next:** richer in-TUI token sources beyond the keyring, optional read-only views for services,
+databases and servers, and an MCP adapter sitting on the same `app.Service`.
+
+---
+
+## 🤝 Contributing
+
+Bug reports, feature requests and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the
+local setup, the golden-test workflow and what `make check` expects before review.
+
+## 📄 License
+
+[MIT](LICENSE) © 2026 Alexandr Rešetňak
