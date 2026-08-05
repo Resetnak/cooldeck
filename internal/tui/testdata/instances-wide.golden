@@ -1,0 +1,40 @@
+ COOLDECK  Demo   o connected    DEMO                                                                                            12 apps  |  refreshed just now
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ RESOURCES               │INSTANCES
+                         │1 configured
+   Applications      12  │
+   Deployments        0  │  NAME                                         URL                                               STATE      VERSION    LATENCY  AUTH
+ > Instances          1  │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   Diagnostics           │> > Demo (demo)                                https://coolify.demo.invalid                      online     4.0.0-demo —        demo
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │
+                         │ID demo
+                         │Team Demo Team
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ↑↓  select   enter  switch   T  test connection   a  add   e  edit   d  delete local   1  apps   ?  help                                                 Demo

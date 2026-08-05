@@ -167,6 +167,13 @@ func TestGoldenViews(t *testing.T) {
 			},
 		},
 		{
+			name: "instances-wide", width: 160, height: 40,
+			setup: func(m *Model) {
+				m.apps.SetApplications(snapshot.Applications, snapshot.ActiveDeployments, now)
+				m.section = SectionInstances
+			},
+		},
+		{
 			name: "diagnostics", width: 100, height: 28,
 			setup: func(m *Model) {
 				m.apps.SetApplications(snapshot.Applications, snapshot.ActiveDeployments, now)
