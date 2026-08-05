@@ -6,11 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/) once tagged
 releases begin.
 
-## [Unreleased]
+## [0.2.0] - 2026-08-05
 
 ### Added
 
-- Fleet tail: mark applications with `space`, press `t`, and read their runtime logs interleaved in one buffer
+- Fleet tail: mark applications with `space`, press `t`, and read their runtime logs interleaved in
+  one buffer, each line named and coloured by the application it came from
 
 ## [0.1.2] - 2026-08-05
 
@@ -44,7 +45,8 @@ Packaging only - the binary is identical to 0.1.0.
 - Command palette with fuzzy filter and disabled reasons
 - Help overlay with full key map
 - Instances section: mid-session switch, test connection, **add / edit / delete** local config
-- Deployments section: recent history with active-only filter
+- Deployments section: recent history with active-only filter, in-flight deployments first
+- Deployment progress against the median of an application's last five successful builds
 - Diagnostics section with copy and file export
 - Interactive `cooldeck setup` and `cooldeck theme` wizards
 - Theme set: auto, dark, light, Dracula, Catppuccin, Nord, Gruvbox, Tokyo Night
@@ -63,6 +65,7 @@ Packaging only - the binary is identical to 0.1.0.
 - Tokens excluded from logs, toasts, and diagnostics
 - Browser open restricted to http(s) URLs
 
+[0.2.0]: https://github.com/Resetnak/cooldeck/releases/tag/v0.2.0
 [0.1.2]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.0

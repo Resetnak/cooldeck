@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Resetnak/cooldeck/security/advisories/new
+    about: Report privately rather than in a public issue. See SECURITY.md.
+  - name: Coolify itself
+    url: https://github.com/coollabsio/coolify/issues
+    about: CoolDeck is a client. Bugs in Coolify's API or dashboard belong there.
