@@ -106,7 +106,7 @@ func stripANSI(s string) string { return ansi.Strip(s) }
 
 // Dash is what an absent value renders as, so empty cells read as intentional
 // rather than broken.
-const Dash = "—"
+const Dash = "-"
 
 // OrDash returns s, or the em dash when s is blank.
 func OrDash(s string) string {

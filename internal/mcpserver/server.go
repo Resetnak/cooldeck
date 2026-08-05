@@ -130,7 +130,7 @@ func New(opts Options) *mcp.Server {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name: "get_runtime_logs",
-		Description: "Runtime logs of a running application — what the container is printing now. " +
+		Description: "Runtime logs of a running application - what the container is printing now. " +
 			"Use this to diagnose an application that is up but misbehaving. For why a build " +
 			"failed, use get_deployment_logs instead.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, args logArgs) (*mcp.CallToolResult, app.LogSnapshot, error) {
@@ -150,7 +150,7 @@ func New(opts Options) *mcp.Server {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name: "get_deployment_logs",
-		Description: "Build and deployment log for one deployment — this is where a failed " +
+		Description: "Build and deployment log for one deployment - this is where a failed " +
 			"build explains itself.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, args deploymentArgs) (*mcp.CallToolResult, app.LogSnapshot, error) {
 		return call(ctx, func(ctx context.Context) (app.LogSnapshot, error) {
@@ -212,7 +212,7 @@ func Run(ctx context.Context, opts Options) error {
 }
 
 // toolError turns a domain error into the message the agent sees. Error() alone
-// drops the title and the suggestion, which is the actionable half — an agent
+// drops the title and the suggestion, which is the actionable half - an agent
 // that is told "the token lacks permission, check its scope in Coolify" can
 // stop and report, where a bare "403" invites a retry loop.
 func toolError(err error) error {
@@ -228,7 +228,7 @@ func toolError(err error) error {
 	}
 	b.WriteString(derr.Error())
 	if derr.Suggestion != "" {
-		b.WriteString(" — ")
+		b.WriteString(" - ")
 		b.WriteString(derr.Suggestion)
 	}
 	return errors.New(b.String())

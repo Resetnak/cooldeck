@@ -116,13 +116,13 @@ func (v *Instances) Render(th *theme.Theme, width, height int, focused bool, now
 			name += " (demo)"
 		}
 		state := connectionLabel(th, item.Connection)
-		latency := "—"
+		latency := "-"
 		if item.Latency > 0 {
 			latency = item.Latency.Round(time.Millisecond).String()
 		}
 		auth := item.TokenSource
 		if auth == "" {
-			auth = "—"
+			auth = "-"
 		}
 		rows = append(rows, components.Row{Cells: []string{
 			name,

@@ -4,17 +4,17 @@
   STATUS       APPLICATION            PROJECT / ENV        BRANCH       DEPLOYED DOMAIN
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 > ! Degraded   * maintenea-api        Maintenea / produ... main          47m ago api.maintenea.dev
-  * Restarting logen-dashboard        Logen / preview      feat/ch... 1m 30s ago —
+  * Restarting logen-dashboard        Logen / preview      feat/ch... 1m 30s ago -
   * Running    * resetnak-web         Personal / produc... main              21s resetnak.cz
   . Queued     * shredloq             Personal / produc... main               4s shredloq.com
-  # Stopped    * mainte+----------------------------------------------------+ago —
+  # Stopped    * mainte+----------------------------------------------------+ago -
   # Stopped    weektraq|                                                    |ago staging.weektraq.ap
   o Running    * logen-|  Deploy application?                               |ago ingest.logen.examp.
   o Running    * nosmok|                                                    |ago nosmoko.app
   o Running    * stimus|  Application: stimustop-api                        |ago api.stimustop.com
   o Running    * stimus|                                                    |ago stimustop.com
   o Running    weektraq|    enter confirm      esc cancel                   |ago staging-api.weektr.
-  ? Unknown    mpd-api |                                                    |  — —
+  ? Unknown    mpd-api |                                                    |  - -
                        +----------------------------------------------------+
 
 

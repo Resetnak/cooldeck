@@ -1,10 +1,10 @@
-# outage.tape — VHS script that renders assets/outage.gif, the clip about what
+# outage.tape - VHS script that renders assets/outage.gif, the clip about what
 # CoolDeck does when Coolify stops answering.
 # Regenerate from the repo root:  vhs outage.tape
 #
 # Same throwaway setup as cassette.tape: `--demo` data, an isolated
 # COOLDECK_CONFIG_DIR under /tmp, no network and no token. The outage itself is
-# simulated by the demo service's F2 switch, so the clip is reproducible — the
+# simulated by the demo service's F2 switch, so the clip is reproducible - the
 # point being that a failed refresh keeps the last good snapshot on screen and
 # adds a stale banner instead of wiping the list.
 # VHS: https://github.com/charmbracelet/vhs
@@ -40,7 +40,7 @@ Enter
 Sleep 4s
 Show
 
-# --- ':' — every action also has a name, for the days you forget the key ---
+# --- ':' - every action also has a name, for the days you forget the key ---
 Sleep 800ms
 Type ":"
 Sleep 700ms

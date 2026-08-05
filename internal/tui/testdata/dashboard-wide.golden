@@ -3,17 +3,17 @@
  RESOURCES               │  STATUS       APPLICATION         PROJECT / ENV     BRANCH      DEPLOYED DOMAIN          +----------------------------------------+
                          │──────────────────────────────────────────────────────────────────────────────────────────| maintenea-api                          |
  > Applications      12  │> ! Degraded   * maintenea-api     Maintenea / pr... main         47m ago api.maintenea.de| ! Degraded                             |
-   Deployments        0  │  * Restarting logen-dashboard     Logen / preview   feat/c... 1m 30s ago —               |                                        |
+   Deployments        0  │  * Restarting logen-dashboard     Logen / preview   feat/c... 1m 30s ago -               |                                        |
    Instances          1  │  * Running    * resetnak-web      Personal / pro... main             21s resetnak.cz     |  PRODUCTION                            |
    Diagnostics           │  . Queued     * shredloq          Personal / pro... main              4s shredloq.com    |                                        |
-                         │  # Stopped    * maintenea-worker  Maintenea / pr... main          2h ago —               | Project    Maintenea                   |
+                         │  # Stopped    * maintenea-worker  Maintenea / pr... main          2h ago -               | Project    Maintenea                   |
                          │  # Stopped    weektraq-web        Weektraq / sta... develop    1d 2h ago staging.weektra.| Env        production                  |
                          │  o Running    * logen-ingest-s... Logen / produc... main          5d ago ingest.logen.ex.| Server     hetzner-nbg1                |
                          │  o Running    * nosmoko           Personal / pro... main         11d ago nosmoko.app     | Branch     main                        |
                          │  o Running    * stimustop-api     StimuStop / pr... main          3m ago api.stimustop.co| Commit     2099246                     |
                          │  o Running    * stimustop-web     StimuStop / pr... main          3m ago stimustop.com   | Domain     api.maintenea.dev           |
                          │  o Running    weektraq-api        Weektraq / sta... develop    1d 2h ago staging-api.wee.|                                        |
-                         │  ? Unknown    mpd-api             MPD / development main               — —               | LAST DEPLOYMENT                        |
+                         │  ? Unknown    mpd-api             MPD / development main               - -               | LAST DEPLOYMENT                        |
                          │                                                                                          | + Finished                             |
                          │                                                                                          | 47m ago  1m 43s                        |
                          │                                                                                          | docs: document the new environment     |

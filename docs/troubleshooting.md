@@ -26,13 +26,13 @@ echo "token set?" # never cat the secret into chat logs
 ## No applications
 
 - Token may belong to another team.
-- Coolify project empty — create an app in the web UI.
-- Filter still active — press `Esc` on the list or clear with the empty-state hint.
+- Coolify project empty - create an app in the web UI.
+- Filter still active - press `Esc` on the list or clear with the empty-state hint.
 
 ## Logs empty or stuck
 
 - Pause is on (`space` to resume).
-- Follow off and scrolled up — `f` or `G` to jump to tail.
+- Follow off and scrolled up - `f` or `G` to jump to tail.
 - Increase window with `+` (session only; does not rewrite config).
 - Token may lack log read permission.
 
@@ -82,4 +82,4 @@ cooldeck --demo
 ## Reset local instance entry
 
 In **Instances** (`3`), select a row and press `d` (confirm). This deletes only
-local config and optional keyring data — not Coolify resources.
+local config and optional keyring data - not Coolify resources.
