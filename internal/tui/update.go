@@ -118,6 +118,8 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	}
 
 	switch m.screen {
+	case screenTail:
+		return m.handleTailKey(msg)
 	case screenDetail:
 		return m.handleDetailKey(msg)
 	default:
@@ -232,6 +234,13 @@ func (m *Model) handleApplicationsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) 
 	page := max(m.contentHeight()-2, 1)
 
 	switch {
+	case key.Matches(msg, m.keys.Mark):
+		if marked, ok := m.apps.ToggleMark(); ok {
+			_ = marked
+		}
+		return m, nil
+	case key.Matches(msg, m.keys.Tail):
+		return m.openTail()
 	case key.Matches(msg, m.keys.Up):
 		m.apps.Move(-1)
 	case key.Matches(msg, m.keys.Down):
@@ -780,4 +789,79 @@ func trimLastWord(s string) string {
 		return s[:i+1]
 	}
 	return ""
+}
+
+// handleTailKey drives the fleet tail. The bindings deliberately mirror the
+// single-application log view, so what the user already learned still works.
+func (m *Model) handleTailKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	if m.tailSearching {
+		return m.handleTailSearchKey(msg)
+	}
+
+	page := max(m.contentHeight()-2, 1)
+
+	switch {
+	case key.Matches(msg, m.keys.Back), key.Matches(msg, m.keys.Quit):
+		m.closeTail()
+		return m, nil
+	case key.Matches(msg, m.keys.Up):
+		m.tail.Scroll(-1)
+	case key.Matches(msg, m.keys.Down):
+		m.tail.Scroll(1)
+	case key.Matches(msg, m.keys.PageUp):
+		m.tail.Scroll(-page)
+	case key.Matches(msg, m.keys.PageDown):
+		m.tail.Scroll(page)
+	case key.Matches(msg, m.keys.LogPause):
+		if paused := m.tail.TogglePause(); !paused {
+			// Resuming re-arms every source at once; they re-stagger from the
+			// replies that follow.
+			return m, m.resumeTail()
+		}
+		return m, nil
+	case key.Matches(msg, m.keys.LogFollow):
+		m.tail.ToggleFollow()
+	case key.Matches(msg, m.keys.LogWrap):
+		m.tail.ToggleWrap()
+	case key.Matches(msg, m.keys.Filter):
+		m.tailSearching = true
+		m.tailSearchText = m.tail.Search()
+		return m, nil
+	case key.Matches(msg, m.keys.CopyUUID):
+		return m, m.copyText(m.tail.Text(), "Tail copied")
+	}
+	return m, nil
+}
+
+func (m *Model) handleTailSearchKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	if key.Matches(msg, m.keys.Cancel) || key.Matches(msg, m.keys.Confirm) {
+		m.tailSearching = false
+		return m, nil
+	}
+
+	switch msg.String() {
+	case "backspace":
+		if runes := []rune(m.tailSearchText); len(runes) > 0 {
+			m.tailSearchText = string(runes[:len(runes)-1])
+		}
+	case "ctrl+u":
+		m.tailSearchText = ""
+	default:
+		// String() renders space as "space"; Text carries the literal input.
+		if text := msg.Key().Text; text != "" {
+			m.tailSearchText += text
+		}
+	}
+	m.tail.SetSearch(m.tailSearchText)
+	return m, nil
+}
+
+// resumeTail re-arms every source after a pause.
+func (m *Model) resumeTail() tea.Cmd {
+	uuids := m.tail.UUIDs()
+	cmds := make([]tea.Cmd, 0, len(uuids))
+	for i, uuid := range uuids {
+		cmds = append(cmds, m.tailTick(uuid, tailStagger(i, len(uuids))))
+	}
+	return tea.Batch(cmds...)
 }

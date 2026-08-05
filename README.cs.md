@@ -76,6 +76,7 @@ si přečte konfiguraci, vytáhne token z OS keyringu a vykreslí.
 
 - **🖥️ Celá flotila na jedné obrazovce**: stav, projekt/prostředí, branch, poslední deploy a doména u každé aplikace, s filtrem (`/`) a řazením (`S`).
 - **🔎 Detail bez přepínání kontextu**: přehled, historie deploymentů, runtime logy a konfigurace jako záložky na téže obrazovce.
+- **🛰️ Fleet tail**: označte aplikace klávesou `space`, zmáčkněte `t` a čtěte jejich runtime logy proložené v jednom bufferu, každý řádek pojmenovaný a obarvený podle aplikace - pohled, který vám webové UI Coolify nedá.
 - **📜 Logy, které se dají číst**: follow, pauza, zalamování, hledání v bufferu s `n`/`N`, kopírování nálezu, vyčištění bufferu, `+`/`-` pro rozšíření nebo zúžení okna řádků.
 - **🚀 Operace jen s potvrzením**: deploy, force deploy, restart, start/stop - každá destruktivní akce se nejdřív zeptá a najednou běží vždy jen jedna mutace.
 - **🛟 Poctivé k výpadkům**: neúspěšný refresh nechá na obrazovce poslední dobrá data pod „stale“ bannerem, místo aby seznam vymazal. Viz [Když Coolify zamrká](#-když-coolify-zamrká).
@@ -393,7 +394,7 @@ vypustila ven.
 | Dokument | |
 | :--- | :--- |
 | [Architektura](docs/architecture.md) | Vrstvy, tok zpráv, asynchronní životní cyklus |
-| [Rozhodnutí](docs/decisions/) | Šest ADR: Go + Charm, přímé REST místo MCP, oddělení domény a DTO, ukládání přihlašovacích údajů, responzivní layout, MCP server |
+| [Rozhodnutí](docs/decisions/) | Sedm ADR: Go + Charm, přímé REST místo MCP, oddělení domény a DTO, ukládání přihlašovacích údajů, responzivní layout, MCP server, souběžnost fleet tailu |
 | [Coolify API](docs/coolify-api.md) | Které endpointy se používají a jak |
 | [MCP server](docs/mcp.md) | Připojení agenta: klienti, nástroje, bezpečnost, řešení potíží |
 | [Konfigurace](docs/configuration.md) | Kompletní reference schématu |

@@ -32,6 +32,10 @@ type KeyMap struct {
 	Theme   key.Binding
 	Compact key.Binding
 
+	// Fleet tail.
+	Mark key.Binding
+	Tail key.Binding
+
 	// Sections.
 	SectionApplications key.Binding
 	SectionDeployments  key.Binding
@@ -96,6 +100,9 @@ func DefaultKeyMap() KeyMap {
 		Refresh: key.NewBinding(key.WithKeys("R"), key.WithHelp("R", "refresh")),
 		Theme:   key.NewBinding(key.WithKeys("ctrl+t"), key.WithHelp("ctrl+t", "toggle theme")),
 		Compact: key.NewBinding(key.WithKeys("ctrl+w"), key.WithHelp("ctrl+w", "compact mode")),
+
+		Mark: key.NewBinding(key.WithKeys(" "), key.WithHelp("space", "mark for tail")),
+		Tail: key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "tail marked")),
 
 		SectionApplications: key.NewBinding(key.WithKeys("1"), key.WithHelp("1", "applications")),
 		SectionDeployments:  key.NewBinding(key.WithKeys("2"), key.WithHelp("2", "deployments")),

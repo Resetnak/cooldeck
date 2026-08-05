@@ -95,6 +95,19 @@ func (m *Model) helpGroups() []helpGroup {
 				{"b / o", "open domain / repository"},
 				{"c", "copy UUID"},
 				{"S", "cycle sort mode"},
+				{"space", "mark for the fleet tail"},
+				{"t", "tail the marked applications"},
+			},
+		},
+		{
+			Title: "Fleet tail",
+			Rows: []helpRow{
+				{"space", "pause / resume polling"},
+				{"f", "follow the newest line"},
+				{"w", "wrap long lines"},
+				{"/", "search the merged buffer"},
+				{"c", "copy the buffer"},
+				{"esc / q", "back to applications"},
 			},
 		},
 		{

@@ -76,6 +76,7 @@ your config, pulls a token out of your OS keyring, and renders.
 
 - **🖥️ The whole fleet on one screen**: status, project/environment, branch, last deploy and domain for every application, with filtering (`/`) and sorting (`S`).
 - **🔎 Detail without a context switch**: overview, deployment history, runtime logs and configuration as tabs on the same screen.
+- **🛰️ Fleet tail**: mark applications with `space`, press `t`, and read their runtime logs interleaved in one buffer, each line named and coloured by the application it came from - the view Coolify's web UI cannot give you.
 - **📜 Real log ergonomics**: follow, pause, wrap, in-buffer search with `n`/`N`, copy the match, clear the buffer, `+`/`-` to widen or narrow the line window.
 - **🚀 Operations behind a confirmation**: deploy, force deploy, restart, start/stop - every destructive action asks first, and only one mutation runs at a time.
 - **🛟 Honest about failure**: a refresh that fails keeps the last good data on screen behind a stale banner instead of blanking the list. See [When Coolify blinks](#-when-coolify-blinks).
@@ -392,7 +393,7 @@ shipping.
 | Doc | |
 | :--- | :--- |
 | [Architecture](docs/architecture.md) | Layers, message flow, async lifecycle |
-| [Decisions](docs/decisions/) | Six ADRs: Go + Charm, direct REST over MCP, domain/DTO split, credential storage, responsive layout, MCP server |
+| [Decisions](docs/decisions/) | Seven ADRs: Go + Charm, direct REST over MCP, domain/DTO split, credential storage, responsive layout, MCP server, fleet-tail concurrency |
 | [Coolify API](docs/coolify-api.md) | Which endpoints are used and how |
 | [MCP server](docs/mcp.md) | Connecting an agent: clients, tools, safety, troubleshooting |
 | [Configuration](docs/configuration.md) | Full schema reference |
