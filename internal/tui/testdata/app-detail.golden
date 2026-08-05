@@ -1,6 +1,6 @@
  COOLDECK  Demo   o connected    DEMO                                                    12 apps  |  refreshed just now
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- RESOURCES         │Demo -> StimuStop -> production -> stimustop-api
+ RESOURCES         │Demo -> Shipyard -> production -> shipyard-api
                    │  Overview  |  Deployments  |  Runtime Logs  |  Configuration
  > Applic...   12  │
    Deploym...   0  │OVERVIEW
@@ -10,18 +10,18 @@
                    │UUID           demo000ayg9ml
                    │
                    │PLACEMENT
-                   │Project        StimuStop
+                   │Project        Shipyard
                    │Environment    production   PRODUCTION
                    │Server         hetzner-fsn1
                    │
                    │SOURCE
-                   │Repository     git@github.com:resetnak/stimustop-api.git
+                   │Repository     git@github.com:acme/shipyard-api.git
                    │Branch         main
                    │Commit         6b3514c
                    │Build pack     nixpacks
                    │
                    │DOMAINS
-                   │               api.stimustop.com
+                   │               api.shipyard.example
                    │
                    │LAST DEPLOYMENT
                    │Result         + Finished

@@ -4,17 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-CoolDeck — a keyboard-first terminal dashboard (Bubble Tea / Charm v2) for [Coolify](https://coolify.io).
+CoolDeck - a keyboard-first terminal dashboard (Bubble Tea / Charm v2) for [Coolify](https://coolify.io).
 Single Go module, `github.com/resetnak/cooldeck`, Go 1.26.5+, no CGO.
 
 ## Commands
 
 ```bash
-make check               # fmt-check + vet + test + build — run before every PR
+make check               # fmt-check + vet + test + build - run before every PR
 make build               # -> bin/cooldeck, injects version/commit/date ldflags
 make run                 # go run ./cmd/cooldeck --demo
 make test-race
-make test-update-golden  # UPDATE_GOLDEN=1 go test ./... — refresh TUI snapshots
+make test-update-golden  # UPDATE_GOLDEN=1 go test ./... - refresh TUI snapshots
 make lint                # staticcheck ./...
 make bench               # benchmarks in internal/tui/views
 make vuln                # govulncheck
@@ -72,7 +72,7 @@ direct REST instead of MCP, domain/DTO split, credential storage, responsive lay
 Each request kind (dashboard, detail, runtime logs, deployment logs, connect, operation) has both a
 **sequence number** and a stored `context.CancelFunc` on the `Model`. A new request bumps the seq and
 cancels the previous one; replies whose seq is stale are dropped. Mutating operations are serialised
-via `operationInFlight`. Failed refreshes keep the last good snapshot on screen plus a stale banner —
+via `operationInFlight`. Failed refreshes keep the last good snapshot on screen plus a stale banner -
 they never wipe the list. Instance switch clears app/detail/deployment caches so fleets cannot mix.
 
 `requestTimeout` (20s) bounds every API call; `frameInterval` (500ms) drives spinner and relative times.
@@ -80,10 +80,10 @@ they never wipe the list. Instance switch clears app/detail/deployment caches so
 ## Golden tests
 
 `internal/tui/golden_test.go` renders the demo service into `internal/tui/testdata/*.golden`.
-Snapshots must stay host-independent — `normalizeGolden` strips ANSI, CRLF, spinner frames, absolute
+Snapshots must stay host-independent - `normalizeGolden` strips ANSI, CRLF, spinner frames, absolute
 timestamps, GOOS/GOARCH and the Go version. `.gitattributes` pins `*.golden` and `*.go` to LF.
 
-If you change TUI chrome, layout, or copy: run `make test-update-golden` and **review the diff** —
+If you change TUI chrome, layout, or copy: run `make test-update-golden` and **review the diff** -
 an unexpected golden change usually means a real regression, not a stale fixture.
 
 The demo service is seeded (`demo.DefaultSeed`) and takes a `Now func() time.Time`; keep both
@@ -91,18 +91,18 @@ injectable so tests stay deterministic.
 
 ## Config & credentials
 
-TOML at `config.DefaultPath()` (`COOLDECK_CONFIG_DIR` overrides the dir — use it to keep tests
+TOML at `config.DefaultPath()` (`COOLDECK_CONFIG_DIR` overrides the dir - use it to keep tests
 hermetic). `config.SchemaVersion = 1`; a file with a newer version is rejected rather than guessed at.
 
 Token resolution order (`credentials.Resolve`): `COOLDECK_TOKEN` env override first, then the
-instance's `token_source` — `keyring` (default, via `cooldeck setup` / `cooldeck auth add`),
+instance's `token_source` - `keyring` (default, via `cooldeck setup` / `cooldeck auth add`),
 `command`, `env`, or `plaintext` (discouraged).
 
 ## Conventions
 
-- British English in prose and identifiers (`colour`, `behaviour`) — `misspell` is deliberately off.
+- British English in prose and identifiers (`colour`, `behaviour`) - `misspell` is deliberately off.
   Coolify's own `CANCELLED` spelling is preserved in status parsing.
-- Comments explain *why*, not *what*; that's the prevailing style — match it rather than adding
+- Comments explain *why*, not *what*; that's the prevailing style - match it rather than adding
   restating comments.
 - User-visible failures need an actionable title + suggestion on the `domain.Error`.
 - Commit subjects: present tense, no prefix (`Add instance switch mid-session`).

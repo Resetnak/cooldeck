@@ -621,7 +621,7 @@ func (m *Model) sections() []components.NavItem {
 }
 
 // rememberError keeps a short, redacted trail of failures for the diagnostics
-// screen. Titles only — never raw response bodies.
+// screen. Titles only - never raw response bodies.
 func (m *Model) rememberError(err *domain.Error) {
 	if err == nil {
 		return

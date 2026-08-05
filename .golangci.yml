@@ -1,9 +1,9 @@
-# golangci-lint v2 — focused gate, not a style police.
+# golangci-lint v2 - focused gate, not a style police.
 #
 # Misspell is omitted: the codebase uses British English (colour, behaviour)
 # and Coolify status strings like CANCELLED.
 #
-# Gosec is omitted deliberately — do not re-add it without reading this. All 14
+# Gosec is omitted deliberately - do not re-add it without reading this. All 14
 # findings it produced were false positives: seeded math/rand in the demo
 # generator and the skeleton animation (determinism is the point, not secrecy),
 # G304 on config/log paths the user themselves configured, G204 on the

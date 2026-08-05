@@ -63,7 +63,7 @@ var UnicodeSymbols = SymbolSet{
 	ArrowUp:    "↑",
 	ArrowDown:  "↓",
 	Ellipsis:   "…",
-	Dash:       "—",
+	Dash:       "-",
 	Separator:  "│",
 	Selected:   "▌",
 	Check:      "✓",

@@ -314,7 +314,7 @@ func (c Config) OrderedInstances() []Instance {
 }
 
 // RemoveInstance drops a configured instance from the in-memory config. It does
-// not touch Coolify itself or the credential store — callers must clean those
+// not touch Coolify itself or the credential store - callers must clean those
 // up separately. If the removed instance was the default, the default falls
 // back to the first remaining ID (or empty when none remain).
 func (c *Config) RemoveInstance(id string) error {

@@ -3,18 +3,18 @@
   Apps  |  Deploys  |  Inst  |  Diag
   STATUS       APPLICATION        PROJECT / ENV     BRANCH      DEPLOY
 ──────────────────────────────────────────────────────────────────────
-> ! Degraded   * maintenea-api    Maintenea / pr... main         47m a
-  * Restarting logen-dashboard    Logen / preview   feat/c... 1m 30s a
-  * Running    * resetnak-web     Personal / pro... main             2
-  . Queued     * shredloq         Personal / pro... main
-  # Stopped    * maintenea-worker Maintenea / pr... main          2h a
-  # Stopped    weektraq-web       Weektraq / sta... develop    1d 2h a
-  o Running    * logen-ingest-... Logen / produc... main          5d a
-  o Running    * nosmoko          Personal / pro... main         11d a
-  o Running    * stimustop-api    StimuStop / pr... main          3m a
-  o Running    * stimustop-web    StimuStop / pr... main          3m a
-  o Running    weektraq-api       Weektraq / sta... develop    1d 2h a
-  ? Unknown    mpd-api            MPD / development main
+> ! Degraded   * billing-api      Billing / prod... main         47m a
+  * Restarting ingest-dashboard   Ingest / preview  feat/c... 1m 30s a
+  * Running    * landing-web      Personal / pro... main             2
+  . Queued     * vault-web        Personal / pro... main
+  # Stopped    * billing-worker   Billing / prod... main          2h a
+  # Stopped    metrics-web        Metrics / staging develop    1d 2h a
+  o Running    * ingest-servic... Ingest / produ... main          5d a
+  o Running    metrics-api        Metrics / staging develop    1d 2h a
+  o Running    * notes-app        Personal / pro... main         11d a
+  o Running    * shipyard-api     Shipyard / pro... main          3m a
+  o Running    * shipyard-web     Shipyard / pro... main          3m a
+  ? Unknown    sandbox-api        Sandbox / deve... main
 
 
 

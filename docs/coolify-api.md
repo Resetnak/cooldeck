@@ -40,8 +40,8 @@ HTTP failures become `domain.Error` with a kind:
 | Kind | Typical cause |
 |------|----------------|
 | `network` | DNS, TLS, timeout, connection refused |
-| `unauthorized` | 401 — bad or missing token |
-| `forbidden` | 403 — token lacks permission (capability downgrade) |
+| `unauthorized` | 401 - bad or missing token |
+| `forbidden` | 403 - token lacks permission (capability downgrade) |
 | `not_found` | 404 |
 | `rate_limit` | 429 |
 | `cancelled` | context cancel (superseded request; usually silent) |

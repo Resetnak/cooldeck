@@ -201,7 +201,7 @@ func TestDeleteActiveInstanceSwitchesAway(t *testing.T) {
 	// The batch includes toast + switch; pull the switch message by running
 	// switchInstance once operation is free.
 	// After Update with NextID set, operationInFlight may already be true from
-	// switchInstance inside the batch construction — process the switch msg.
+	// switchInstance inside the batch construction - process the switch msg.
 	// Safer: invoke switchInstance only if still on the old service.
 	if model.service.InstanceID() == "a" {
 		// Batch deferred the switch cmd; execute it.
@@ -243,7 +243,7 @@ func TestSwitchFailureKeepsPreviousService(t *testing.T) {
 	if !ok {
 		t.Fatalf("got %T", msg)
 	}
-	// apply failure without having swapped yet — switchInstance only swaps on success.
+	// apply failure without having swapped yet - switchInstance only swaps on success.
 	model.applyInstanceSwitchFailed(failed)
 	if model.service.InstanceID() != "primary" {
 		t.Fatal("service changed despite failure")

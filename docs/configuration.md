@@ -47,7 +47,7 @@ token_key = "production"             # keyring account; defaults to instance id
 # token_command = ["op", "read", "op://…"]
 # token_env = "COOLIFY_TOKEN"
 # token = "…"                        # only with token_source = "plaintext"
-# insecure_skip_verify = false       # TLS skip — trusted networks only
+# insecure_skip_verify = false       # TLS skip - trusted networks only
 # refresh_interval = "15s"           # optional per-instance override
 ```
 

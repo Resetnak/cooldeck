@@ -109,7 +109,7 @@ func TestListApplicationsReturnsStructuredSnapshot(t *testing.T) {
 		t.Fatal("no applications in snapshot")
 	}
 	if snapshot.Applications[0].UUID == "" {
-		t.Fatal("application UUID missing — the other tools take it as input")
+		t.Fatal("application UUID missing - the other tools take it as input")
 	}
 }
 
@@ -133,7 +133,9 @@ func TestToolErrorCarriesTitleAndSuggestion(t *testing.T) {
 	if !strings.Contains(text, "Not found") {
 		t.Errorf("error text %q lost the domain error title", text)
 	}
-	if !strings.Contains(text, "—") {
+	// The suggestion is the actionable half and the reason toolError exists at
+	// all; asserting on the separator alone would pass on any stray hyphen.
+	if !strings.Contains(text, "It may have been deleted") {
 		t.Errorf("error text %q lost the suggestion", text)
 	}
 }
