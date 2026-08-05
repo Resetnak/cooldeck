@@ -17,7 +17,7 @@ z terminálu, který stejně máte otevřený.
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-green.svg)](LICENSE)
 [![Platformy](https://img.shields.io/badge/testov%C3%A1no-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-yellow)](.github/workflows/ci.yml)
 [![Coolify API](https://img.shields.io/badge/Coolify-API%20v1-8B5CF6)](docs/coolify-api.md)
-[![Stav](https://img.shields.io/badge/stav-pre--release-orange)](CHANGELOG.md)
+[![Release](https://img.shields.io/github/v/release/Resetnak/cooldeck?color=brightgreen)](https://github.com/Resetnak/cooldeck/releases/latest)
 
 <br>
 
@@ -33,7 +33,7 @@ z terminálu, který stejně máte otevřený.
   <sub>Jedna degradovaná aplikace od začátku do konce: <code>/</code> filtr, <code>enter</code> detail, <code>l</code> runtime logy, <code>d</code> redeploy s potvrzením, <code>2</code> <code>a</code> a je vidět v aktivní frontě. Vyrenderováno z <a href="cassette.tape">cassette.tape</a>.</sub>
 </div>
 
-> ⚠️ **Pre-release.** Zatím neexistuje otagovaný release - build ze zdrojáků je na jeden příkaz. Jednotkové a golden testy běží v CI na Linuxu, macOS i Windows; `--demo` nepotřebuje žádnou instanci Coolify, takže si celé UI můžete prohlédnout dřív, než mu dáte token.
+> **v0.1.0 je venku.** Stáhněte si binárku z [Releases](https://github.com/Resetnak/cooldeck/releases/latest), nebo si ji sestavte ze zdrojáků jedním příkazem. Jednotkové a golden testy běží v CI na Linuxu, macOS i Windows; `--demo` nepotřebuje žádnou instanci Coolify, takže si celé UI můžete prohlédnout dřív, než mu dáte token.
 
 ---
 
@@ -230,9 +230,24 @@ go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
 
 ### Varianta 3: Release binárky
 
+Stáhněte si archiv pro svou platformu z [Releases](https://github.com/Resetnak/cooldeck/releases/latest),
+rozbalte ho a dejte `cooldeck` do `PATH`:
+
+```bash
+tar xzf cooldeck_0.1.0_Darwin_arm64.tar.gz     # nebo Linux_x86_64, Linux_arm64, Darwin_x86_64
+sudo mv cooldeck /usr/local/bin/
+cooldeck version
+```
+
+Windows se distribuuje jako `.zip`. Ke každému vydání patří `checksums.txt`; ověřte si ho, než
+binárce začnete věřit:
+
+```bash
+shasum -a 256 -c checksums.txt --ignore-missing
+```
+
 Archivy pro Linux, macOS a Windows (`amd64` & `arm64`) staví [GoReleaser](.goreleaser.yaml) z tagů
-`v*`, včetně `checksums.txt`. Zatím není vypuštěný žádný tag, takže dnes není co stahovat - sledujte
-[Releases](https://github.com/Resetnak/cooldeck/releases).
+`v*`.
 
 ---
 
