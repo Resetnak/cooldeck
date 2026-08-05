@@ -17,7 +17,7 @@ from the terminal you already have open.
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/tested-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-yellow)](.github/workflows/ci.yml)
 [![Coolify API](https://img.shields.io/badge/Coolify-API%20v1-8B5CF6)](docs/coolify-api.md)
-[![Status](https://img.shields.io/badge/status-pre--release-orange)](CHANGELOG.md)
+[![Release](https://img.shields.io/github/v/release/Resetnak/cooldeck?color=brightgreen)](https://github.com/Resetnak/cooldeck/releases/latest)
 
 <br>
 
@@ -33,7 +33,7 @@ from the terminal you already have open.
   <sub>One degraded app, start to finish: <code>/</code> to filter, <code>enter</code> for the detail, <code>l</code> for runtime logs, <code>d</code> to redeploy behind a confirmation, <code>2</code> <code>a</code> to watch it land in the active queue. Rendered from <a href="cassette.tape">cassette.tape</a>.</sub>
 </div>
 
-> ⚠️ **Pre-release.** There is no tagged release yet - build from source (it takes one command). Unit and golden tests run on Linux, macOS and Windows in CI; `--demo` needs no Coolify instance at all, so you can judge the whole UI before you hand it a token.
+> **v0.1.0 is out.** Grab a binary from [Releases](https://github.com/Resetnak/cooldeck/releases/latest), or build from source in one command. Unit and golden tests run on Linux, macOS and Windows in CI; `--demo` needs no Coolify instance at all, so you can judge the whole UI before you hand it a token.
 
 ---
 
@@ -230,9 +230,23 @@ go install github.com/resetnak/cooldeck/cmd/cooldeck@latest
 
 ### Option 3: Release binaries
 
-Release archives for Linux, macOS and Windows (`amd64` & `arm64`) are produced by
-[GoReleaser](.goreleaser.yaml) from `v*` tags, with a `checksums.txt` alongside them. No tag has been
-pushed yet, so there is nothing to download today - watch [Releases](https://github.com/Resetnak/cooldeck/releases).
+Download an archive for your platform from [Releases](https://github.com/Resetnak/cooldeck/releases/latest),
+unpack it, and put `cooldeck` on your `PATH`:
+
+```bash
+tar xzf cooldeck_0.1.0_Darwin_arm64.tar.gz     # or Linux_x86_64, Linux_arm64, Darwin_x86_64
+sudo mv cooldeck /usr/local/bin/
+cooldeck version
+```
+
+Windows ships as a `.zip`. Every release carries a `checksums.txt`; verify before you trust it:
+
+```bash
+shasum -a 256 -c checksums.txt --ignore-missing
+```
+
+Archives for Linux, macOS and Windows (`amd64` & `arm64`) are built by
+[GoReleaser](.goreleaser.yaml) from `v*` tags.
 
 ---
 
