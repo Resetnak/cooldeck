@@ -14,6 +14,7 @@ z terminálu, který stejně máte otevřený.
 [![CI](https://github.com/Resetnak/cooldeck/actions/workflows/ci.yml/badge.svg)](https://github.com/Resetnak/cooldeck/actions/workflows/ci.yml)
 [![Bezpečnost](https://github.com/Resetnak/cooldeck/actions/workflows/security.yml/badge.svg)](https://github.com/Resetnak/cooldeck/actions/workflows/security.yml)
 [![Go](https://img.shields.io/badge/Go-1.26.5%2B-00ADD8?logo=go&logoColor=white)](go.mod)
+[![Go Report Card](https://goreportcard.com/badge/github.com/resetnak/cooldeck)](https://goreportcard.com/report/github.com/resetnak/cooldeck)
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-green.svg)](LICENSE)
 [![Platformy](https://img.shields.io/badge/testov%C3%A1no-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-yellow)](.github/workflows/ci.yml)
 [![Coolify API](https://img.shields.io/badge/Coolify-API%20v1-8B5CF6)](docs/coolify-api.md)
@@ -434,7 +435,8 @@ databáze a servery a neinteraktivní CLI pro skripty a CI.
 ## 🤝 Přispívání
 
 Hlášení chyb, návrhy funkcí i PR jsou vítané - v [CONTRIBUTING.md](CONTRIBUTING.md) najdete lokální
-setup, workflow golden testů a co má projít před review přes `make check`.
+setup, workflow golden testů a co má projít před review přes `make check`. Účast se řídí
+[Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## 📄 Licence
 

@@ -14,6 +14,7 @@ from the terminal you already have open.
 [![CI](https://github.com/Resetnak/cooldeck/actions/workflows/ci.yml/badge.svg)](https://github.com/Resetnak/cooldeck/actions/workflows/ci.yml)
 [![Security](https://github.com/Resetnak/cooldeck/actions/workflows/security.yml/badge.svg)](https://github.com/Resetnak/cooldeck/actions/workflows/security.yml)
 [![Go](https://img.shields.io/badge/Go-1.26.5%2B-00ADD8?logo=go&logoColor=white)](go.mod)
+[![Go Report Card](https://goreportcard.com/badge/github.com/resetnak/cooldeck)](https://goreportcard.com/report/github.com/resetnak/cooldeck)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/tested-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-yellow)](.github/workflows/ci.yml)
 [![Coolify API](https://img.shields.io/badge/Coolify-API%20v1-8B5CF6)](docs/coolify-api.md)
@@ -433,7 +434,8 @@ databases and servers, and a non-interactive CLI for scripts and CI.
 ## 🤝 Contributing
 
 Bug reports, feature requests and PRs are welcome - see [CONTRIBUTING.md](CONTRIBUTING.md) for the
-local setup, the golden-test workflow and what `make check` expects before review.
+local setup, the golden-test workflow and what `make check` expects before review. Participation is
+covered by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## 📄 License
 
