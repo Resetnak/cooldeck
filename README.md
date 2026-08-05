@@ -7,7 +7,7 @@
 Deployments, logs, restarts and instance switching for [Coolify](https://coolify.io) -
 from the terminal you already have open.
 
-*No browser tab. No MCP hop. No token on screen. On purpose.*
+*No browser tab. No daemon. No token on screen. On purpose.*
 
 <br>
 
@@ -23,7 +23,7 @@ from the terminal you already have open.
 
 **English** · [Čeština](README.cs.md)
 
-[Quick Start](#-quick-start) · [Features](#-key-features) · [Comparison](#-how-it-compares) · [Keyboard Shortcuts](#-keyboard-shortcuts) · [Installation](#-installation) · [Configuration](#-configuration) · [Security](#-security) · [Contributing](CONTRIBUTING.md)
+[Quick Start](#-quick-start) · [Features](#-key-features) · [MCP](#-your-fleet-in-your-agent) · [Comparison](#-how-it-compares) · [Keyboard Shortcuts](#-keyboard-shortcuts) · [Installation](#-installation) · [Configuration](#-configuration) · [Security](#-security) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -83,7 +83,40 @@ your config, pulls a token out of your OS keyring, and renders.
 - **⌨️ Keyboard-first, mouse-optional**: vi-flavoured bindings borrowed from `lazygit` and `k9s`, a command palette (`:` / `Ctrl+K`) for the day you forget one, and a `?` overlay that always shows the truth - every hint is generated from a single `KeyMap`.
 - **🎨 Eight themes, responsive layout**: auto, dark, light, Dracula, Catppuccin, Nord, Gruvbox, Tokyo Night; three-pane at 150+ columns, single column when the window is small.
 - **🔐 Tokens you never see**: OS keyring by default, and tokens are kept out of the UI, the logs, the toasts and the diagnostics export by construction.
+- **🤖 An MCP server in the same binary**: `cooldeck mcp` hands your fleet to an agent - read-only until you say otherwise. See [Your fleet, in your agent](#-your-fleet-in-your-agent).
 - **🧪 Offline demo mode**: `--demo` is a full implementation of the same service interface, which is also what the golden snapshot tests render.
+
+---
+
+## 🤖 Your Fleet, In Your Agent
+
+`cooldeck mcp` speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdin/stdout,
+so an agent can ask what is running, why a build failed, and what the logs say - through the same use
+cases the TUI uses. No second HTTP client, no separate token, no daemon.
+
+<p align="center">
+  <img src="assets/mcp.gif" alt="A real MCP session against CoolDeck in demo mode: the handshake, the six read-only tools, the fleet listed with statuses, the runtime logs of a degraded application revealing an upstream timeout, and the four mutating tools appearing only with --allow-mutations" width="900">
+
+  <sub>A real JSON-RPC session against <code>--demo</code> - handshake, tool discovery, two calls, then the opt-in. Rendered from <a href="mcp.tape">mcp.tape</a>.</sub>
+</p>
+
+**It cannot touch your production by default.** The read-only surface is `list_applications`,
+`get_application`, `list_deployments`, `get_runtime_logs`, `get_deployment_logs` and
+`get_instance_info`. `--allow-mutations` adds `deploy_application`, `restart_application`,
+`start_application` and `stop_application` - and nothing behind them asks for confirmation, because an
+agent has no one to ask. Grant it deliberately, and prefer a token scoped to the instance you are
+willing to let it operate.
+
+```jsonc
+// Point any MCP client at the binary you already have:
+{ "mcpServers": { "cooldeck": { "command": "cooldeck", "args": ["mcp"] } } }
+```
+
+Try it before you wire it up: `cooldeck mcp --demo` serves the same tools against the offline demo
+fleet, so you can watch an agent work without a Coolify instance in the loop.
+
+📖 **[Full guide: docs/mcp.md](docs/mcp.md)** - client setup, every tool and its arguments, what to
+decide before granting mutations, and troubleshooting.
 
 ---
 
@@ -272,6 +305,9 @@ cooldeck --instance production    start on a specific instance
 cooldeck --theme catppuccin       theme override for this run
 cooldeck --debug                  structured debug log (redacted)
 
+cooldeck mcp                      serve the instance to an agent over MCP (read-only)
+cooldeck mcp --allow-mutations    ... and let it deploy, restart, start and stop
+
 cooldeck setup                    first-run wizard: URL, token, keyring
 cooldeck theme                    interactive theme picker with live preview
 cooldeck auth add|status|delete <instance>
@@ -295,14 +331,15 @@ Reporting a vulnerability: [SECURITY.md](SECURITY.md).
 
 ## 🏗️ Architecture
 
-Layered so that the same use cases can back the TUI, a CLI subcommand, or a future MCP adapter:
+Layered so that the same use cases back the TUI, a CLI subcommand and the MCP server:
 
 ```text
-cmd/cooldeck → internal/cli      cobra, flags, config, service construction
-             → internal/tui      Bubble Tea model + views (presentation only, no I/O)
-             → internal/app      Service interface = the use cases
-               ├── app/demo      deterministic fake service (demo mode + golden tests)
-               └── coolify       HTTP client + DTO → domain mapping
+cmd/cooldeck → internal/cli        cobra, flags, config, service construction
+             → internal/tui        Bubble Tea model + views (presentation only, no I/O)
+             → internal/mcpserver  MCP tools over stdio (no HTTP client, no TUI imports)
+             → internal/app        Service interface = the use cases
+               ├── app/demo        deterministic fake service (demo mode + golden tests)
+               └── coolify         HTTP client + DTO → domain mapping
              → internal/domain, config, credentials, logging, platform, version
 ```
 
@@ -313,8 +350,9 @@ shipping.
 | Doc | |
 | :--- | :--- |
 | [Architecture](docs/architecture.md) | Layers, message flow, async lifecycle |
-| [Decisions](docs/decisions/) | Five ADRs: Go + Charm, direct REST over MCP, domain/DTO split, credential storage, responsive layout |
+| [Decisions](docs/decisions/) | Six ADRs: Go + Charm, direct REST over MCP, domain/DTO split, credential storage, responsive layout, MCP server |
 | [Coolify API](docs/coolify-api.md) | Which endpoints are used and how |
+| [MCP server](docs/mcp.md) | Connecting an agent: clients, tools, safety, troubleshooting |
 | [Configuration](docs/configuration.md) | Full schema reference |
 | [Keybindings](docs/keybindings.md) | The complete key map |
 | [Troubleshooting](docs/troubleshooting.md) | Common failures and what they mean |
@@ -341,10 +379,11 @@ working tree. Both run in a throwaway `COOLDECK_CONFIG_DIR` under `/tmp` and tou
 ## 🗺️ Roadmap
 
 **Shipped:** applications dashboard, detail with logs, confirmed mutations, deployments queue,
-multi-instance management, diagnostics, eight themes, demo mode, golden tests, multi-OS CI.
+deployment outcome notifications, multi-instance management, diagnostics, eight themes, demo mode,
+an MCP server on the same `app.Service`, golden tests, multi-OS CI.
 
 **Next:** richer in-TUI token sources beyond the keyring, optional read-only views for services,
-databases and servers, and an MCP adapter sitting on the same `app.Service`.
+databases and servers, and a non-interactive CLI for scripts and CI.
 
 ---
 
