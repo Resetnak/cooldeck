@@ -56,7 +56,8 @@ func TestAddInstanceFormValidatesAndSaves(t *testing.T) {
 	}
 	typeIn("staging")
 	model.handleInstanceFormKey(tea.KeyPressMsg{Code: tea.KeyTab})
-	typeIn("Staging")
+	// Spaces are legal in a display name and must survive the key handler.
+	typeIn("Staging EU")
 	model.handleInstanceFormKey(tea.KeyPressMsg{Code: tea.KeyTab})
 	typeIn("https://coolify.example.com")
 	model.handleInstanceFormKey(tea.KeyPressMsg{Code: tea.KeyTab})
@@ -69,8 +70,8 @@ func TestAddInstanceFormValidatesAndSaves(t *testing.T) {
 	if storedKey != "staging" || storedTok != "secret-token" {
 		t.Fatalf("credentials = %q %q", storedKey, storedTok)
 	}
-	if saved.Instances["staging"].URL != "https://coolify.example.com" {
-		t.Fatalf("saved url = %#v", saved.Instances["staging"])
+	if got := saved.Instances["staging"]; got.URL != "https://coolify.example.com" || got.Name != "Staging EU" {
+		t.Fatalf("saved instance = %#v", got)
 	}
 	if cmd == nil {
 		t.Fatal("expected success toast")

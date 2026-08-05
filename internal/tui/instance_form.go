@@ -237,13 +237,11 @@ func (m *Model) handleInstanceFormKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) 
 		f.err = ""
 		return m, nil
 	}
-	if text := msg.String(); len([]rune(text)) == 1 {
-		// Hide multi-byte control names; only printable runes.
-		r := []rune(text)[0]
-		if r >= 32 && r != 127 {
-			f.setCurrent(f.currentValue() + text)
-			f.err = ""
-		}
+	// String() renders space as "space"; Text carries the literal input,
+	// and is empty for keys that produce none.
+	if text := msg.Key().Text; text != "" {
+		f.setCurrent(f.currentValue() + text)
+		f.err = ""
 	}
 	return m, nil
 }
