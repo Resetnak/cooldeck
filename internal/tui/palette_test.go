@@ -126,6 +126,23 @@ func TestCommandPaletteEscapeCloses(t *testing.T) {
 	}
 }
 
+func TestCommandPaletteQueryKeepsSpaces(t *testing.T) {
+	model := New(Options{Config: config.Default(), Service: demo.New(demo.Options{}), Demo: true, ASCII: true})
+	model.openPalette()
+
+	// Command titles are multi-word, so the query has to carry a space.
+	for _, k := range []tea.KeyPressMsg{
+		{Code: 'a', Text: "a"},
+		{Code: tea.KeySpace, Text: " "},
+		{Code: 'b', Text: "b"},
+	} {
+		model.handleKey(k)
+	}
+	if model.paletteQuery != "a b" {
+		t.Fatalf("palette query = %q, want %q", model.paletteQuery, "a b")
+	}
+}
+
 func TestFuzzyScoreRanksContiguousHigher(t *testing.T) {
 	contiguous, ok1 := fuzzyScore("dep", "Deploy selected application")
 	scattered, ok2 := fuzzyScore("dep", "Open deployments")
