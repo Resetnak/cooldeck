@@ -1,0 +1,63 @@
+name: Bug report
+description: Something behaves differently from what the docs or the UI promise.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: `cooldeck --demo` needs no Coolify instance, so it is a quick way to tell a
+        UI bug from an instance-specific one.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+      placeholder: |
+        1. Opened the deployments section
+        2. Pressed a
+        3. Expected only in-flight deployments; the list stayed empty
+    validations:
+      required: true
+
+  - type: dropdown
+    id: reproduces-in-demo
+    attributes:
+      label: Does it reproduce in demo mode?
+      description: Run `cooldeck --demo` and try the same steps.
+      options:
+        - "Yes, it reproduces in --demo"
+        - "No, only against my Coolify instance"
+        - "Not applicable"
+    validations:
+      required: true
+
+  - type: textarea
+    id: version
+    attributes:
+      label: Version
+      description: Paste the output of `cooldeck version`.
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: coolify-version
+    attributes:
+      label: Coolify version
+      description: Skip this if the bug reproduces in demo mode.
+
+  - type: input
+    id: terminal
+    attributes:
+      label: Terminal and size
+      placeholder: iTerm2, 180x50
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: |
+        Press `4` then `c` to copy the diagnostics, and paste them here. They are secret-free by
+        construction - no token ever reaches that screen.
+      render: text

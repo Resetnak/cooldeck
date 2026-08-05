@@ -1,0 +1,32 @@
+name: Feature request
+description: Something CoolDeck should be able to do and cannot.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: |
+        Describe the situation rather than the solution. What were you doing when CoolDeck got in
+        the way, and what did you do instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+      description: Optional. If you already have a shape in mind, describe it here.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Which surface?
+      options:
+        - The TUI
+        - The MCP server
+        - The CLI (setup, auth, config)
+        - Packaging and installation
+        - Not sure
+    validations:
+      required: true
