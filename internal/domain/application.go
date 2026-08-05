@@ -2,6 +2,7 @@ package domain
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
@@ -247,4 +248,81 @@ func ShortSHA(sha string) string {
 		return sha[:7]
 	}
 	return sha
+}
+
+// BaselineDuration is the median run time of the most recent successful
+// deployments of one application, used to judge whether an in-flight build is
+// taking longer than that application usually does. It returns zero when there
+// is no usable history, which callers must treat as "no expectation to show"
+// rather than "instant".
+//
+// Only finished deployments count. A failed or cancelled build stops for
+// reasons that say nothing about how long a successful one takes, and letting
+// a build that died after ten seconds drag the median down would make every
+// normal build look overdue.
+//
+// The median over a small sample is deliberate: one pathological run - a cold
+// cache, a slow registry - should not move the number a user is shown.
+func BaselineDuration(deployments []Deployment, appUUID string, sample int) time.Duration {
+	if sample <= 0 {
+		return 0
+	}
+
+	// Order is not guaranteed by the caller, and "most recent" has to mean
+	// exactly that for the baseline to track a project as it grows.
+	ordered := make([]Deployment, 0, len(deployments))
+	for _, d := range deployments {
+		if d.Status != DeploymentFinished {
+			continue
+		}
+		if appUUID != "" && d.ApplicationUUID != appUUID {
+			continue
+		}
+		ordered = append(ordered, d)
+	}
+	slices.SortFunc(ordered, func(a, b Deployment) int {
+		return b.deploymentStart().Compare(a.deploymentStart())
+	})
+
+	durations := make([]time.Duration, 0, sample)
+	for _, d := range ordered {
+		if len(durations) == sample {
+			break
+		}
+		// Duration falls back to now for an unfinished deployment, but these are
+		// all finished, so the zero check only skips malformed history.
+		if run := d.Duration(d.finishedOrStart()); run > 0 {
+			durations = append(durations, run)
+		}
+	}
+	if len(durations) == 0 {
+		return 0
+	}
+
+	slices.Sort(durations)
+	mid := len(durations) / 2
+	if len(durations)%2 == 1 {
+		return durations[mid]
+	}
+	return (durations[mid-1] + durations[mid]) / 2
+}
+
+// deploymentStart is the best available start time, matching what Duration uses.
+func (d Deployment) deploymentStart() time.Time {
+	if !d.StartedAt.IsZero() {
+		return d.StartedAt
+	}
+	return d.CreatedAt
+}
+
+// finishedOrStart gives Duration a reference point that cannot drift with the
+// clock, so a historical duration is stable across refreshes.
+func (d Deployment) finishedOrStart() time.Time {
+	if d.FinishedAt != nil {
+		return *d.FinishedAt
+	}
+	if !d.UpdatedAt.IsZero() {
+		return d.UpdatedAt
+	}
+	return d.deploymentStart()
 }
