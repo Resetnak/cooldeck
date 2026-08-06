@@ -48,7 +48,6 @@ cmd/cooldeck → internal/cli (cobra, flags, config load, service construction)
 `docs/architecture.md` has the full picture; `docs/decisions/` holds seven ADRs (Go+Charm v2,
 direct REST instead of MCP, domain/DTO split, credential storage, responsive layout, MCP server,
 fleet-tail concurrency).
-`CLAUDE_CODE_COOLIFY_TUI_SPEC.md` is the original full product spec.
 
 ### Key invariants
 
