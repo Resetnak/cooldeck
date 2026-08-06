@@ -63,7 +63,20 @@ func TestAddInstanceFormValidatesAndSaves(t *testing.T) {
 	model.handleInstanceFormKey(tea.KeyPressMsg{Code: tea.KeyTab})
 	typeIn("secret-token")
 
+	// The writes run inside the returned command; deliver its result message
+	// back to the model, as the event loop would.
 	cmd := model.submitInstanceForm()
+	if cmd == nil {
+		t.Fatalf("expected a save command, form err: %s", model.instanceForm.err)
+	}
+	if !model.instanceForm.saving {
+		t.Fatal("form should be inert while saving")
+	}
+	saveMsg, ok := cmd().(instanceFormSavedMsg)
+	if !ok {
+		t.Fatal("expected instanceFormSavedMsg")
+	}
+	toastCmd := model.applyInstanceFormSaved(saveMsg)
 	if model.instanceForm != nil {
 		t.Fatalf("form still open: %s", model.instanceForm.err)
 	}
@@ -73,11 +86,13 @@ func TestAddInstanceFormValidatesAndSaves(t *testing.T) {
 	if got := saved.Instances["staging"]; got.URL != "https://coolify.example.com" || got.Name != "Staging EU" {
 		t.Fatalf("saved instance = %#v", got)
 	}
-	if cmd == nil {
+	if got := model.opts.Config.Instances["staging"]; got.URL != "https://coolify.example.com" {
+		t.Fatalf("config not committed to model: %#v", got)
+	}
+	if toastCmd == nil {
 		t.Fatal("expected success toast")
 	}
-	// Toast cmd.
-	if msg := cmd(); msg != nil {
+	if msg := toastCmd(); msg != nil {
 		if toast, ok := msg.(toastMsg); ok && toast.Kind != int(components.ToastSuccess) {
 			t.Fatalf("toast = %+v", toast)
 		}
@@ -107,7 +122,11 @@ func TestEditInstanceFormUpdatesNameURL(t *testing.T) {
 	}
 	model.instanceForm.name = "Production"
 	model.instanceForm.url = "https://new.example"
-	model.submitInstanceForm()
+	cmd := model.submitInstanceForm()
+	if cmd == nil {
+		t.Fatalf("expected a save command, form err: %s", model.instanceForm.err)
+	}
+	model.applyInstanceFormSaved(cmd().(instanceFormSavedMsg))
 	if saved.Instances["prod"].Name != "Production" || saved.Instances["prod"].URL != "https://new.example" {
 		t.Fatalf("saved = %#v", saved.Instances["prod"])
 	}

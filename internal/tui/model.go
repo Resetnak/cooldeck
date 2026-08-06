@@ -511,23 +511,39 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case instanceSwitchFailedMsg:
 		return m, m.applyInstanceSwitchFailed(msg)
 
+	case instanceFormSavedMsg:
+		return m, m.applyInstanceFormSaved(msg)
+
 	case instanceRemovedMsg:
-		if msg.EmptyFleet {
+		cmds := []tea.Cmd{}
+		if msg.CredWarning != "" {
+			cmds = append(cmds, m.pushToast(components.ToastWarning,
+				"Credential cleanup failed", msg.CredWarning))
+		}
+		switch {
+		case msg.EmptyFleet:
 			m.apps = views.NewApplications()
 			m.deployments = views.NewDeployments()
 			m.connection = components.ConnectionOffline
 			m.loading = false
-			return m, m.pushToast(components.ToastSuccess, "Instance removed",
-				"No instances remain. Run cooldeck setup to add one.")
-		}
-		if msg.NextID != "" {
-			return m, tea.Batch(
+			cmds = append(cmds, m.pushToast(components.ToastSuccess, "Instance removed",
+				"No instances remain. Run cooldeck setup to add one."))
+		case msg.NextID != "":
+			cmds = append(cmds,
 				m.pushToast(components.ToastSuccess, "Instance removed", msg.Name),
-				m.switchInstance(msg.NextID),
-			)
+				m.switchInstance(msg.NextID))
+		default:
+			cmds = append(cmds, m.pushToast(components.ToastSuccess, "Instance removed",
+				msg.Name+" deleted from local config"))
 		}
-		return m, m.pushToast(components.ToastSuccess, "Instance removed",
-			msg.Name+" deleted from local config")
+		return m, tea.Batch(cmds...)
+
+	case instanceDeleteFailedMsg:
+		m.opts.Config.Instances = msg.PrevInstances
+		m.opts.Config.DefaultInstance = msg.PrevDefault
+		m.refreshInstances()
+		m.refreshDiagnostics()
+		return m, m.pushToast(components.ToastError, "Could not write config", msg.Err.Error())
 	}
 
 	return m, nil

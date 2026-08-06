@@ -181,11 +181,11 @@ func (s *Service) RuntimeLogs(ctx context.Context, appUUID string, lines int) (a
 		raw = append(append([]string(nil), raw...), s.tailLines(appUUID, elapsed)...)
 	}
 
-	parsed := domain.ParseLogPayload(strings.Join(raw, "\n"), lines)
+	parsed, truncated := domain.ParseLogPayload(strings.Join(raw, "\n"), lines)
 	return app.LogSnapshot{
 		Lines:     parsed,
 		LoadedAt:  s.now(),
-		Truncated: lines > 0 && len(raw) > lines,
+		Truncated: truncated,
 	}, nil
 }
 
@@ -363,7 +363,7 @@ func (s *Service) newDeployment(a *domain.Application, trigger string, force boo
 		CreatedAt:       now,
 		UpdatedAt:       now,
 	}
-	d.Logs = domain.ParseLogPayload(buildLog(a.Name, d.CommitSHA, domain.DeploymentQueued), 0)
+	d.Logs, _ = domain.ParseLogPayload(buildLog(a.Name, d.CommitSHA, domain.DeploymentQueued), 0)
 	return d
 }
 

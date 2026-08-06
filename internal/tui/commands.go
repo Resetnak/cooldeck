@@ -161,7 +161,7 @@ func (m *Model) cancelDeploymentLogsRequest() {
 }
 
 func (m *Model) runtimeLogsTick(appUUID string) tea.Cmd {
-	interval := time.Duration(m.opts.Config.LogRefreshInterval)
+	interval := m.opts.Config.EffectiveLogRefreshInterval()
 	return tea.Tick(interval, func(time.Time) tea.Msg {
 		return runtimeLogsTickMsg{AppUUID: appUUID}
 	})

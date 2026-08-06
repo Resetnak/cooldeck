@@ -257,70 +257,93 @@ func (m *Model) submitInstanceForm() tea.Cmd {
 	}
 	inst := f.toInstance()
 
+	// Build the new config on a copied map so nothing changes on the model
+	// until the write succeeds.
+	cfg := m.opts.Config
+	cfg.Instances = cloneInstances(cfg.Instances)
 	if f.mode == instanceFormAdd {
-		if m.opts.Config.Instances == nil {
-			m.opts.Config.Instances = map[string]config.Instance{}
-		}
-		if _, exists := m.opts.Config.Instances[inst.ID]; exists {
+		if _, exists := cfg.Instances[inst.ID]; exists {
 			f.err = "an instance with this id already exists"
 			return nil
 		}
-		// Persist token before config so a failed keyring write does not leave
-		// a config pointing at a missing secret.
-		if m.opts.StoreCredentials != nil {
-			if err := m.opts.StoreCredentials(inst, strings.TrimSpace(f.token)); err != nil {
-				f.err = "store token: " + err.Error()
-				return nil
-			}
-		} else {
-			// Fallback: store via credentials package directly when wired without callback.
-			if err := credentials.Store(credentials.KeyFor(inst), credentials.NewToken(strings.TrimSpace(f.token))); err != nil {
-				f.err = "store token: " + err.Error()
-				return nil
-			}
-		}
-		m.opts.Config.Instances[inst.ID] = inst
-		if m.opts.Config.DefaultInstance == "" {
-			m.opts.Config.DefaultInstance = inst.ID
+		cfg.Instances[inst.ID] = inst
+		if cfg.DefaultInstance == "" {
+			cfg.DefaultInstance = inst.ID
 		}
 	} else {
-		existing, err := m.opts.Config.Instance(inst.ID)
+		existing, err := cfg.Instance(inst.ID)
 		if err != nil {
 			f.err = err.Error()
 			return nil
 		}
 		existing.Name = inst.Name
 		existing.URL = inst.URL
-		m.opts.Config.Instances[inst.ID] = existing
+		cfg.Instances[inst.ID] = existing
 	}
 
-	if err := m.opts.SaveConfig(m.opts.Config); err != nil {
-		f.err = "save config: " + err.Error()
-		// Best effort: remove the instance we just added if save failed.
-		if f.mode == instanceFormAdd {
-			delete(m.opts.Config.Instances, inst.ID)
+	// Keyring and disk writes run inside the command, never on the event
+	// loop: a macOS Keychain prompt can block for seconds, and the UI -
+	// including ctrl+c - would freeze with it. f.saving keeps the form inert
+	// until the result message lands.
+	f.saving = true
+	store := m.opts.StoreCredentials
+	save := m.opts.SaveConfig
+	token := strings.TrimSpace(f.token)
+	mode := f.mode
+	return func() tea.Msg {
+		if mode == instanceFormAdd {
+			// Persist token before config so a failed keyring write does not
+			// leave a config pointing at a missing secret.
+			var err error
+			if store != nil {
+				err = store(inst, token)
+			} else {
+				// Fallback: store directly when wired without a callback.
+				err = credentials.Store(credentials.KeyFor(inst), credentials.NewToken(token))
+			}
+			if err != nil {
+				return instanceFormSavedMsg{Err: fmt.Errorf("store token: %w", err)}
+			}
+		}
+		if save != nil {
+			if err := save(cfg); err != nil {
+				return instanceFormSavedMsg{Err: fmt.Errorf("save config: %w", err)}
+			}
+		}
+		return instanceFormSavedMsg{Config: cfg, Instance: inst, Mode: mode}
+	}
+}
+
+// applyInstanceFormSaved commits or reports the result of the asynchronous
+// form submission.
+func (m *Model) applyInstanceFormSaved(msg instanceFormSavedMsg) tea.Cmd {
+	f := m.instanceForm
+	if msg.Err != nil {
+		if f != nil {
+			f.saving = false
+			f.err = msg.Err.Error()
 		}
 		return nil
 	}
 
-	name := inst.Name
-	id := inst.ID
-	mode := f.mode
+	m.opts.Config = msg.Config
+	name := msg.Instance.Name
+	id := msg.Instance.ID
 	m.closeInstanceForm()
 	m.refreshInstances()
 	m.refreshDiagnostics()
 
-	if mode == instanceFormAdd && m.opts.OpenService != nil {
+	if msg.Mode == instanceFormAdd && m.opts.OpenService != nil {
 		return tea.Batch(
 			m.pushToast(components.ToastSuccess, "Instance added", name),
 			m.switchInstance(id),
 		)
 	}
-	msg := "Instance updated"
-	if mode == instanceFormAdd {
-		msg = "Instance added"
+	text := "Instance updated"
+	if msg.Mode == instanceFormAdd {
+		text = "Instance added"
 	}
-	return m.pushToast(components.ToastSuccess, msg, name)
+	return m.pushToast(components.ToastSuccess, text, name)
 }
 
 func (m *Model) renderInstanceForm() string {

@@ -55,7 +55,9 @@ func mapDeployment(dto deploymentDTO) domain.Deployment {
 		StartedAt:       created,
 		CreatedAt:       created,
 		UpdatedAt:       updated,
-		Logs:            parseDeploymentLogs(dto.Logs),
+		// Logs stay unparsed here on purpose: list endpoints carry the full
+		// build log of every deployment, and nothing reads it from a list.
+		// DeploymentLogs parses the one deployment actually opened.
 	}
 	if !deployment.Status.IsActive() && !updated.IsZero() {
 		deployment.FinishedAt = &updated
@@ -80,7 +82,8 @@ func parseDeploymentLogs(raw string) []domain.LogLine {
 	}
 	items := []deploymentLogDTO{}
 	if err := json.Unmarshal([]byte(raw), &items); err != nil {
-		return domain.ParseLogPayload(raw, 20_000)
+		lines, _ := domain.ParseLogPayload(raw, 20_000)
+		return lines
 	}
 	lines := make([]domain.LogLine, 0, len(items))
 	for _, item := range items {

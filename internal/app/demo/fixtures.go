@@ -204,7 +204,7 @@ func (s *Service) generateDeployments(
 			d.FinishedAt = &finished
 			d.UpdatedAt = finished
 		}
-		d.Logs = domain.ParseLogPayload(buildLog(a.Name, d.CommitSHA, status), 0)
+		d.Logs, _ = domain.ParseLogPayload(buildLog(a.Name, d.CommitSHA, status), 0)
 		deps = append(deps, d)
 
 		age += time.Duration(6+r.Intn(60)) * time.Hour

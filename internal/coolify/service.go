@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -125,7 +126,14 @@ func (s *Service) ApplicationDetail(ctx context.Context, appUUID string) (app.Ap
 	if err := s.client.getJSON(ctx, "applications/"+url.PathEscape(appUUID), nil, &dto); err != nil {
 		return app.ApplicationDetail{}, domain.AsError(err).WithOperation("get application")
 	}
-	deployments, _ := s.Deployments(ctx, appUUID, 10)
+	deployments, deployErr := s.Deployments(ctx, appUUID, 10)
+	if deployErr != nil {
+		// The detail is still worth rendering without its history, but a 403
+		// must downgrade the capability like everywhere else - silence here
+		// would render "no deployments" for a permissions problem.
+		s.downgradeForError(deployErr, "deployments")
+		deployments = nil
+	}
 	application := mapApplication(dto)
 	if len(deployments) > 0 {
 		summary := deployments[0].Summary(s.now())
@@ -141,7 +149,8 @@ func (s *Service) RuntimeLogs(ctx context.Context, appUUID string, lines int) (a
 		s.downgradeForError(err, "application_logs")
 		return app.LogSnapshot{}, domain.AsError(err).WithOperation("get application logs")
 	}
-	return app.LogSnapshot{Lines: domain.ParseLogPayload(dto.Logs, lines), LoadedAt: s.now()}, nil
+	parsed, truncated := domain.ParseLogPayload(dto.Logs, lines)
+	return app.LogSnapshot{Lines: parsed, LoadedAt: s.now(), Truncated: truncated}, nil
 }
 
 func (s *Service) Deployments(ctx context.Context, appUUID string, limit int) ([]domain.Deployment, error) {
@@ -236,6 +245,11 @@ func mapDeployments(dtos []deploymentDTO) []domain.Deployment {
 	for _, dto := range dtos {
 		deployments = append(deployments, mapDeployment(dto))
 	}
+	// splitDeployments and attachDeployments assume newest first; enforce it
+	// here instead of trusting the API's ordering.
+	sort.SliceStable(deployments, func(i, j int) bool {
+		return deployments[i].CreatedAt.After(deployments[j].CreatedAt)
+	})
 	return deployments
 }
 

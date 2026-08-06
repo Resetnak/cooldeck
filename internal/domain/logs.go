@@ -127,10 +127,11 @@ func ParseLogLine(raw string) LogLine {
 }
 
 // ParseLogPayload splits a raw multi-line log blob into sanitised lines,
-// keeping at most maxLines of the newest output.
-func ParseLogPayload(payload string, maxLines int) []LogLine {
+// keeping at most maxLines of the newest output. truncated reports whether
+// older lines were dropped to respect the limit.
+func ParseLogPayload(payload string, maxLines int) (lines []LogLine, truncated bool) {
 	if payload == "" {
-		return nil
+		return nil, false
 	}
 	raw := strings.Split(strings.ReplaceAll(payload, "\r\n", "\n"), "\n")
 	// Drop the trailing empty element produced by a final newline.
@@ -139,13 +140,14 @@ func ParseLogPayload(payload string, maxLines int) []LogLine {
 	}
 	if maxLines > 0 && len(raw) > maxLines {
 		raw = raw[len(raw)-maxLines:]
+		truncated = true
 	}
 
-	lines := make([]LogLine, 0, len(raw))
+	lines = make([]LogLine, 0, len(raw))
 	for _, r := range raw {
 		lines = append(lines, ParseLogLine(r))
 	}
-	return lines
+	return lines, truncated
 }
 
 // DetectLogLevel finds a severity token anywhere in the line. It is format
