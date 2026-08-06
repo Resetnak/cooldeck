@@ -3,8 +3,9 @@
 All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project uses [Semantic Versioning](https://semver.org/) once tagged
-releases begin.
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
 
 ## [0.2.1] - 2026-08-05
 
@@ -85,8 +86,9 @@ Packaging only - the binary is identical to 0.1.0.
 - Tokens excluded from logs, toasts, and diagnostics
 - Browser open restricted to http(s) URLs
 
-[0.2.1]: https://github.com/Resetnak/cooldeck/releases/tag/v0.2.1
-[0.2.0]: https://github.com/Resetnak/cooldeck/releases/tag/v0.2.0
-[0.1.2]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.2
-[0.1.1]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.1
+[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/Resetnak/cooldeck/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/Resetnak/cooldeck/compare/v0.1.2...v0.2.0
+[0.1.2]: https://github.com/Resetnak/cooldeck/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/Resetnak/cooldeck/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Resetnak/cooldeck/releases/tag/v0.1.0

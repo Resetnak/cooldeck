@@ -1,7 +1,8 @@
 # Architecture
 
-CoolDeck is layered so the same business logic can drive the TUI today and a
-CLI or MCP adapter later without rewriting Coolify integration.
+CoolDeck is layered so the same business logic drives the TUI and the MCP
+server today, and could back a non-interactive CLI without rewriting the
+Coolify integration.
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐

@@ -37,7 +37,11 @@ z terminálu, který stejně máte otevřený.
 **Celé UI vyzkoušíte jedním řádkem - bez instance Coolify, bez tokenu, bez sítě:**
 
 ```bash
+# macOS (Homebrew)
 brew install resetnak/tap/cooldeck && cooldeck --demo
+
+# Linux a macOS (instalační skript)
+curl -fsSL https://raw.githubusercontent.com/Resetnak/cooldeck/main/install.sh | sh && cooldeck --demo
 ```
 
 Máte radši Go? `go install github.com/resetnak/cooldeck/cmd/cooldeck@latest`. Chcete binárku? Každé
@@ -207,6 +211,7 @@ odpovědi z překonaného požadavku se zahodí místo vykreslení.
 | `l` / `L` | Runtime logy / build log |
 | `b` / `o` | Otevřít doménu / repozitář v prohlížeči |
 | `c` | Zkopírovat UUID aplikace |
+| `Space` / `t` | Označit pro fleet tail / otevřít fleet tail |
 | `S` | Cyklovat řazení: stav → název → poslední deploy |
 | `R` | Ruční refresh |
 
@@ -221,7 +226,7 @@ odpovědi z překonaného požadavku se zahodí místo vykreslení.
 ### 📜 Logy
 | Zkratka | Akce |
 | :--- | :--- |
-| `Space` | Pauza / obnovení pollingu |
+| `Space` | Pauza / obnovení pollingu (v seznamu aplikací `Space` místo toho označuje pro fleet tail) |
 | `f` / `w` | Follow tail / zalamování dlouhých řádků |
 | `/` · `n` · `N` | Hledat · další nález · předchozí nález |
 | `c` | Zkopírovat buffer nebo aktuální nález |
@@ -237,14 +242,15 @@ Kompletní mapa: v aplikaci `?`, nebo [docs/keybindings.md](docs/keybindings.md)
 **Žádné runtime závislosti.** Každá varianta níž vám dá jednu statickou binárku; toolchain
 potřebuje jen build ze zdrojáků (Go **1.26.5+**, bez CGO).
 
-### Varianta 1: Homebrew (macOS a Linux)
+### Varianta 1: Homebrew (macOS)
 
 ```bash
 brew install resetnak/tap/cooldeck
 cooldeck --demo
 ```
 
-Aktualizace pak chodí přes `brew upgrade` jako u čehokoli jiného.
+Aktualizace pak chodí přes `brew upgrade` jako u čehokoli jiného. Tap publikuje cask, který Homebrew
+na Linuxu nepodporuje - na Linuxu použijte instalační skript níže.
 
 ### Varianta 2: Instalační skript (macOS a Linux)
 
@@ -297,8 +303,8 @@ binárce začnete věřit:
 shasum -a 256 -c checksums.txt --ignore-missing
 ```
 
-Archivy pro Linux, macOS a Windows (`amd64` & `arm64`) staví [GoReleaser](.goreleaser.yaml) z tagů
-`v*`.
+Archivy pro Linux a macOS (`amd64` & `arm64`) a Windows (`amd64`) staví
+[GoReleaser](.goreleaser.yaml) z tagů `v*`.
 
 ### Varianta 5: `go install`
 
@@ -454,9 +460,10 @@ make bench               # benchmarky vykreslování
 make vuln                # govulncheck
 ```
 
-Oba GIFy v tomto README jsou generované, ne ručně nahrané: `vhs cassette.tape` a `vhs outage.tape`
-znovu postaví binárku a nahrají záznam proti `--demo`, takže se nemůžou rozejít s pracovní kopií. Oba
-běží v jednorázovém `COOLDECK_CONFIG_DIR` pod `/tmp` a ničeho vašeho se nedotknou.
+Všechny čtyři GIFy v tomto README jsou generované, ne ručně nahrané: `vhs cassette.tape`,
+`vhs tail.tape`, `vhs mcp.tape` a `vhs outage.tape` znovu postaví binárku a nahrají záznam proti
+`--demo`, takže se nemůžou rozejít s pracovní kopií. Všechny běží v jednorázovém
+`COOLDECK_CONFIG_DIR` pod `/tmp` a ničeho vašeho se nedotknou.
 
 ---
 

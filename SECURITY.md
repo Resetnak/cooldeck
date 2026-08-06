@@ -15,14 +15,20 @@ long-term support branch yet.
 
 Please **do not** open a public issue for exploitable security bugs.
 
-Email or message the repository maintainer privately with:
+Report privately through either channel:
+
+- [GitHub security advisory](https://github.com/Resetnak/cooldeck/security/advisories/new) (preferred)
+- Email the maintainer: <mail@resetnak.cz>
+
+Include:
 
 - description of the issue
 - impact (token leak, RCE via logs, path traversal, etc.)
 - reproduction steps or PoC
 - affected commit or version if known
 
-We will acknowledge the report and work on a fix before any public disclosure.
+You will get an acknowledgement within 72 hours, and a fix lands before any
+public disclosure.
 
 ## Non-vulnerabilities
 
