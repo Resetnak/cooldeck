@@ -64,13 +64,15 @@ release:
 homebrew_casks:
   - name: cooldeck
     # A missing or expired tap token skips the cask push instead of failing the
-    # whole release - archives, checksums and packages still ship.
-    skip_upload: '{{ if envOrDefault "HOMEBREW_TAP_GITHUB_TOKEN" "" }}false{{ else }}true{{ end }}'
+    # whole release - archives, checksums and packages still ship. index is a
+    # text/template builtin, so it works on every goreleaser version, unlike
+    # envOrDefault.
+    skip_upload: '{{ if index .Env "HOMEBREW_TAP_GITHUB_TOKEN" }}false{{ else }}true{{ end }}'
     repository:
       owner: Resetnak
       name: homebrew-tap
       branch: main
-      token: '{{ envOrDefault "HOMEBREW_TAP_GITHUB_TOKEN" "" }}'
+      token: '{{ index .Env "HOMEBREW_TAP_GITHUB_TOKEN" }}'
     homepage: https://github.com/Resetnak/cooldeck
     description: Keyboard-first terminal dashboard for Coolify
     # Strip the quarantine flag Gatekeeper adds to downloaded archives, so the
