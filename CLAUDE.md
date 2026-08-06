@@ -33,7 +33,7 @@ and the full test matrix on ubuntu/macos/windows. `-race` is skipped on Windows.
 
 ## Architecture
 
-Layered so the same use cases can back the TUI, a CLI subcommand, or a future MCP adapter:
+Layered so the same use cases back the TUI, the MCP server, and any future CLI subcommand:
 
 ```
 cmd/cooldeck → internal/cli (cobra, flags, config load, service construction)

@@ -37,7 +37,11 @@ from the terminal you already have open.
 **Try the whole UI in one line - no Coolify instance, no token, no network:**
 
 ```bash
+# macOS (Homebrew)
 brew install resetnak/tap/cooldeck && cooldeck --demo
+
+# Linux & macOS (install script)
+curl -fsSL https://raw.githubusercontent.com/Resetnak/cooldeck/main/install.sh | sh && cooldeck --demo
 ```
 
 Prefer Go? `go install github.com/resetnak/cooldeck/cmd/cooldeck@latest`. Prefer a binary? Every
@@ -207,6 +211,7 @@ from a superseded request are dropped rather than rendered.
 | `l` / `L` | Runtime logs / build log |
 | `b` / `o` | Open primary domain / repository in the browser |
 | `c` | Copy application UUID |
+| `Space` / `t` | Mark for the fleet tail / open the fleet tail |
 | `S` | Cycle sort: status → name → last deploy |
 | `R` | Manual refresh |
 
@@ -221,7 +226,7 @@ from a superseded request are dropped rather than rendered.
 ### 📜 Logs
 | Shortcut | Action |
 | :--- | :--- |
-| `Space` | Pause / resume polling |
+| `Space` | Pause / resume polling (in the applications list, `Space` marks for the fleet tail instead) |
 | `f` / `w` | Follow tail / wrap long lines |
 | `/` · `n` · `N` | Search · next match · previous match |
 | `c` | Copy the buffer, or the current match |
@@ -237,14 +242,15 @@ Full map: press `?` in the app, or read [docs/keybindings.md](docs/keybindings.m
 **No runtime dependencies.** Every option below leaves you with a single static binary; only building
 from source needs a toolchain (Go **1.26.5+**, no CGO).
 
-### Option 1: Homebrew (macOS & Linux)
+### Option 1: Homebrew (macOS)
 
 ```bash
 brew install resetnak/tap/cooldeck
 cooldeck --demo
 ```
 
-Upgrades come with `brew upgrade` like anything else.
+Upgrades come with `brew upgrade` like anything else. The tap publishes a cask, which Homebrew on
+Linux does not support - on Linux, use the install script below.
 
 ### Option 2: Install script (macOS & Linux)
 
@@ -296,7 +302,7 @@ Windows ships as a `.zip`. Every release carries a `checksums.txt`; verify befor
 shasum -a 256 -c checksums.txt --ignore-missing
 ```
 
-Archives for Linux, macOS and Windows (`amd64` & `arm64`) are built by
+Archives for Linux and macOS (`amd64` & `arm64`) and Windows (`amd64`) are built by
 [GoReleaser](.goreleaser.yaml) from `v*` tags.
 
 ### Option 5: `go install`
@@ -452,9 +458,10 @@ make bench               # view rendering benchmarks
 make vuln                # govulncheck
 ```
 
-The two GIFs in this README are generated, not hand-recorded: `vhs cassette.tape` and
-`vhs outage.tape` rebuild the binary and re-record against `--demo`, so they cannot drift from the
-working tree. Both run in a throwaway `COOLDECK_CONFIG_DIR` under `/tmp` and touch nothing of yours.
+The four GIFs in this README are generated, not hand-recorded: `vhs cassette.tape`, `vhs tail.tape`,
+`vhs mcp.tape` and `vhs outage.tape` rebuild the binary and re-record against `--demo`, so they
+cannot drift from the working tree. All of them run in a throwaway `COOLDECK_CONFIG_DIR` under
+`/tmp` and touch nothing of yours.
 
 ---
 

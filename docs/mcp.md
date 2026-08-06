@@ -116,7 +116,7 @@ one to ask, so the decision moves to the moment you add the flag. Some things wo
 deliberately:
 
 - **Scope the token, not just the flag.** The agent can do whatever the token can. Coolify has no
-  permission-introspection endpoint, so cooldeck assumes full capabilities and only learns otherwise
+  permission-introspection endpoint, so CoolDeck assumes full capabilities and only learns otherwise
   when a call is refused with a `403`. A token limited to the instance and scopes you are willing to
   automate is a real boundary; the flag alone is a smaller one.
 - **Prefer separate entries per instance.** Registering production read-only and staging with
@@ -148,10 +148,10 @@ Swap `--demo` for your real flags once you trust it.
 | Client reports the server failed to start | `command` is not on the client's `PATH`. Use the absolute path from `which cooldeck`. |
 | `no configuration file found` | The server loads the same config as the TUI. Run `cooldeck setup` first, or pass `--config`, or try `--demo`. |
 | Only six tools are listed | That is the read-only default. Add `--allow-mutations` to the launch command and restart the client - the tool list is sent once, at connection. |
-| A tool answers "Permission denied" | The token lacks that scope. The error carries Coolify's own suggestion; fix it in Coolify's *profile → API tokens* rather than in cooldeck. |
+| A tool answers "Permission denied" | The token lacks that scope. The error carries Coolify's own suggestion; fix it in Coolify's *profile → API tokens* rather than in CoolDeck. |
 | A tool answers "Request timed out" | Every call is bounded at 20 seconds, the same as in the TUI. A Coolify instance that slow will show the same symptom in the dashboard. |
 | Responses look truncated | The counts are capped (see the table above). Ask for a narrower window - a specific deployment's log rather than 2000 runtime lines. |
-| Garbled output or a client that cannot parse anything | Something wrote to stdout, which is the protocol transport. cooldeck writes diagnostics to stderr by design; a wrapper script that echoes to stdout will corrupt the session. |
+| Garbled output or a client that cannot parse anything | Something wrote to stdout, which is the protocol transport. CoolDeck writes diagnostics to stderr by design; a wrapper script that echoes to stdout will corrupt the session. |
 
 For anything else, `cooldeck mcp --help`, or the
 [troubleshooting guide](troubleshooting.md) for problems that are really about the Coolify

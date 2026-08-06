@@ -19,8 +19,7 @@ Symptoms: offline banner, “Cannot reach Coolify”, network error toast.
 | Actions greyed in palette | Capability downgraded after 403 | Check token scopes in Coolify |
 
 ```bash
-cooldeck auth status production
-echo "token set?" # never cat the secret into chat logs
+cooldeck auth status production   # reports whether a token exists; never prints it
 ```
 
 ## No applications
@@ -56,7 +55,7 @@ cooldeck --demo
 
 - Minimum usable size is about **60×18**.
 - Try `Ctrl+W` compact mode or a larger terminal.
-- ASCII glyph mode activates when the locale is not UTF-8; force via code path is automatic.
+- ASCII glyph mode activates automatically when the locale is not UTF-8; no flag is needed.
 
 ## Slow over SSH
 
