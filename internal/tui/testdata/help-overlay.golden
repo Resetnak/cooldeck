@@ -1,19 +1,19 @@
  COOLDECK  Demo   o connected    DEMO                                12 apps  |  refreshed just now
 ──────────────+----------------------------------------------------------------------+──────────────
   Applications|                                                                      |m  |  Deployme
-  STATUS      |  cooldeck help                                                       |N
+  STATUS      |  cooldeck help                                                       |
 ──────────────|  A fast and polished terminal dashboard for monitoring and           |──────────────
-> ! Degraded  |  operating Coolify deployments.                                      |illing.example
+> ! Degraded  |  operating Coolify deployments.                                      |.example
   * Restarting|  esc close  ·  ↑↓ scroll                                             |
-  * Running   |                                                                      |ng.example
-  . Queued    |  Global                                                              |.example
+  * Running   |                                                                      |mple
+  . Queued    |  Global                                                              |le
   # Stopped   |  ↑↓ / j k            move selection                                  |
-  # Stopped   |  g / G               first / last                                    |ng.metrics.ex.
-  o Running   |  ctrl+d / ctrl+u     page down / up                                  |t.example-wit.
-  o Running   |  enter               open / confirm                                  |ng-api.metric.
-  o Running   |  esc / q             back / quit                                     |.example
-  o Running   |  tab / shift+tab     next / previous pane                            |hipyard.exampl
-  o Running   |  /                   filter or search                                |ard.example
+  # Stopped   |  g / G               first / last                                    |rics.example
+  o Running   |  ctrl+d / ctrl+u     page down / up                                  |ple-with-a-ra.
+  o Running   |  enter               open / confirm                                  |.metrics.examp
+  o Running   |  esc / q             back / quit                                     |le
+  o Running   |  tab / shift+tab     next / previous pane                            |d.example
+  o Running   |  /                   filter or search                                |ample
   ? Unknown   |  : / ctrl+k          command palette                                 |
               |  ?                   this help                                       |
               |  R                   manual refresh                                  |

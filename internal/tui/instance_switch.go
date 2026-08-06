@@ -2,6 +2,7 @@ package tui
 
 import (
 	"context"
+	"maps"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -158,11 +159,11 @@ func (m *Model) runDeleteInstance(action pendingAction) tea.Cmd {
 	}
 }
 
+// cloneInstances always returns a non-nil map, unlike maps.Clone, so callers
+// can insert into the copy of an instance list that does not exist yet.
 func cloneInstances(in map[string]config.Instance) map[string]config.Instance {
 	out := make(map[string]config.Instance, len(in))
-	for k, v := range in {
-		out[k] = v
-	}
+	maps.Copy(out, in)
 	return out
 }
 

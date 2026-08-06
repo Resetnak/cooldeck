@@ -13,9 +13,9 @@ import (
 // cover every visual state the dashboard has to render: healthy, degraded,
 // building, stopped, failed and unknown, plus long names and missing domains.
 type fixture struct {
-	name    string
-	project string
-	env     string
+	name string
+	// server feeds the deployment history's ServerName; the application itself
+	// no longer carries placement data.
 	server  string
 	branch  string
 	status  string
@@ -31,54 +31,54 @@ type fixture struct {
 
 var fixtures = []fixture{
 	{
-		name: "shipyard-api", project: "Shipyard", env: "production", server: "hetzner-fsn1",
+		name: "shipyard-api", server: "hetzner-fsn1",
 		branch: "main", status: "running:healthy", domains: []string{"api.shipyard.example"},
 		repo: "git@github.com:acme/shipyard-api.git", pack: "nixpacks",
 		lastDeploy: 3 * time.Minute, deployStatus: domain.DeploymentFinished,
 		description: "Public REST API",
 	},
 	{
-		name: "shipyard-web", project: "Shipyard", env: "production", server: "hetzner-fsn1",
+		name: "shipyard-web", server: "hetzner-fsn1",
 		branch: "main", status: "running:healthy", domains: []string{"shipyard.example", "www.shipyard.example"},
 		repo: "git@github.com:acme/shipyard-web.git", pack: "static",
 		lastDeploy: 3 * time.Minute, deployStatus: domain.DeploymentFinished,
 	},
 	{
-		name: "landing-web", project: "Personal", env: "production", server: "hetzner-fsn1",
+		name: "landing-web", server: "hetzner-fsn1",
 		branch: "main", status: "in_progress", domains: []string{"landing.example"},
 		repo: "git@github.com:acme/landing.git", pack: "static",
 		lastDeploy: 21 * time.Second, deployStatus: domain.DeploymentInProgress,
 		description: "Personal site",
 	},
 	{
-		name: "billing-worker", project: "Billing", env: "production", server: "hetzner-nbg1",
+		name: "billing-worker", server: "hetzner-nbg1",
 		branch: "main", status: "exited:unhealthy",
 		repo: "git@github.com:acme/billing.git", pack: "dockerfile",
 		lastDeploy: 2 * time.Hour, deployStatus: domain.DeploymentFailed,
 		description: "Background job runner",
 	},
 	{
-		name: "billing-api", project: "Billing", env: "production", server: "hetzner-nbg1",
+		name: "billing-api", server: "hetzner-nbg1",
 		branch: "main", status: "running:unhealthy", domains: []string{"api.billing.example"},
 		repo: "git@github.com:acme/billing.git", pack: "nixpacks",
 		lastDeploy: 47 * time.Minute, deployStatus: domain.DeploymentFinished,
 		description: "Failing its health probe since the last deploy",
 	},
 	{
-		name: "metrics-api", project: "Metrics", env: "staging", server: "hetzner-nbg1",
+		name: "metrics-api", server: "hetzner-nbg1",
 		branch: "develop", status: "running:healthy", domains: []string{"staging-api.metrics.example"},
 		repo: "git@github.com:acme/metrics.git", pack: "dockercompose",
 		lastDeploy: 26 * time.Hour, deployStatus: domain.DeploymentFinished,
 	},
 	{
-		name: "metrics-web", project: "Metrics", env: "staging", server: "hetzner-nbg1",
+		name: "metrics-web", server: "hetzner-nbg1",
 		branch: "develop", status: "exited", domains: []string{"staging.metrics.example"},
 		repo: "git@github.com:acme/metrics.git", pack: "nixpacks",
 		lastDeploy: 26 * time.Hour, deployStatus: domain.DeploymentFinished,
 		description: "Stopped to save resources",
 	},
 	{
-		name: "ingest-service-with-a-very-long-name", project: "Ingest", env: "production",
+		name:   "ingest-service-with-a-very-long-name",
 		server: "contabo-eu", branch: "main", status: "running:healthy",
 		domains: []string{"ingest.example-with-a-rather-long-domain-name.example"},
 		repo:    "git@github.com:acme/ingest.git", pack: "dockerfile",
@@ -86,25 +86,25 @@ var fixtures = []fixture{
 		description: "Exercises column truncation",
 	},
 	{
-		name: "ingest-dashboard", project: "Ingest", env: "preview", server: "contabo-eu",
+		name: "ingest-dashboard", server: "contabo-eu",
 		branch: "feat/charts", status: "restarting:starting",
 		repo: "git@github.com:acme/ingest.git", pack: "railpack",
 		lastDeploy: 90 * time.Second, deployStatus: domain.DeploymentFinished,
 	},
 	{
-		name: "sandbox-api", project: "Sandbox", env: "development", server: "local-dev",
+		name: "sandbox-api", server: "local-dev",
 		branch: "main", status: "", // an unknown status must render safely
 		repo: "git@github.com:acme/sandbox.git", pack: "dockercompose",
 		deployStatus: domain.DeploymentUnknown,
 	},
 	{
-		name: "notes-app", project: "Personal", env: "production", server: "hetzner-fsn1",
+		name: "notes-app", server: "hetzner-fsn1",
 		branch: "main", status: "running:healthy", domains: []string{"notes.example"},
 		repo: "git@github.com:acme/notes-app.git", pack: "nixpacks",
 		lastDeploy: 11 * 24 * time.Hour, deployStatus: domain.DeploymentFinished,
 	},
 	{
-		name: "vault-web", project: "Personal", env: "production", server: "hetzner-fsn1",
+		name: "vault-web", server: "hetzner-fsn1",
 		branch: "main", status: "queued", domains: []string{"vault.example"},
 		repo: "git@github.com:acme/vault-web.git", pack: "nixpacks",
 		lastDeploy: 4 * time.Second, deployStatus: domain.DeploymentQueued,
@@ -135,9 +135,6 @@ func (s *Service) generate() {
 			Branch:        f.branch,
 			CommitSHA:     randomSHA(r),
 			BuildPack:     f.pack,
-			Project:       domain.ResourceRef{ID: i + 1, Name: f.project},
-			Environment:   domain.ResourceRef{ID: i + 1, Name: f.env},
-			Server:        domain.ResourceRef{ID: i + 1, Name: f.server, UUID: "srv-" + f.server},
 			CreatedAt:     now.Add(-time.Duration(60+r.Intn(300)) * 24 * time.Hour),
 			UpdatedAt:     now.Add(-f.lastDeploy),
 		}

@@ -15,13 +15,9 @@ func BenchmarkApplicationsReproject(b *testing.B) {
 	apps := make([]domain.Application, 200)
 	for i := range apps {
 		apps[i] = domain.Application{
-			UUID:    fmt.Sprintf("app-%03d", i),
-			Name:    fmt.Sprintf("service-%03d", i),
-			Status:  domain.ParseStatus("running:healthy"),
-			Project: domain.ResourceRef{Name: "proj"},
-			Environment: domain.ResourceRef{
-				Name: map[bool]string{true: "production", false: "staging"}[i%5 == 0],
-			},
+			UUID:   fmt.Sprintf("app-%03d", i),
+			Name:   fmt.Sprintf("service-%03d", i),
+			Status: domain.ParseStatus("running:healthy"),
 			Branch: "main",
 		}
 	}

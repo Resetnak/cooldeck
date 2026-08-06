@@ -135,12 +135,11 @@ type Theme struct {
 	LogMatch     lipgloss.Style
 
 	// Badges, keyed by semantic role.
-	badgeNeutral    lipgloss.Style
-	badgeSuccess    lipgloss.Style
-	badgeWarning    lipgloss.Style
-	badgeError      lipgloss.Style
-	badgeInfo       lipgloss.Style
-	badgeProduction lipgloss.Style
+	badgeNeutral lipgloss.Style
+	badgeSuccess lipgloss.Style
+	badgeWarning lipgloss.Style
+	badgeError   lipgloss.Style
+	badgeInfo    lipgloss.Style
 
 	// statusFg maps a normalised state onto its foreground style.
 	statusFg map[domain.ResourceStatus]lipgloss.Style
@@ -308,7 +307,6 @@ func New(opts Options) *Theme {
 	t.badgeWarning = badge.Foreground(p.TextInvert).Background(p.Warning)
 	t.badgeError = badge.Foreground(p.TextInvert).Background(p.Error)
 	t.badgeInfo = badge.Foreground(p.TextInvert).Background(p.Info)
-	t.badgeProduction = badge.Bold(true).Foreground(p.TextInvert).Background(p.Error)
 
 	t.statusFg = map[domain.ResourceStatus]lipgloss.Style{
 		domain.StatusRunning:    t.Positive,
@@ -362,7 +360,6 @@ const (
 	BadgeWarning
 	BadgeError
 	BadgeInfo
-	BadgeProduction
 )
 
 // Badge renders a small filled label.
@@ -376,26 +373,8 @@ func (t *Theme) Badge(kind BadgeKind, text string) string {
 		return t.badgeError.Render(text)
 	case BadgeInfo:
 		return t.badgeInfo.Render(text)
-	case BadgeProduction:
-		return t.badgeProduction.Render(text)
 	default:
 		return t.badgeNeutral.Render(text)
-	}
-}
-
-// LogLineStyle returns the style for a detected log level.
-func (t *Theme) LogLineStyle(level domain.LogLevel) lipgloss.Style {
-	switch level {
-	case domain.LogLevelError, domain.LogLevelFatal:
-		return t.LogError
-	case domain.LogLevelWarn:
-		return t.LogWarn
-	case domain.LogLevelInfo:
-		return t.LogInfo
-	case domain.LogLevelDebug, domain.LogLevelTrace:
-		return t.LogDebug
-	default:
-		return t.LogText
 	}
 }
 

@@ -54,7 +54,7 @@ Sleep 1100ms
 Type "g"
 Sleep 1400ms
 
-# --- / narrows 12 apps down to one project; enter applies the filter ---
+# --- / narrows 12 apps down to a handful; enter applies the filter ---
 Type "/"
 Sleep 500ms
 Type "billing"

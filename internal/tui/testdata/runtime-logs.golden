@@ -1,6 +1,6 @@
  COOLDECK  Demo   o connected    DEMO                                                    12 apps  |  refreshed just now
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- RESOURCES         │Demo -> Shipyard -> production -> shipyard-api
+ RESOURCES         │Demo -> shipyard-api
                    │  Overview  |  Deployments  |  Runtime Logs  |  Configuration
  > Applic...   12  │
    Deploym...   0  │RUNTIME LOGS

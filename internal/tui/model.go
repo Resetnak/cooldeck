@@ -703,20 +703,7 @@ func (m *Model) refreshInstances() {
 	}
 
 	// Stable order by ID so the list does not jump between refreshes.
-	ids := make([]string, 0, len(m.opts.Config.Instances))
-	for id := range m.opts.Config.Instances {
-		ids = append(ids, id)
-	}
-	// Simple insertion order via sort would need import; use map iteration then
-	// a tiny selection sort by ID.
-	for i := 0; i < len(ids); i++ {
-		for j := i + 1; j < len(ids); j++ {
-			if ids[j] < ids[i] {
-				ids[i], ids[j] = ids[j], ids[i]
-			}
-		}
-	}
-	for _, id := range ids {
+	for _, id := range m.opts.Config.InstanceIDs() {
 		inst := m.opts.Config.Instances[id]
 		inst.ID = id
 		row := views.InstanceRow{
@@ -786,7 +773,7 @@ func (m *Model) filterPrompt(width int) string {
 	th := m.theme
 	prompt := th.FilterPrompt.Render(th.Sym.Filter + " ")
 	text := th.FilterText.Render(m.filterText) + th.FilterPrompt.Render("▏")
-	hint := th.FilterHint.Render("  status: project: env: branch: domain:  " +
+	hint := th.FilterHint.Render("  status: branch: domain: name:  " +
 		th.Sym.Separator + "  esc clear  enter apply")
 
 	line := prompt + text

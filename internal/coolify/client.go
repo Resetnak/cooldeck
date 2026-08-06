@@ -36,7 +36,6 @@ type clientOptions struct {
 	baseURL    string
 	token      credentials.Token
 	insecure   bool
-	timeout    time.Duration
 	httpClient *http.Client
 }
 
@@ -59,11 +58,7 @@ func newClient(opts clientOptions) (*client, error) {
 		if opts.insecure {
 			transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec // explicit per-instance opt-in
 		}
-		timeout := opts.timeout
-		if timeout <= 0 {
-			timeout = defaultTimeout
-		}
-		httpClient = &http.Client{Transport: transport, Timeout: timeout}
+		httpClient = &http.Client{Transport: transport, Timeout: defaultTimeout}
 	}
 
 	return &client{baseURL: u, token: opts.token, http: httpClient}, nil

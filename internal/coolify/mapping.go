@@ -19,8 +19,6 @@ func mapApplication(dto applicationDTO) domain.Application {
 		Branch:        dto.GitBranch,
 		CommitSHA:     dto.GitCommitSHA,
 		BuildPack:     dto.BuildPack,
-		Environment:   domain.ResourceRef{ID: dto.EnvironmentID},
-		Server:        domain.ResourceRef{ID: dto.DestinationID},
 		HealthCheck: domain.HealthCheck{
 			Enabled:  dto.HealthCheckEnabled,
 			Method:   dto.HealthCheckMethod,

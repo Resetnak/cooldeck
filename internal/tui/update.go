@@ -235,9 +235,7 @@ func (m *Model) handleApplicationsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) 
 
 	switch {
 	case key.Matches(msg, m.keys.Mark):
-		if marked, ok := m.apps.ToggleMark(); ok {
-			_ = marked
-		}
+		m.apps.ToggleMark()
 		return m, nil
 	case key.Matches(msg, m.keys.Tail):
 		return m.openTail()
@@ -344,7 +342,7 @@ func (m *Model) handleDeploymentsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		if d, ok := m.deployments.Selected(); ok && d.UUID != "" {
 			return m, m.copyText(d.UUID, "Copied deployment UUID")
 		}
-	case msg.String() == "a":
+	case key.Matches(msg, m.keys.DeploymentsActive):
 		only := m.deployments.ToggleActiveOnly()
 		label := "recent history"
 		if only {
@@ -378,16 +376,16 @@ func (m *Model) handleInstancesKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 	case key.Matches(msg, m.keys.Enter):
 		return m, m.activateSelectedInstance()
-	case msg.String() == "T":
+	case key.Matches(msg, m.keys.TestConnection):
 		return m, tea.Batch(
 			m.pushToast(components.ToastInfo, "Testing connection…", ""),
 			m.testActiveConnection(),
 		)
-	case msg.String() == "a":
+	case key.Matches(msg, m.keys.AddInstance):
 		return m, m.openAddInstanceForm()
-	case msg.String() == "e":
+	case key.Matches(msg, m.keys.EditInstance):
 		return m, m.openEditInstanceForm()
-	case msg.String() == "d":
+	case key.Matches(msg, m.keys.DeleteInstance):
 		if row, ok := m.instances.Selected(); ok {
 			return m, m.stageDeleteInstance(row.ID, row.Name)
 		}
@@ -414,9 +412,9 @@ func (m *Model) handleDiagnosticsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		if m.layout.ShowSidebar {
 			m.focus = focusSidebar
 		}
-	case key.Matches(msg, m.keys.CopyUUID), msg.String() == "c":
+	case key.Matches(msg, m.keys.CopyUUID):
 		return m, m.copyDiagnostics()
-	case msg.String() == "e":
+	case key.Matches(msg, m.keys.ExportDiagnostics):
 		return m, m.exportDiagnostics()
 	case key.Matches(msg, m.keys.Quit), key.Matches(msg, m.keys.Back):
 		return m.gotoSection(SectionApplications)

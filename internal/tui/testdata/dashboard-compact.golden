@@ -1,20 +1,20 @@
  COOLDECK Demo   o connected    DEMO                 12 apps just now
 ──────────────────────────────────────────────────────────────────────
   Apps  |  Deploys  |  Inst  |  Diag
-  STATUS       APPLICATION        PROJECT / ENV     BRANCH      DEPLOY
+  STATUS       APPLICATION        BRANCH      DEPLOYED DOMAIN
 ──────────────────────────────────────────────────────────────────────
-> ! Degraded   * billing-api      Billing / prod... main         47m a
-  * Restarting ingest-dashboard   Ingest / preview  feat/c... 1m 30s a
-  * Running    * landing-web      Personal / pro... main             2
-  . Queued     * vault-web        Personal / pro... main
-  # Stopped    * billing-worker   Billing / prod... main          2h a
-  # Stopped    metrics-web        Metrics / staging develop    1d 2h a
-  o Running    * ingest-servic... Ingest / produ... main          5d a
-  o Running    metrics-api        Metrics / staging develop    1d 2h a
-  o Running    * notes-app        Personal / pro... main         11d a
-  o Running    * shipyard-api     Shipyard / pro... main          3m a
-  o Running    * shipyard-web     Shipyard / pro... main          3m a
-  ? Unknown    sandbox-api        Sandbox / deve... main
+> ! Degraded   billing-api        main         47m ago api.billing.ex.
+  * Restarting ingest-dashboard   feat/c... 1m 30s ago -
+  * Running    landing-web        main             21s landing.example
+  . Queued     vault-web          main              4s vault.example
+  # Stopped    billing-worker     main          2h ago -
+  # Stopped    metrics-web        develop    1d 2h ago staging.metric.
+  o Running    ingest-service-... main          5d ago ingest.example.
+  o Running    metrics-api        develop    1d 2h ago staging-api.me.
+  o Running    notes-app          main         11d ago notes.example
+  o Running    shipyard-api       main          3m ago api.shipyard.e.
+  o Running    shipyard-web       main          3m ago shipyard.exampl
+  ? Unknown    sandbox-api        main               - -
 
 
 

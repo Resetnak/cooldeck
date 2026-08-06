@@ -1,20 +1,20 @@
  COOLDECK  Demo   o connected    DEMO                                12 apps  |  refreshed just now
 ────────────────────────────────────────────────────────────────────────────────────────────────────
   Applications  12   |  Deployme
-  STATUS       APPLICATION            PROJECT / ENV        BRANCH       DEPLOYED DOMAIN
+  STATUS       APPLICATION                      BRANCH            DEPLOYED DOMAIN
 ────────────────────────────────────────────────────────────────────────────────────────────────────
-> ! Degraded   * billing-api          Billing / production main          47m ago api.billing.example
-  * Restarting ingest-dashboard       Ingest / preview     feat/ch... 1m 30s ago -
-  * Running    * landing-web          Personal / produc... main              21s landing.example
-  . Queued     * vault-web            Personal / produc... main               4s vault.example
-  # Stopped    * billing-worker       Billing / production main           2h ago -
-  # Stopped    metrics-web            Metrics / staging    develop     1d 2h ago staging.metrics.ex.
-  o Running    * ingest-service-wi... Ingest / production  main           5d ago ingest.example-wit.
-  o Running    metrics-api            Metrics / staging    develop     1d 2h ago staging-api.metric.
-  o Running    * notes-app            Personal / produc... main          11d ago notes.example
-  o Running    * shipyard-api         Shipyard / produc... main           3m ago api.shipyard.exampl
-  o Running    * shipyard-web         Shipyard / produc... main           3m ago shipyard.example
-  ? Unknown    sandbox-api            Sandbox / develop... main                - -
+> ! Degraded   billing-api                      main               47m ago api.billing.example
+  * Restarting ingest-dashboard                 feat/charts     1m 30s ago -
+  * Running    landing-web                      main                   21s landing.example
+  . Queued     vault-web                        main                    4s vault.example
+  # Stopped    billing-worker                   main                2h ago -
+  # Stopped    metrics-web                      develop          1d 2h ago staging.metrics.example
+  o Running    ingest-service-with-a-very-lo... main                5d ago ingest.example-with-a-ra.
+  o Running    metrics-api                      develop          1d 2h ago staging-api.metrics.examp
+  o Running    notes-app                        main               11d ago notes.example
+  o Running    shipyard-api                     main                3m ago api.shipyard.example
+  o Running    shipyard-web                     main                3m ago shipyard.example
+  ? Unknown    sandbox-api                      main                     - -
 
 
 
