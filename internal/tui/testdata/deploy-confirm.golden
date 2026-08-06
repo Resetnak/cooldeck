@@ -1,20 +1,20 @@
  COOLDECK  Demo   o connected    DEMO                                12 apps  |  refreshed just now
 ────────────────────────────────────────────────────────────────────────────────────────────────────
   Applications  12   |  Deployme
-  STATUS       APPLICATION            PROJECT / ENV        BRANCH       DEPLOYED DOMAIN
+  STATUS       APPLICATION                      BRANCH            DEPLOYED DOMAIN
 ────────────────────────────────────────────────────────────────────────────────────────────────────
-> ! Degraded   * billing-api          Billing / production main          47m ago api.billing.example
-  * Restarting ingest-dashboard       Ingest / preview     feat/ch... 1m 30s ago -
-  * Running    * landing-web          Personal / produc... main              21s landing.example
-  . Queued     * vault-web            Personal / produc... main               4s vault.example
-  # Stopped    * billin+----------------------------------------------------+ago -
-  # Stopped    metrics-|                                                    |ago staging.metrics.ex.
-  o Running    * ingest|  Deploy application?                               |ago ingest.example-wit.
-  o Running    metrics-|                                                    |ago staging-api.metric.
-  o Running    * notes-|  Application: shipyard-api                         |ago notes.example
-  o Running    * shipya|                                                    |ago api.shipyard.exampl
-  o Running    * shipya|    enter confirm      esc cancel                   |ago shipyard.example
-  ? Unknown    sandbox-|                                                    |  - -
+> ! Degraded   billing-api                      main               47m ago api.billing.example
+  * Restarting ingest-dashboard                 feat/charts     1m 30s ago -
+  * Running    landing-web                      main                   21s landing.example
+  . Queued     vault-web                        main                    4s vault.example
+  # Stopped    billing-+----------------------------------------------------+
+  # Stopped    metrics-|                                                    |aging.metrics.example
+  o Running    ingest-s|  Deploy application?                               |gest.example-with-a-ra.
+  o Running    metrics-|                                                    |aging-api.metrics.examp
+  o Running    notes-ap|  Application: shipyard-api                         |tes.example
+  o Running    shipyard|                                                    |i.shipyard.example
+  o Running    shipyard|    enter confirm      esc cancel                   |ipyard.example
+  ? Unknown    sandbox-|                                                    |
                        +----------------------------------------------------+
 
 

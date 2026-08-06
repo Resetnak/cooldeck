@@ -313,7 +313,6 @@ func (s *Service) simulate(ctx context.Context) error {
 // advanceLocked moves the simulated in-flight deployment forward so a demo
 // left running shows a build progressing and finishing on its own.
 func (s *Service) advanceLocked() {
-	elapsed := s.now().Sub(s.startedAt)
 	for uuid, deps := range s.deployments {
 		for i := range deps {
 			d := &deps[i]
@@ -333,9 +332,7 @@ func (s *Service) advanceLocked() {
 				s.setAppStatusLocked(uuid, "in_progress")
 			}
 		}
-		s.deployments[uuid] = deps
 	}
-	_ = elapsed
 }
 
 func (s *Service) setAppStatusLocked(appUUID, raw string) {
@@ -367,7 +364,9 @@ func (s *Service) newDeployment(a *domain.Application, trigger string, force boo
 	return d
 }
 
-func (s *Service) tailLines(appUUID string, n int) []string {
+// tailLines serves the same synthetic lines for every application; the demo
+// only needs plausible traffic, not per-app history.
+func (s *Service) tailLines(_ string, n int) []string {
 	if n > 40 {
 		n = 40
 	}
@@ -377,7 +376,6 @@ func (s *Service) tailLines(appUUID string, n int) []string {
 		ts := base.Add(time.Duration(i) * 2 * time.Second).UTC().Format(time.RFC3339)
 		out = append(out, fmt.Sprintf("%s INFO  GET /healthz 200 in %dms", ts, 3+(i*7)%40))
 	}
-	_ = appUUID
 	return out
 }
 

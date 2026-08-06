@@ -11,8 +11,6 @@ type applicationDTO struct {
 	GitCommitSHA        string  `json:"git_commit_sha"`
 	BuildPack           string  `json:"build_pack"`
 	Status              string  `json:"status"`
-	EnvironmentID       int     `json:"environment_id"`
-	DestinationID       int     `json:"destination_id"`
 	HealthCheckEnabled  bool    `json:"health_check_enabled"`
 	HealthCheckMethod   string  `json:"health_check_method"`
 	HealthCheckScheme   string  `json:"health_check_scheme"`

@@ -9,30 +9,21 @@ func testApps() []Application {
 	return []Application{
 		{
 			UUID: "a1", Name: "shipyard-api", Branch: "main",
-			Status:      ParseStatus("running:healthy"),
-			FQDNs:       []string{"api.shipyard.example"},
-			Project:     ResourceRef{Name: "Shipyard"},
-			Environment: ResourceRef{Name: "production"},
-			Server:      ResourceRef{Name: "hetzner-1"},
+			Status: ParseStatus("running:healthy"),
+			FQDNs:  []string{"api.shipyard.example"},
 		},
 		{
 			UUID: "a2", Name: "landing-web", Branch: "main",
-			Status:      ParseStatus("in_progress"),
-			FQDNs:       []string{"landing.example", "www.landing.example"},
-			Project:     ResourceRef{Name: "Personal"},
-			Environment: ResourceRef{Name: "production"},
+			Status: ParseStatus("in_progress"),
+			FQDNs:  []string{"landing.example", "www.landing.example"},
 		},
 		{
 			UUID: "a3", Name: "billing-worker", Branch: "develop",
-			Status:      ParseStatus("failed"),
-			Project:     ResourceRef{Name: "Billing"},
-			Environment: ResourceRef{Name: "staging"},
+			Status: ParseStatus("failed"),
 		},
 		{
 			UUID: "a4", Name: "shipyard-cron", Branch: "main",
-			Status:      ParseStatus("running:unhealthy"),
-			Project:     ResourceRef{Name: "Shipyard"},
-			Environment: ResourceRef{Name: "production"},
+			Status: ParseStatus("running:unhealthy"),
 		},
 	}
 }
@@ -60,23 +51,20 @@ func TestFilterMatching(t *testing.T) {
 		// A degraded app is not "running"; it needs its own bucket.
 		{"status:degraded", []string{"shipyard-cron"}},
 		{"status:unhealthy", []string{"shipyard-cron"}},
-		{"project:shipyard", []string{"shipyard-api", "shipyard-cron"}},
-		{"env:production", []string{"shipyard-api", "landing-web", "shipyard-cron"}},
 		{"branch:main", []string{"shipyard-api", "landing-web", "shipyard-cron"}},
 		{"domain:landing.example", []string{"landing-web"}},
 		// Terms combine with AND.
-		{"project:shipyard status:failed", nil},
-		{"branch:main env:production", []string{"shipyard-api", "landing-web", "shipyard-cron"}},
+		{"branch:main status:failed", nil},
+		{"branch:main status:running", []string{"shipyard-api"}},
 		// Negation excludes.
 		{"-status:running", []string{"landing-web", "billing-worker", "shipyard-cron"}},
-		{"project:shipyard -status:degraded", []string{"shipyard-api"}},
+		{"shipyard -status:degraded", []string{"shipyard-api"}},
 		// Free text searches every relevant column.
-		{"hetzner-1", []string{"shipyard-api"}},
 		{"a3", []string{"billing-worker"}},
 		// Case is irrelevant.
 		{"STATUS:FAILED", []string{"billing-worker"}},
 		// Aliases.
-		{"p:personal", []string{"landing-web"}},
+		{"b:develop", []string{"billing-worker"}},
 		{"s:failed", []string{"billing-worker"}},
 		// Synonyms.
 		{"status:bad", []string{"billing-worker", "shipyard-cron"}},
@@ -112,28 +100,6 @@ func TestFilterIsEmpty(t *testing.T) {
 	}
 	if f := ParseFilter("status:failed"); f.Raw != "status:failed" {
 		t.Errorf("Raw should preserve the typed query, got %q", f.Raw)
-	}
-}
-
-func TestIsProductionEnvironment(t *testing.T) {
-	prod := []string{"production", "prod", "Production", "PROD", "live", "prd", "app-prod", "prod-eu"}
-	for _, name := range prod {
-		if !IsProductionEnvironment(name) {
-			t.Errorf("%q should be production", name)
-		}
-	}
-	// A false positive only makes a confirmation louder; a false negative
-	// lets a production restart through unannounced, so err toward matching.
-	notProd := []string{"staging", "dev", "development", "test", "reproduction", "preview", ""}
-	for _, name := range notProd {
-		if IsProductionEnvironment(name) {
-			t.Errorf("%q should not be production", name)
-		}
-	}
-
-	app := Application{Environment: ResourceRef{Name: "production"}}
-	if !app.IsProduction() {
-		t.Error("application in a production environment should report as production")
 	}
 }
 

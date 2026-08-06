@@ -46,9 +46,6 @@ func (v *Diagnostics) Scroll(delta, viewport int) {
 	v.scroll = min(max(v.scroll+delta, 0), maxScroll)
 }
 
-// ScrollOffset returns the current scroll position.
-func (v *Diagnostics) ScrollOffset() int { return v.scroll }
-
 // PlainText renders the diagnostics as plain text suitable for export/copy.
 func (v *Diagnostics) PlainText() string {
 	var b strings.Builder

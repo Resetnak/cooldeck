@@ -2,6 +2,7 @@ package tui
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -52,7 +53,7 @@ func (m *Model) openTail() (tea.Model, tea.Cmd) {
 	if dropped > 0 {
 		// Say what was left out rather than silently tailing a subset.
 		cmds = append(cmds, m.pushToast(components.ToastWarning, "Tailing the first "+
-			itoa(views.MaxTailApps), itoa(dropped)+" more stayed behind; Coolify serves logs as whole snapshots, so each source is its own request."))
+			strconv.Itoa(views.MaxTailApps), strconv.Itoa(dropped)+" more stayed behind; Coolify serves logs as whole snapshots, so each source is its own request."))
 	}
 	return m, tea.Batch(cmds...)
 }
@@ -140,17 +141,4 @@ func tailRetryDelay(err *domain.Error) time.Duration {
 		return err.RetryAfter
 	}
 	return tailInterval * 2
-}
-
-// itoa keeps the toast text free of a strconv import in this file.
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	var digits []byte
-	for n > 0 {
-		digits = append([]byte{byte('0' + n%10)}, digits...)
-		n /= 10
-	}
-	return string(digits)
 }

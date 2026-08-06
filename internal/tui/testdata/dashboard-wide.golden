@@ -1,23 +1,23 @@
  COOLDECK  Demo   o connected    DEMO                                                                                            12 apps  |  refreshed just now
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- RESOURCES               │  STATUS       APPLICATION         PROJECT / ENV     BRANCH      DEPLOYED DOMAIN          +----------------------------------------+
+ RESOURCES               │  STATUS       APPLICATION                 BRANCH          DEPLOYED DOMAIN                +----------------------------------------+
                          │──────────────────────────────────────────────────────────────────────────────────────────| billing-api                            |
- > Applications      12  │> ! Degraded   * billing-api       Billing / prod... main         47m ago api.billing.exa.| ! Degraded                             |
-   Deployments        0  │  * Restarting ingest-dashboard    Ingest / preview  feat/c... 1m 30s ago -               |                                        |
-   Instances          1  │  * Running    * landing-web       Personal / pro... main             21s landing.example |  PRODUCTION                            |
-   Diagnostics           │  . Queued     * vault-web         Personal / pro... main              4s vault.example   |                                        |
-                         │  # Stopped    * billing-worker    Billing / prod... main          2h ago -               | Project    Billing                     |
-                         │  # Stopped    metrics-web         Metrics / staging develop    1d 2h ago staging.metrics.| Env        production                  |
-                         │  o Running    * ingest-service... Ingest / produ... main          5d ago ingest.example-.| Server     hetzner-nbg1                |
-                         │  o Running    metrics-api         Metrics / staging develop    1d 2h ago staging-api.met.| Branch     main                        |
-                         │  o Running    * notes-app         Personal / pro... main         11d ago notes.example   | Commit     2099246                     |
-                         │  o Running    * shipyard-api      Shipyard / pro... main          3m ago api.shipyard.ex.| Domain     api.billing.example         |
-                         │  o Running    * shipyard-web      Shipyard / pro... main          3m ago shipyard.example|                                        |
-                         │  ? Unknown    sandbox-api         Sandbox / deve... main               - -               | LAST DEPLOYMENT                        |
-                         │                                                                                          | + Finished                             |
-                         │                                                                                          | 47m ago  1m 43s                        |
-                         │                                                                                          | docs: document the new environment     |
-                         │                                                                                          | vari...                                |
+ > Applications      12  │> ! Degraded   billing-api                 main             47m ago api.billing.example   | ! Degraded                             |
+   Deployments        0  │  * Restarting ingest-dashboard            feat/charts   1m 30s ago -                     |                                        |
+   Instances          1  │  * Running    landing-web                 main                 21s landing.example       | Branch     main                        |
+   Diagnostics           │  . Queued     vault-web                   main                  4s vault.example         | Commit     2099246                     |
+                         │  # Stopped    billing-worker              main              2h ago -                     | Domain     api.billing.example         |
+                         │  # Stopped    metrics-web                 develop        1d 2h ago staging.metrics.exampl|                                        |
+                         │  o Running    ingest-service-with-a-ve... main              5d ago ingest.example-with-a.| LAST DEPLOYMENT                        |
+                         │  o Running    metrics-api                 develop        1d 2h ago staging-api.metrics.e.| + Finished                             |
+                         │  o Running    notes-app                   main             11d ago notes.example         | 47m ago  1m 43s                        |
+                         │  o Running    shipyard-api                main              3m ago api.shipyard.example  | docs: document the new environment     |
+                         │  o Running    shipyard-web                main              3m ago shipyard.example      | vari...                                |
+                         │  ? Unknown    sandbox-api                 main                   - -                     |                                        |
+                         │                                                                                          |                                        |
+                         │                                                                                          |                                        |
+                         │                                                                                          |                                        |
+                         │                                                                                          |                                        |
                          │                                                                                          |                                        |
                          │                                                                                          |                                        |
                          │                                                                                          |                                        |

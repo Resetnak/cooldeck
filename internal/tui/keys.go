@@ -54,6 +54,18 @@ type KeyMap struct {
 	CopyUUID    key.Binding
 	Sort        key.Binding
 
+	// Deployments section.
+	DeploymentsActive key.Binding
+
+	// Instances section.
+	TestConnection key.Binding
+	AddInstance    key.Binding
+	EditInstance   key.Binding
+	DeleteInstance key.Binding
+
+	// Diagnostics section.
+	ExportDiagnostics key.Binding
+
 	// Log view.
 	LogFollow key.Binding
 	LogPause  key.Binding
@@ -120,6 +132,15 @@ func DefaultKeyMap() KeyMap {
 		OpenRepo:    key.NewBinding(key.WithKeys("o"), key.WithHelp("o", "open repo")),
 		CopyUUID:    key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "copy UUID")),
 		Sort:        key.NewBinding(key.WithKeys("S"), key.WithHelp("S", "sort")),
+
+		DeploymentsActive: key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "active filter")),
+
+		TestConnection: key.NewBinding(key.WithKeys("T"), key.WithHelp("T", "test connection")),
+		AddInstance:    key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "add instance")),
+		EditInstance:   key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit instance")),
+		DeleteInstance: key.NewBinding(key.WithKeys("d"), key.WithHelp("d", "delete instance")),
+
+		ExportDiagnostics: key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "export")),
 
 		LogFollow: key.NewBinding(key.WithKeys("f"), key.WithHelp("f", "follow")),
 		LogPause:  key.NewBinding(key.WithKeys("space"), key.WithHelp("space", "pause")),

@@ -554,11 +554,6 @@ func (v *Detail) overviewRows(th *theme.Theme, now time.Time) []field {
 	rows = append(rows,
 		field{label: "UUID", value: a.UUID},
 		field{blank: true},
-		field{heading: true, value: "Placement"},
-		field{label: "Project", value: components.OrDash(a.Project.String())},
-		field{label: "Environment", value: v.environmentValue(th)},
-		field{label: "Server", value: components.OrDash(a.Server.String())},
-		field{blank: true},
 		field{heading: true, value: "Source"},
 		field{label: "Repository", value: components.OrDash(a.RepositoryURL)},
 		field{label: "Branch", value: components.OrDash(a.Branch)},
@@ -631,14 +626,6 @@ func (v *Detail) configurationRows(th *theme.Theme) []field {
 	return rows
 }
 
-func (v *Detail) environmentValue(th *theme.Theme) string {
-	env := components.OrDash(v.app.Environment.String())
-	if v.app.IsProduction() {
-		return env + "  " + th.Badge(theme.BadgeProduction, "PRODUCTION")
-	}
-	return env
-}
-
 // renderScrollable lays out label/value rows and applies the scroll offset.
 func (v *Detail) renderScrollable(th *theme.Theme, rows []field, width, height int) string {
 	const labelWidth = 14
@@ -682,10 +669,6 @@ func Preview(th *theme.Theme, a domain.Application, width, height int, now time.
 		th.StatusText(a.Status),
 		"",
 	}
-	if a.IsProduction() {
-		lines = append(lines, th.Badge(theme.BadgeProduction, "PRODUCTION"), "")
-	}
-
 	add := func(label, value string) {
 		if strings.TrimSpace(value) == "" {
 			return
@@ -694,9 +677,6 @@ func Preview(th *theme.Theme, a domain.Application, width, height int, now time.
 			th.Label.Render(components.Pad(label, 10))+" "+
 				components.Truncate(value, inner-11, th.Sym.Ellipsis))
 	}
-	add("Project", a.Project.String())
-	add("Env", a.Environment.String())
-	add("Server", a.Server.String())
 	add("Branch", a.Branch)
 	add("Commit", a.ShortCommit())
 	add("Domain", a.PrimaryDomain())

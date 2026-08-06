@@ -23,10 +23,6 @@ type Capabilities struct {
 	Deploy          bool
 	Restart         bool
 	StartStop       bool
-	Projects        bool
-	Servers         bool
-	Services        bool
-	Databases       bool
 }
 
 // FullCapabilities is the optimistic starting point used before probing.
@@ -35,7 +31,6 @@ func FullCapabilities() Capabilities {
 		Applications: true, ApplicationLogs: true,
 		Deployments: true, DeploymentLogs: true,
 		Deploy: true, Restart: true, StartStop: true,
-		Projects: true, Servers: true, Services: true, Databases: true,
 	}
 }
 
@@ -66,8 +61,8 @@ type DashboardSnapshot struct {
 	// backend only exposes the live queue.
 	RecentDeployments []domain.Deployment
 	LoadedAt          time.Time
-	// Partial marks a snapshot where an optional enrichment (project names,
-	// deployment badges) failed but the applications themselves loaded.
+	// Partial marks a snapshot where an optional enrichment (deployment
+	// badges) failed but the applications themselves loaded.
 	Partial bool
 	// Warnings explains what was degraded. Always safe to display.
 	Warnings []string

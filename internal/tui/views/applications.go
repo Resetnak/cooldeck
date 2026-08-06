@@ -161,12 +161,6 @@ func (v *Applications) ToggleMark() (marked bool, ok bool) {
 	return true, true
 }
 
-// ClearMarks drops every mark.
-func (v *Applications) ClearMarks() { v.marked = nil }
-
-// MarkCount returns how many applications are marked.
-func (v *Applications) MarkCount() int { return len(v.marked) }
-
 // Marked returns the marked applications in display order, so the tail shows
 // them in the order the table does rather than in map order.
 func (v *Applications) Marked() []domain.Application {
@@ -180,12 +174,6 @@ func (v *Applications) Marked() []domain.Application {
 		}
 	}
 	return out
-}
-
-// ActiveDeployment returns the in-flight deployment for an application.
-func (v *Applications) ActiveDeployment(uuid string) (domain.Deployment, bool) {
-	d, ok := v.activeDeployments[uuid]
-	return d, ok
 }
 
 // Move shifts the selection by delta rows and returns whether it changed.
@@ -283,11 +271,10 @@ func deployedAt(a domain.Application) time.Time {
 // Allocated once: Render is hot and must not rebuild the schema every frame.
 var applicationColumns = []components.Column{
 	{Title: "Status", MinWidth: 12, Priority: 0},
-	{Title: "Application", MinWidth: 16, Flex: 3, MaxWidth: 40, Priority: 0},
-	{Title: "Project / Env", ShortTitle: "Project", MinWidth: 16, Flex: 2, MaxWidth: 30, Priority: 3},
-	{Title: "Branch", MinWidth: 8, Flex: 1, MaxWidth: 18, Priority: 2},
+	{Title: "Application", MinWidth: 16, Flex: 4, MaxWidth: 48, Priority: 0},
+	{Title: "Branch", MinWidth: 8, Flex: 2, MaxWidth: 24, Priority: 2},
 	{Title: "Deployed", MinWidth: 10, Priority: 1, Right: true},
-	{Title: "Domain", MinWidth: 16, Flex: 3, MaxWidth: 44, Priority: 4},
+	{Title: "Domain", MinWidth: 16, Flex: 3, MaxWidth: 44, Priority: 3},
 }
 
 // Render draws the table, or the appropriate empty, loading or filtered-out
@@ -341,22 +328,8 @@ func (v *Applications) cells(th *theme.Theme, a domain.Application, now time.Tim
 
 	name := a.Name
 	if v.marked[a.UUID] {
-		// Same treatment as the production bullet below: a glyph, never colour
-		// alone, and in front of it so a marked production app shows both.
+		// A glyph rather than colour alone, so marks survive monochrome terminals.
 		name = th.Accent.Render(th.Sym.Check) + " " + name
-	}
-	if a.IsProduction() {
-		// Production is marked with a glyph rather than colour alone.
-		name = th.Danger.Render(th.Sym.Bullet) + " " + name
-	}
-
-	projectEnv := a.Project.String()
-	if env := a.Environment.String(); env != "" {
-		if projectEnv == "" {
-			projectEnv = env
-		} else {
-			projectEnv += " / " + env
-		}
 	}
 
 	deployed := components.Dash
@@ -369,7 +342,6 @@ func (v *Applications) cells(th *theme.Theme, a domain.Application, now time.Tim
 	return []string{
 		status,
 		name,
-		th.TableCellMuted.Render(components.OrDash(projectEnv)),
 		th.TableCellMuted.Render(components.OrDash(a.Branch)),
 		deployed,
 		th.TableCellMuted.Render(components.OrDash(a.PrimaryDomain())),

@@ -1,19 +1,19 @@
  COOLDECK  Demo   o connected    DEMO                                12 apps  |  refreshed just now
 ──────────────────+--------------------------------------------------------------+──────────────────
   Applications [48|                                                              |5m   |  Deployme
-  STATUS       APP|  Commands                                                    |OMAIN
+  STATUS       APP|  Commands                                                    |
 ──────────────────|  > ▏                                                         |──────────────────
-> ! Degraded   * b|  type to filter · enter run · esc close                      |pi.billing.example
+> ! Degraded   bil|  type to filter · enter run · esc close                      |ling.example
   * Restarting ing|                                                              |
-  * Running    * l|  Actions                                                     |anding.example
-  . Queued     * v|  Deploy selected application                                 |ault.example
-  # Stopped    * b|  d                                                           |
-  # Stopped    met|  Force deploy selected application                           |taging.metrics.ex.
-  o Running    * i|  D                                                           |ngest.example-wit.
-  o Running    met|  Restart application                                         |taging-api.metric.
-  o Running    * n|  r                                                           |otes.example
-  o Running    * s|  Start or stop application                                   |pi.shipyard.exampl
-  o Running    * s|  s                                                           |hipyard.example
+  * Running    lan|  Actions                                                     |.example
+  . Queued     vau|  Deploy selected application                                 |xample
+  # Stopped    bil|  d                                                           |
+  # Stopped    met|  Force deploy selected application                           |.metrics.example
+  o Running    ing|  D                                                           |example-with-a-ra.
+  o Running    met|  Restart application                                         |-api.metrics.examp
+  o Running    not|  r                                                           |xample
+  o Running    shi|  Start or stop application                                   |pyard.example
+  o Running    shi|  s                                                           |d.example
   ? Unknown    san|  Navigate                                                    |
                   |  Open runtime logs                                           |
                   |  l                                                           |

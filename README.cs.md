@@ -60,13 +60,13 @@ si přečte konfiguraci, vytáhne token z OS keyringu a vykreslí.
 ```text
  COOLDECK  Demo   ● connected   DEMO                              12 apps  |  refreshed just now
 ────────────────────────────────────────────────────────────────────────────────────────────────
- RESOURCES        │ STATUS       APPLICATION       PROJECT / ENV     BRANCH    DEPLOYED │ billing-api
-                  │ ▲ Degraded   billing-api       Billing / prod    main       47m ago │ ▲ Degraded
- > Applications 12│ ◐ Restarting ingest-dashboard  Ingest / preview  feat/…  1m 30s ago │
-   Deployments  33│ ● Running    landing-web       Personal / prod   main           21s │  PRODUCTION
-   Instances     1│ ○ Queued     vault-web         Personal / prod   main            4s │
-   Diagnostics    │ ■ Stopped    billing-worker    Billing / prod    main        2h ago │ Project  Billing
-                  │ ● Running    shipyard-api      Shipyard / prod   main        3m ago │ Branch   main
+ RESOURCES        │ STATUS       APPLICATION       BRANCH         DEPLOYED  DOMAIN      │ billing-api
+                  │ ▲ Degraded   billing-api       main            47m ago  api.billi…  │ ▲ Degraded
+ > Applications 12│ ◐ Restarting ingest-dashboard  feat/charts  1m 30s ago  -           │
+   Deployments  33│ ● Running    landing-web       main                21s  landing.e…  │ Branch   main
+   Instances     1│ ○ Queued     vault-web         main                 4s  vault.exa…  │ Commit   9f31c2e
+   Diagnostics    │ ■ Stopped    billing-worker    main             2h ago  -           │ Deploy   47m ago
+                  │ ● Running    shipyard-api      main             3m ago  shipyard.…  │
 ────────────────────────────────────────────────────────────────────────────────────────────────
   ↑↓ navigate   enter details   d deploy   r restart   s start/stop   / filter   ? more     1/12
 ```
@@ -84,7 +84,7 @@ si přečte konfiguraci, vytáhne token z OS keyringu a vykreslí.
 
 ## ✨ Hlavní vlastnosti
 
-- **🖥️ Celá flotila na jedné obrazovce**: stav, projekt/prostředí, branch, poslední deploy a doména u každé aplikace, s filtrem (`/`) a řazením (`S`).
+- **🖥️ Celá flotila na jedné obrazovce**: stav, branch, poslední deploy a doména u každé aplikace, s filtrem (`/`) a řazením (`S`).
 - **🔎 Detail bez přepínání kontextu**: přehled, historie deploymentů, runtime logy a konfigurace jako záložky na téže obrazovce.
 - **🛰️ Fleet tail**: označte aplikace klávesou `space`, zmáčkněte `t` a čtěte jejich runtime logy proložené v jednom bufferu, každý řádek pojmenovaný a obarvený podle aplikace - pohled, který vám webové UI Coolify nedá.
 - **📜 Logy, které se dají číst**: follow, pauza, zalamování, hledání v bufferu s `n`/`N`, kopírování nálezu, vyčištění bufferu, `+`/`-` pro rozšíření nebo zúžení okna řádků.
@@ -213,7 +213,7 @@ odpovědi z překonaného požadavku se zahodí místo vykreslení.
 ### 🔍 Filtr, hledání a nápověda
 | Zkratka | Akce |
 | :--- | :--- |
-| `/` | Filtr aplikací (`status:`, `project:`, `env:`, `branch:`, volný text) - nebo hledání v log bufferu |
+| `/` | Filtr aplikací (`status:`, `branch:`, volný text) - nebo hledání v log bufferu |
 | `:` / `Ctrl+K` | Command palette; zakázané příkazy ukážou *proč* |
 | `?` | Overlay s kompletní mapou kláves |
 | `Ctrl+T` / `Ctrl+W` | Cyklovat téma / přepnout kompaktní layout |

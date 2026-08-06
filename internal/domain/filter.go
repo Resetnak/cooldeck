@@ -9,28 +9,22 @@ type FilterField string
 
 // Supported filter fields.
 const (
-	FieldFree    FilterField = ""
-	FieldStatus  FilterField = "status"
-	FieldProject FilterField = "project"
-	FieldEnv     FilterField = "env"
-	FieldBranch  FilterField = "branch"
-	FieldServer  FilterField = "server"
-	FieldDomain  FilterField = "domain"
-	FieldName    FilterField = "name"
+	FieldFree   FilterField = ""
+	FieldStatus FilterField = "status"
+	FieldBranch FilterField = "branch"
+	FieldDomain FilterField = "domain"
+	FieldName   FilterField = "name"
 )
 
 // FilterFields lists the scoped fields, used for the filter input's hint line.
 var FilterFields = []FilterField{
-	FieldStatus, FieldProject, FieldEnv, FieldBranch, FieldServer, FieldDomain, FieldName,
+	FieldStatus, FieldBranch, FieldDomain, FieldName,
 }
 
 // aliases maps the prefixes users actually type onto canonical fields.
 var fieldAliases = map[string]FilterField{
 	"status": FieldStatus, "state": FieldStatus, "s": FieldStatus,
-	"project": FieldProject, "proj": FieldProject, "p": FieldProject,
-	"env": FieldEnv, "environment": FieldEnv, "e": FieldEnv,
 	"branch": FieldBranch, "b": FieldBranch,
-	"server": FieldServer,
 	"domain": FieldDomain, "fqdn": FieldDomain, "url": FieldDomain,
 	"name": FieldName, "app": FieldName,
 }
@@ -99,14 +93,8 @@ func (t FilterTerm) match(a Application) bool {
 	switch t.Field {
 	case FieldStatus:
 		return matchStatus(a.Status, t.Value)
-	case FieldProject:
-		return contains(a.Project.Name, t.Value)
-	case FieldEnv:
-		return contains(a.Environment.Name, t.Value)
 	case FieldBranch:
 		return contains(a.Branch, t.Value)
-	case FieldServer:
-		return contains(a.Server.Name, t.Value)
 	case FieldDomain:
 		return containsAny(a.FQDNs, t.Value)
 	case FieldName:
@@ -114,10 +102,7 @@ func (t FilterTerm) match(a Application) bool {
 	default:
 		return contains(a.Name, t.Value) ||
 			contains(a.Description, t.Value) ||
-			contains(a.Project.Name, t.Value) ||
-			contains(a.Environment.Name, t.Value) ||
 			contains(a.Branch, t.Value) ||
-			contains(a.Server.Name, t.Value) ||
 			contains(a.UUID, t.Value) ||
 			containsAny(a.FQDNs, t.Value) ||
 			contains(a.RepositoryURL, t.Value)

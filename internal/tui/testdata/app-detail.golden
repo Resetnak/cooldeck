@@ -1,6 +1,6 @@
  COOLDECK  Demo   o connected    DEMO                                                    12 apps  |  refreshed just now
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- RESOURCES         │Demo -> Shipyard -> production -> shipyard-api
+ RESOURCES         │Demo -> shipyard-api
                    │  Overview  |  Deployments  |  Runtime Logs  |  Configuration
  > Applic...   12  │
    Deploym...   0  │OVERVIEW
@@ -8,11 +8,6 @@
    Diagnostics     │Health         healthy
                    │Description    Public REST API
                    │UUID           demo000ayg9ml
-                   │
-                   │PLACEMENT
-                   │Project        Shipyard
-                   │Environment    production   PRODUCTION
-                   │Server         hetzner-fsn1
                    │
                    │SOURCE
                    │Repository     git@github.com:acme/shipyard-api.git
@@ -28,5 +23,10 @@
                    │Started        3m ago  (YYYY-MM-DD HH:MM:SS)
                    │Duration       1m 12s
                    │Commit         6b3514c
+                   │Message        chore(deps): bump base image to alpine 3.21
+                   │
+                   │TIMESTAMPS
+                   │Created        YYYY-MM-DD HH:MM:SS
+                   │Updated        YYYY-MM-DD HH:MM:SS
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
   ←→  tabs   ↑↓  scroll   d  deploy   r  restart   s  start/stop   b  open domain   o  open repo   ?  more     Overview

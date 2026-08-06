@@ -162,8 +162,7 @@ func (m *Model) renderDetail(width, height int, now time.Time) string {
 	th := m.theme
 	a := m.detail.Application()
 
-	crumb := components.Breadcrumb(th, width,
-		m.instanceLabel(), a.Project.String(), a.Environment.String(), a.Name)
+	crumb := components.Breadcrumb(th, width, m.instanceLabel(), a.Name)
 	tabs := m.detail.TabBar(th, width, m.layout.IsCompact())
 
 	bodyHeight := max(height-3, 1)

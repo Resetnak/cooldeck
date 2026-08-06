@@ -45,7 +45,7 @@ behaviour, footer hints, and the help overlay together.
 | `S` | Cycle sort (status → name → last deploy) |
 | `space` | Mark / unmark for the fleet tail |
 | `t` | Tail the marked applications |
-| `/` | Filter (`status:`, `project:`, `env:`, `branch:`, free text) |
+| `/` | Filter (`status:`, `branch:`, free text) |
 
 ## Detail & logs
 
