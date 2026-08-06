@@ -10,12 +10,12 @@ Single Go module, `github.com/resetnak/cooldeck`, Go 1.26.5+, no CGO.
 ## Commands
 
 ```bash
-make check               # fmt-check + vet + test + build - run before every PR
+make check               # fmt-check + vet + lint + test + build - run before every PR
 make build               # -> bin/cooldeck, injects version/commit/date ldflags
 make run                 # go run ./cmd/cooldeck --demo
 make test-race
 make test-update-golden  # UPDATE_GOLDEN=1 go test ./... - refresh TUI snapshots
-make lint                # staticcheck ./...
+make lint                # staticcheck + golangci-lint, pinned to the CI versions
 make bench               # benchmarks in internal/tui/views
 make vuln                # govulncheck
 ```

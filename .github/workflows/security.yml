@@ -6,6 +6,7 @@ on:
   pull_request:
   schedule:
     - cron: '17 4 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -21,7 +22,7 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Scan reachable vulnerabilities
-        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.6.0 ./...
 
   # Dependency review reads the dependency graph API, which private repositories
   # only get with GitHub Advanced Security. Without it the action fails the

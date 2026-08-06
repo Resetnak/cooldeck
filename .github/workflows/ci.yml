@@ -16,6 +16,7 @@ jobs:
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -52,6 +53,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -60,7 +62,7 @@ jobs:
           cache: true
       - uses: dominikh/staticcheck-action@v1
         with:
-          version: latest
+          version: "2026.1"
           install-go: false
       # Install with the job's Go toolchain so the linter matches go.mod (1.26+).
       # Prebuilt golangci-lint binaries lag and refuse newer language versions.
@@ -71,6 +73,7 @@ jobs:
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -91,6 +94,7 @@ jobs:
   build-matrix:
     name: Cross-build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       matrix:
         include:

@@ -30,10 +30,14 @@ need mktemp
 # curl or wget, whichever the machine happens to have.
 if command -v curl >/dev/null 2>&1; then
 	fetch() { curl -fsSL "$1" -o "$2"; }
-	fetch_stdout() { curl -fsSL "$1"; }
+	# Where does the URL redirect to? Follows the chain and prints the final URL.
+	resolve_url() { curl -fsSLI -o /dev/null -w '%{url_effective}' "$1"; }
 elif command -v wget >/dev/null 2>&1; then
 	fetch() { wget -qO "$2" "$1"; }
-	fetch_stdout() { wget -qO- "$1"; }
+	resolve_url() {
+		wget -q -S --max-redirect=0 -O /dev/null "$1" 2>&1 |
+			sed -n 's/^ *[Ll]ocation: *//p' | head -n 1
+	}
 else
 	fail "neither curl nor wget is installed"
 fi
@@ -52,12 +56,14 @@ esac
 
 version="${COOLDECK_VERSION:-}"
 if [ -z "$version" ]; then
-	# Follow the /latest redirect rather than parsing the API, so this needs no
-	# JSON tooling and no API token.
-	version=$(fetch_stdout "https://github.com/$REPO/releases/latest" 2>/dev/null |
-		sed -n 's|.*/releases/tag/\(v[0-9][^"]*\)".*|\1|p' | head -n 1)
+	# Follow the /latest redirect rather than scraping HTML or parsing the API:
+	# the redirect target is a stable contract, needs no JSON tooling, no token.
+	version=$( (resolve_url "https://github.com/$REPO/releases/latest" || true) |
+		sed -n 's|.*/releases/tag/\(v[0-9][^/?# ]*\).*|\1|p' | head -n 1)
 	[ -n "$version" ] || fail "could not determine the latest version; set COOLDECK_VERSION"
 fi
+# Accept COOLDECK_VERSION with or without the leading v.
+case "$version" in v*) ;; *) version="v$version" ;; esac
 
 archive="cooldeck_${version#v}_${os}_${arch}.tar.gz"
 base="https://github.com/$REPO/releases/download/$version"
@@ -70,7 +76,8 @@ fetch "$base/$archive" "$tmp/$archive" || fail "download failed: $base/$archive"
 fetch "$base/checksums.txt" "$tmp/checksums.txt" || fail "could not download checksums.txt"
 
 # Verify before trusting. A download that cannot be checked is not installed.
-expected=$(grep " $archive\$" "$tmp/checksums.txt" | cut -d' ' -f1)
+# awk matches the filename as a literal field, not a regex.
+expected=$(awk -v f="$archive" '$2 == f { print $1 }' "$tmp/checksums.txt")
 [ -n "$expected" ] || fail "$archive is not listed in checksums.txt"
 
 if command -v sha256sum >/dev/null 2>&1; then
