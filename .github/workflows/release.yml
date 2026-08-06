@@ -15,7 +15,7 @@ jobs:
       # This job runs with contents:write and a cross-repository PAT in its
       # environment, so its actions are pinned to commit SHAs rather than
       # mutable tags.
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
