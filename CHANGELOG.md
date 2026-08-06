@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-06
+
+The result of a full repository audit: correctness fixes, a hardened release
+pipeline, and the removal of a column that never showed real data.
+
+### Fixed
+
+- A typo in `config.toml` no longer prevents the TUI, the MCP server or the
+  `auth` commands from starting; unknown keys are reported by
+  `cooldeck config validate` instead
+- Adding or deleting an instance no longer freezes the whole UI (including
+  `ctrl+c`) while the OS keyring responds - keyring and config writes moved off
+  the event loop
+- Pausing and resuming the fleet tail no longer multiplies the polling rate
+- `log_refresh_interval = "0s"` no longer turns the log poll into a hot loop
+- The application detail downgrades the deployments capability on a 403 instead
+  of silently rendering "no deployments"
+- Runtime logs now show the "older lines dropped" indicator against a real
+  instance, not only in demo mode
+- Recent deployments are ordered newest-first regardless of what order the API
+  returns them in
+- The dashboard refresh no longer parses the full build log of every deployment
+  in the fleet on every poll
+- Opening a link in the browser no longer leaves a zombie process behind
+- An instance-switch failure no longer shows an empty toast, and a failed
+  keyring cleanup after a delete surfaces as a warning
+
+### Changed
+
+- `install.sh` resolves the latest version from the release redirect instead of
+  scraping HTML, and `COOLDECK_VERSION` works with or without the leading `v`
+- Release binaries are built with `-trimpath`, and a release runs the test
+  suite before publishing anything
+- Local builds report the same version shape as release builds (no leading `v`)
+- `make check` runs the same pinned linters as CI, so green locally means
+  green in CI
+
+### Removed
+
+- The Project/Env column, the `project:`/`env:`/`server:` filters and the
+  PRODUCTION badge: Coolify's application API returns only numeric ids, so
+  these showed real data exclusively in demo mode. They can return the day the
+  names are actually fetched
+
 ## [0.2.1] - 2026-08-05
 
 ### Fixed
@@ -86,7 +130,8 @@ Packaging only - the binary is identical to 0.1.0.
 - Tokens excluded from logs, toasts, and diagnostics
 - Browser open restricted to http(s) URLs
 
-[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Resetnak/cooldeck/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/Resetnak/cooldeck/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Resetnak/cooldeck/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/Resetnak/cooldeck/compare/v0.1.1...v0.1.2
