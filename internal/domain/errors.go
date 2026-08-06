@@ -107,7 +107,8 @@ func AsError(err error) *Error {
 	return e
 }
 
-// Is lets callers match on kind with errors.Is(err, domain.ErrorForbidden).
+// Is makes two domain errors match under errors.Is when their kinds are
+// equal. To branch on a kind directly, use IsKind.
 func (e *Error) Is(target error) bool {
 	var t *Error
 	if errors.As(target, &t) {
@@ -178,7 +179,7 @@ func defaultCopy(kind ErrorKind) (title, message, suggestion string, retryable b
 	case ErrorDecode:
 		return "Unexpected response",
 			"The response from Coolify could not be understood.",
-			"This usually means the Coolify version is not supported. Run `cooldeck doctor`.",
+			"This usually means the Coolify version is not supported. Check `cooldeck version` against the compatibility notes.",
 			false
 	case ErrorUnsupported:
 		return "Not supported",

@@ -36,9 +36,13 @@ func OpenURL(rawURL string) error {
 	if name == "" {
 		return fmt.Errorf("no way to open a browser on %s", runtime.GOOS)
 	}
-	if err := exec.Command(name, args...).Start(); err != nil {
+	cmd := exec.Command(name, args...)
+	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("open browser: %w", err)
 	}
+	// Reap the opener once it exits; Start without Wait leaves a zombie per
+	// opened link for the lifetime of the session.
+	go func() { _ = cmd.Wait() }()
 	return nil
 }
 

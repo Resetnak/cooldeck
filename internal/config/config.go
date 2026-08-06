@@ -347,6 +347,17 @@ func (c Config) EffectiveRefreshInterval(inst Instance) time.Duration {
 	return d
 }
 
+// EffectiveLogRefreshInterval returns the log poll interval with the same kind
+// of floor as EffectiveRefreshInterval: an explicit "0s" would otherwise turn
+// tea.Tick into a hot loop against the API.
+func (c Config) EffectiveLogRefreshInterval() time.Duration {
+	d := time.Duration(c.LogRefreshInterval)
+	if d < time.Second {
+		return DefaultLogRefreshInterval
+	}
+	return d
+}
+
 func formatKeys(keys []toml.Key) string {
 	out := make([]string, 0, len(keys))
 	for _, k := range keys {

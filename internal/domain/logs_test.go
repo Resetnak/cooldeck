@@ -114,7 +114,10 @@ func TestParseLogPayloadKeepsNewestLines(t *testing.T) {
 		b.WriteString(string(rune('0' + i%10)))
 		b.WriteByte('\n')
 	}
-	lines := ParseLogPayload(b.String(), 10)
+	lines, truncated := ParseLogPayload(b.String(), 10)
+	if !truncated {
+		t.Error("dropping 90 of 100 lines must report truncated")
+	}
 	if len(lines) != 10 {
 		t.Fatalf("got %d lines, want 10", len(lines))
 	}
@@ -123,15 +126,15 @@ func TestParseLogPayloadKeepsNewestLines(t *testing.T) {
 		t.Errorf("last line = %q, want %q", lines[9].Text, "line 9")
 	}
 
-	if got := ParseLogPayload("", 10); got != nil {
+	if got, _ := ParseLogPayload("", 10); got != nil {
 		t.Errorf("empty payload should yield nil, got %v", got)
 	}
 	// A trailing newline must not produce a phantom blank line.
-	if got := ParseLogPayload("one\ntwo\n", 0); len(got) != 2 {
+	if got, _ := ParseLogPayload("one\ntwo\n", 0); len(got) != 2 {
 		t.Errorf("got %d lines, want 2", len(got))
 	}
 	// CRLF payloads are normalised.
-	if got := ParseLogPayload("one\r\ntwo\r\n", 0); len(got) != 2 || got[0].Text != "one" {
+	if got, _ := ParseLogPayload("one\r\ntwo\r\n", 0); len(got) != 2 || got[0].Text != "one" {
 		t.Errorf("CRLF payload = %+v", got)
 	}
 }

@@ -80,7 +80,7 @@ func newAuthStatusCommand(opts *options) *cobra.Command {
 		Short: "Show credential availability without revealing tokens",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.Load(opts.configPath)
+			cfg, err := loadConfig(opts.configPath)
 			if err != nil {
 				return err
 			}
@@ -100,7 +100,7 @@ func newAuthStatusCommand(opts *options) *cobra.Command {
 }
 
 func loadInstance(path, id string) (config.Instance, error) {
-	cfg, err := config.Load(path)
+	cfg, err := loadConfig(path)
 	if err != nil {
 		return config.Instance{}, err
 	}

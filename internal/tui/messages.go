@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/resetnak/cooldeck/internal/app"
+	"github.com/resetnak/cooldeck/internal/config"
 	"github.com/resetnak/cooldeck/internal/domain"
 )
 
@@ -141,4 +142,25 @@ type instanceRemovedMsg struct {
 	NextID string
 	// EmptyFleet is true when no configured instances remain.
 	EmptyFleet bool
+	// CredWarning carries a keyring cleanup failure; the instance is gone
+	// from config either way.
+	CredWarning string
+}
+
+// instanceFormSavedMsg is delivered when the instance form's credential and
+// config writes finish. On success Config carries the committed config.
+type instanceFormSavedMsg struct {
+	Err      error
+	Config   config.Config
+	Instance config.Instance
+	Mode     instanceFormMode
+}
+
+// instanceDeleteFailedMsg is delivered when the config file could not be
+// written after a delete. It carries the snapshot to roll the in-memory
+// config back to.
+type instanceDeleteFailedMsg struct {
+	Err           error
+	PrevDefault   string
+	PrevInstances map[string]config.Instance
 }

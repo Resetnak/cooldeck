@@ -856,8 +856,12 @@ func (m *Model) handleTailSearchKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// resumeTail re-arms every source after a pause.
+// resumeTail re-arms every source after a pause. Bumping the sequence first
+// orphans any tick scheduled before the pause - without it, a pending tick
+// fires alongside the fresh ones and every pause/resume cycle doubles the
+// polling rate.
 func (m *Model) resumeTail() tea.Cmd {
+	m.tailSeq++
 	uuids := m.tail.UUIDs()
 	cmds := make([]tea.Cmd, 0, len(uuids))
 	for i, uuid := range uuids {

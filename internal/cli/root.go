@@ -137,10 +137,22 @@ func runTUI(ctx context.Context, opts *options) error {
 	return tui.Run(ctx, tuiOpts)
 }
 
+// loadConfig loads the file but tolerates unknown keys, honouring
+// config.Load's contract that the parsed Config stays usable. Reporting the
+// stray keys is `cooldeck config validate`'s job, not a reason to refuse to
+// start.
+func loadConfig(path string) (config.Config, error) {
+	cfg, err := config.Load(path)
+	if err != nil && !errors.Is(err, config.ErrUnknownKeys) {
+		return cfg, err
+	}
+	return cfg, nil
+}
+
 // openConfiguredService resolves credentials and builds a Coolify service for
 // an instance ID. Used for mid-session switches from the TUI.
 func openConfiguredService(ctx context.Context, configPath, instanceID string) (app.Service, string, error) {
-	cfg, err := config.Load(configPath)
+	cfg, err := loadConfig(configPath)
 	if err != nil {
 		return nil, "", err
 	}
@@ -166,7 +178,7 @@ func resolveService(ctx context.Context, opts *options) (config.Config, app.Serv
 		return cfg, service, "Demo", nil
 	}
 
-	cfg, err := config.Load(opts.configPath)
+	cfg, err := loadConfig(opts.configPath)
 	if err != nil {
 		if errors.Is(err, config.ErrNotFound) {
 			return config.Config{}, nil, "", fmt.Errorf("%w; run with --demo or create %s", err, config.FileName)

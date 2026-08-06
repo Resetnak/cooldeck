@@ -90,7 +90,12 @@ func (m *Model) applyInstanceSwitchFailed(msg instanceSwitchFailedMsg) tea.Cmd {
 	m.rememberError(msg.Err)
 	m.refreshInstances()
 	m.refreshDiagnostics()
-	return m.pushToast(components.ToastError, "Could not switch instance", msg.Err.Message)
+	detail := msg.Err.Message
+	if detail == "" {
+		// A wrapped non-domain error lands in Detail; never show a blank toast.
+		detail = msg.Err.Detail
+	}
+	return m.pushToast(components.ToastError, "Could not switch instance", detail)
 }
 
 // runDeleteInstance removes a local config entry and optionally its keyring token.
@@ -110,27 +115,13 @@ func (m *Model) runDeleteInstance(action pendingAction) tea.Cmd {
 	if err := m.opts.Config.RemoveInstance(id); err != nil {
 		return m.pushToast(components.ToastError, "Delete failed", err.Error())
 	}
-	if m.opts.SaveConfig != nil {
-		if err := m.opts.SaveConfig(m.opts.Config); err != nil {
-			m.opts.Config.Instances = prevInstances
-			m.opts.Config.DefaultInstance = prevDefault
-			return m.pushToast(components.ToastError, "Could not write config", err.Error())
-		}
-	}
-	if m.opts.RemoveCredentials != nil {
-		if err := m.opts.RemoveCredentials(inst); err != nil {
-			m.refreshInstances()
-			return m.pushToast(components.ToastWarning,
-				"Instance removed, credential cleanup failed", err.Error())
-		}
-	}
 
 	m.refreshInstances()
 	m.refreshDiagnostics()
 
-	// Defer the follow-up (toast + optional switch) to a message so switchInstance
-	// is not started while building a tea.Batch - that would set operationInFlight
-	// before the event loop runs the command.
+	// The follow-up (toast + optional switch) is deferred to a message so
+	// switchInstance is not started while building a tea.Batch - that would
+	// set operationInFlight before the event loop runs the command.
 	next := ""
 	empty := false
 	if wasActive {
@@ -143,9 +134,27 @@ func (m *Model) runDeleteInstance(action pendingAction) tea.Cmd {
 			}
 		}
 	}
+
+	// Disk and keyring writes run inside the command, never on the event
+	// loop: a macOS Keychain prompt can block for seconds, and the UI -
+	// including ctrl+c - would freeze with it.
+	save := m.opts.SaveConfig
+	removeCreds := m.opts.RemoveCredentials
+	cfg := m.opts.Config
 	name := action.instanceName
 	return func() tea.Msg {
-		return instanceRemovedMsg{Name: name, NextID: next, EmptyFleet: empty}
+		if save != nil {
+			if err := save(cfg); err != nil {
+				return instanceDeleteFailedMsg{Err: err, PrevDefault: prevDefault, PrevInstances: prevInstances}
+			}
+		}
+		credWarning := ""
+		if removeCreds != nil {
+			if err := removeCreds(inst); err != nil {
+				credWarning = err.Error()
+			}
+		}
+		return instanceRemovedMsg{Name: name, NextID: next, EmptyFleet: empty, CredWarning: credWarning}
 	}
 }
 
