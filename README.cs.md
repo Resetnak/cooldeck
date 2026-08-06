@@ -451,11 +451,11 @@ vypustila ven.
 ### Vývoj
 
 ```bash
-make check               # fmt-check + vet + test + build - pusťte před každým PR
+make check               # fmt-check + vet + lint + test + build - pusťte před každým PR
 make run                 # go run ./cmd/cooldeck --demo
 make test-race
 make test-update-golden  # obnovit TUI snapshoty - a pak si *přečíst diff*
-make lint                # staticcheck
+make lint                # staticcheck + golangci-lint (stejné verze jako CI)
 make bench               # benchmarky vykreslování
 make vuln                # govulncheck
 ```

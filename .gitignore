@@ -4,3 +4,5 @@
 /.tokensave/
 *.log
 .DS_Store
+coverage.out
+/.code-review-graph/

@@ -449,11 +449,11 @@ shipping.
 ### Development
 
 ```bash
-make check               # fmt-check + vet + test + build - run this before every PR
+make check               # fmt-check + vet + lint + test + build - run this before every PR
 make run                 # go run ./cmd/cooldeck --demo
 make test-race
 make test-update-golden  # refresh the TUI snapshots, then *read the diff*
-make lint                # staticcheck
+make lint                # staticcheck + golangci-lint (same versions as CI)
 make bench               # view rendering benchmarks
 make vuln                # govulncheck
 ```

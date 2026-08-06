@@ -4,13 +4,18 @@ project_name: cooldeck
 
 before:
   hooks:
-    - go mod tidy
+    # verify, not tidy: a release must build exactly the tagged tree. tidy can
+    # either mutate go.mod (releasing source that differs from the tag) or die
+    # on the resulting dirty state. CI keeps the module tidy on PRs instead.
+    - go mod verify
 
 builds:
   - main: ./cmd/cooldeck
     binary: cooldeck
     env:
       - CGO_ENABLED=0
+    flags:
+      - -trimpath
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
     ignore:
@@ -58,11 +63,14 @@ release:
 # GITHUB_TOKEN cannot - hence HOMEBREW_TAP_GITHUB_TOKEN.
 homebrew_casks:
   - name: cooldeck
+    # A missing or expired tap token skips the cask push instead of failing the
+    # whole release - archives, checksums and packages still ship.
+    skip_upload: '{{ if envOrDefault "HOMEBREW_TAP_GITHUB_TOKEN" "" }}false{{ else }}true{{ end }}'
     repository:
       owner: Resetnak
       name: homebrew-tap
       branch: main
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      token: '{{ envOrDefault "HOMEBREW_TAP_GITHUB_TOKEN" "" }}'
     homepage: https://github.com/Resetnak/cooldeck
     description: Keyboard-first terminal dashboard for Coolify
     # Strip the quarantine flag Gatekeeper adds to downloaded archives, so the

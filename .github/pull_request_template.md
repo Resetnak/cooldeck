@@ -3,7 +3,7 @@
 
 ## Checks
 
-- [ ] `make check` passes (fmt, vet, tests, build)
+- [ ] `make check` passes (fmt, vet, lint, tests, build)
 - [ ] Golden snapshots reviewed, not just regenerated - an unexpected diff is usually a real regression
 - [ ] Keybindings, if any, are defined only in `internal/tui/keys.go`
 - [ ] Anything touching Coolify goes through `app.Service`, not straight to HTTP
