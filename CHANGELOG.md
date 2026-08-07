@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-08-07
+
+### Fixed
+
+- Runtime logs for an application without a running container (mid-deploy,
+  stopped or crashed) no longer fail with a generic "Request rejected"; the
+  error now explains the state and points at the deployment log instead
+- Restart, start and stop rejected because of the application's current state
+  now say so instead of "Request rejected"
+- A 404 on one stale resource (application deleted mid-session) no longer
+  disables the capability for every other application until restart; only a
+  403 downgrades capabilities, as documented
+
+### Changed
+
+- CI actions bumped: checkout v7, setup-go v7, upload-artifact v7,
+  dependency-review-action v5, goreleaser-action v7.2.3
+
 ## [0.3.0] - 2026-08-06
 
 The result of a full repository audit: correctness fixes, a hardened release
@@ -130,7 +148,8 @@ Packaging only - the binary is identical to 0.1.0.
 - Tokens excluded from logs, toasts, and diagnostics
 - Browser open restricted to http(s) URLs
 
-[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/Resetnak/cooldeck/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Resetnak/cooldeck/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/Resetnak/cooldeck/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Resetnak/cooldeck/compare/v0.1.2...v0.2.0
