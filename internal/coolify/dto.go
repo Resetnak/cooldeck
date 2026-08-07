@@ -1,5 +1,7 @@
 package coolify
 
+import "encoding/json"
+
 type applicationDTO struct {
 	ID                  int     `json:"id"`
 	UUID                string  `json:"uuid"`
@@ -40,6 +42,39 @@ type deploymentDTO struct {
 	CreatedAt       string `json:"created_at"`
 	UpdatedAt       string `json:"updated_at"`
 	Logs            string `json:"logs"`
+}
+
+// deploymentListDTO accepts every shape Coolify uses for a deployment list:
+// a bare array, the {count, deployments} wrapper of the per-application
+// history endpoint, and the keyed object json_encode produces when the
+// running-queue endpoint serialises a key-preserving Laravel collection that
+// sortBy has reordered.
+type deploymentListDTO []deploymentDTO
+
+func (l *deploymentListDTO) UnmarshalJSON(data []byte) error {
+	var plain []deploymentDTO
+	if err := json.Unmarshal(data, &plain); err == nil {
+		*l = plain
+		return nil
+	}
+	var wrapped struct {
+		Deployments []deploymentDTO `json:"deployments"`
+	}
+	if err := json.Unmarshal(data, &wrapped); err == nil && wrapped.Deployments != nil {
+		*l = wrapped.Deployments
+		return nil
+	}
+	var keyed map[string]deploymentDTO
+	if err := json.Unmarshal(data, &keyed); err != nil {
+		return err
+	}
+	// Map order is irrelevant: mapDeployments re-sorts newest first anyway.
+	items := make([]deploymentDTO, 0, len(keyed))
+	for _, item := range keyed {
+		items = append(items, item)
+	}
+	*l = items
+	return nil
 }
 
 type teamDTO struct {
