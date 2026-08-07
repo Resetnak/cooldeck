@@ -147,7 +147,16 @@ func (s *Service) RuntimeLogs(ctx context.Context, appUUID string, lines int) (a
 	dto := logsDTO{}
 	if err := s.client.getJSON(ctx, "applications/"+url.PathEscape(appUUID)+"/logs", query, &dto); err != nil {
 		s.downgradeForError(err, "application_logs")
-		return app.LogSnapshot{}, domain.AsError(err).WithOperation("get application logs")
+		derr := domain.AsError(err).WithOperation("get application logs")
+		if derr.Kind == domain.ErrorValidation {
+			// Coolify answers 400 when there is no running container to read
+			// from - mid-deploy, stopped and crashed applications all land
+			// here, so the generic "request invalid" copy would mislead.
+			derr.Title = "Runtime logs unavailable"
+			derr.Message = "The application has no running container to read logs from."
+			derr.Suggestion = "Follow the deployment log while a deployment is in progress; runtime logs return once the application is running."
+		}
+		return app.LogSnapshot{}, derr
 	}
 	parsed, truncated := domain.ParseLogPayload(dto.Logs, lines)
 	return app.LogSnapshot{Lines: parsed, LoadedAt: s.now(), Truncated: truncated}, nil
@@ -209,7 +218,16 @@ func (s *Service) mutate(ctx context.Context, appUUID, operation string) (app.Op
 	path := fmt.Sprintf("applications/%s/%s", url.PathEscape(appUUID), operation)
 	if err := s.client.postJSON(ctx, path, nil, &dto); err != nil {
 		s.downgradeForError(err, operation)
-		return app.OperationResult{}, domain.AsError(err).WithOperation(operation + " application")
+		derr := domain.AsError(err).WithOperation(operation + " application")
+		if derr.Kind == domain.ErrorValidation {
+			// A 400 on a lifecycle endpoint means the application is not in a
+			// state that accepts the operation (restart while stopped, stop
+			// while already stopped, ...), not that the request was malformed.
+			derr.Title = "Cannot " + operation + " in the current state"
+			derr.Message = "Coolify refused because the application is not in a state that allows " + operation + "."
+			derr.Suggestion = "Press R to refresh the status and try again once it settles."
+		}
+		return app.OperationResult{}, derr
 	}
 	return app.OperationResult{
 		Operation:      operation,
@@ -288,7 +306,10 @@ func attachDeployments(applications []domain.Application, deployments []domain.D
 }
 
 func (s *Service) downgradeForError(err error, capability string) {
-	if !domain.IsKind(err, domain.ErrorForbidden) && !domain.IsKind(err, domain.ErrorNotFound) {
+	// Only a 403 says anything about the token. A 404 is about one stale
+	// resource (application deleted mid-session, deployment pruned) and must
+	// not disable the capability for every other resource.
+	if !domain.IsKind(err, domain.ErrorForbidden) {
 		return
 	}
 	s.mu.Lock()

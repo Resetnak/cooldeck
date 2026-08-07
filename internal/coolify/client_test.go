@@ -139,6 +139,45 @@ func TestDeploymentLogsAreSanitized(t *testing.T) {
 	}
 }
 
+func TestValidationErrorsGetStateAwareCopy(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, `{"message":"Application is not running."}`, http.StatusBadRequest)
+	}))
+	defer server.Close()
+
+	service := newTestService(t, server, time.Now())
+	_, err := service.RuntimeLogs(context.Background(), "app-1", 100)
+	derr := domain.AsError(err)
+	if derr.Kind != domain.ErrorValidation || derr.Title != "Runtime logs unavailable" || derr.Suggestion == "" {
+		t.Fatalf("runtime logs copy not rewritten: %#v", derr)
+	}
+
+	_, err = service.Restart(context.Background(), "app-1")
+	derr = domain.AsError(err)
+	if derr.Kind != domain.ErrorValidation || !strings.Contains(derr.Title, "restart") || derr.Suggestion == "" {
+		t.Fatalf("restart copy not rewritten: %#v", derr)
+	}
+}
+
+func TestNotFoundDoesNotDowngradeCapabilities(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.NotFound(w, r)
+	}))
+	defer server.Close()
+
+	service := newTestService(t, server, time.Now())
+	if _, err := service.RuntimeLogs(context.Background(), "deleted-app", 100); !domain.IsKind(err, domain.ErrorNotFound) {
+		t.Fatalf("error = %v", err)
+	}
+	if _, err := service.Restart(context.Background(), "deleted-app"); !domain.IsKind(err, domain.ErrorNotFound) {
+		t.Fatalf("error = %v", err)
+	}
+	caps := service.Capabilities()
+	if !caps.ApplicationLogs || !caps.Restart {
+		t.Fatalf("stale resource downgraded capabilities: %#v", caps)
+	}
+}
+
 func newTestService(t *testing.T, server *httptest.Server, now time.Time) *Service {
 	t.Helper()
 	service, err := New(Options{
