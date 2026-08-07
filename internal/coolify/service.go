@@ -109,6 +109,10 @@ func (s *Service) Dashboard(ctx context.Context) (app.DashboardSnapshot, error) 
 		warnings = append(warnings, "Deployment status is temporarily unavailable.")
 		deployments = []domain.Deployment{}
 	}
+	// The running-queue endpoint only knows about in_progress and queued
+	// deployments, so finished history has to come from one request per
+	// application (Coolify has no fleet-wide history endpoint).
+	deployments = mergeDeployments(deployments, s.fleetRecentDeployments(ctx, applications))
 	active, recent := splitDeployments(deployments, 100)
 	attachDeployments(applications, deployments, s.now())
 	return app.DashboardSnapshot{
@@ -164,7 +168,7 @@ func (s *Service) RuntimeLogs(ctx context.Context, appUUID string, lines int) (a
 
 func (s *Service) Deployments(ctx context.Context, appUUID string, limit int) ([]domain.Deployment, error) {
 	query := url.Values{"skip": {"0"}, "take": {strconv.Itoa(limit)}}
-	dtos := []deploymentDTO{}
+	dtos := deploymentListDTO{}
 	path := "deployments/applications/" + url.PathEscape(appUUID)
 	if err := s.client.getJSON(ctx, path, query, &dtos); err != nil {
 		return nil, domain.AsError(err).WithOperation("list deployments")
@@ -251,7 +255,7 @@ func (s *Service) listApplications(ctx context.Context) ([]domain.Application, e
 }
 
 func (s *Service) listDeployments(ctx context.Context) ([]domain.Deployment, error) {
-	dtos := []deploymentDTO{}
+	dtos := deploymentListDTO{}
 	if err := s.client.getJSON(ctx, "deployments", nil, &dtos); err != nil {
 		return nil, err
 	}
@@ -269,6 +273,61 @@ func mapDeployments(dtos []deploymentDTO) []domain.Deployment {
 		return deployments[i].CreatedAt.After(deployments[j].CreatedAt)
 	})
 	return deployments
+}
+
+// fleetRecentDeployments fans out one bounded history request per application,
+// mirroring the fleet-tail approach of ADR 0007: a fixed worker pool, and each
+// application is best-effort - one failing (or freshly deleted) application
+// must not blank the history of every other one. A 403 still downgrades the
+// capability so the UI can explain itself.
+func (s *Service) fleetRecentDeployments(ctx context.Context, applications []domain.Application) []domain.Deployment {
+	const workers = 8
+	// 5 per application is enough: splitDeployments caps the merged list at 100
+	// anyway, and deeper per-app history stays on the application detail.
+	const perApplication = 5
+
+	sem := make(chan struct{}, workers)
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	all := []domain.Deployment{}
+	for _, application := range applications {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func() {
+			defer wg.Done()
+			defer func() { <-sem }()
+			items, err := s.Deployments(ctx, application.UUID, perApplication)
+			if err != nil {
+				s.downgradeForError(err, "deployments")
+				return
+			}
+			mu.Lock()
+			all = append(all, items...)
+			mu.Unlock()
+		}()
+	}
+	wg.Wait()
+	return all
+}
+
+// mergeDeployments joins the live queue with fetched history, first list wins
+// on duplicate UUIDs, newest first overall.
+func mergeDeployments(primary, secondary []domain.Deployment) []domain.Deployment {
+	seen := make(map[string]bool, len(primary)+len(secondary))
+	merged := make([]domain.Deployment, 0, len(primary)+len(secondary))
+	for _, list := range [][]domain.Deployment{primary, secondary} {
+		for _, d := range list {
+			if d.UUID != "" && seen[d.UUID] {
+				continue
+			}
+			seen[d.UUID] = true
+			merged = append(merged, d)
+		}
+	}
+	sort.SliceStable(merged, func(i, j int) bool {
+		return merged[i].CreatedAt.After(merged[j].CreatedAt)
+	})
+	return merged
 }
 
 // splitDeployments separates the live queue from a bounded recent history
