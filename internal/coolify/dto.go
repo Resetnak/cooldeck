@@ -26,6 +26,15 @@ type applicationDTO struct {
 	UpdatedAt           string  `json:"updated_at"`
 }
 
+// envDTO carries one environment variable. The value never leaves this
+// package: mapping reduces it to a fingerprint immediately.
+type envDTO struct {
+	Key         string `json:"key"`
+	Value       string `json:"value"`
+	IsBuildTime bool   `json:"is_build_time"`
+	IsPreview   bool   `json:"is_preview"`
+}
+
 type deploymentDTO struct {
 	DeploymentUUID  string `json:"deployment_uuid"`
 	ApplicationID   string `json:"application_id"`

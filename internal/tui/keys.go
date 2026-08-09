@@ -36,6 +36,12 @@ type KeyMap struct {
 	Mark key.Binding
 	Tail key.Binding
 
+	// Fleet snapshot.
+	Snapshot key.Binding
+
+	// Env drift comparison.
+	CompareEnv key.Binding
+
 	// Sections.
 	SectionApplications key.Binding
 	SectionDeployments  key.Binding
@@ -55,7 +61,8 @@ type KeyMap struct {
 	Sort        key.Binding
 
 	// Deployments section.
-	DeploymentsActive key.Binding
+	DeploymentsActive   key.Binding
+	DeploymentsTimeline key.Binding
 
 	// Instances section.
 	TestConnection key.Binding
@@ -117,6 +124,9 @@ func DefaultKeyMap() KeyMap {
 		Mark: key.NewBinding(key.WithKeys("space"), key.WithHelp("space", "mark for tail")),
 		Tail: key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "tail marked")),
 
+		Snapshot:   key.NewBinding(key.WithKeys("!"), key.WithHelp("!", "fleet snapshot")),
+		CompareEnv: key.NewBinding(key.WithKeys("x"), key.WithHelp("x", "compare env")),
+
 		SectionApplications: key.NewBinding(key.WithKeys("1"), key.WithHelp("1", "applications")),
 		SectionDeployments:  key.NewBinding(key.WithKeys("2"), key.WithHelp("2", "deployments")),
 		SectionInstances:    key.NewBinding(key.WithKeys("3"), key.WithHelp("3", "instances")),
@@ -133,7 +143,8 @@ func DefaultKeyMap() KeyMap {
 		CopyUUID:    key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "copy UUID")),
 		Sort:        key.NewBinding(key.WithKeys("S"), key.WithHelp("S", "sort")),
 
-		DeploymentsActive: key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "active filter")),
+		DeploymentsActive:   key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "active filter")),
+		DeploymentsTimeline: key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "timeline")),
 
 		TestConnection: key.NewBinding(key.WithKeys("T"), key.WithHelp("T", "test connection")),
 		AddInstance:    key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "add instance")),

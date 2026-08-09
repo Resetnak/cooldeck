@@ -240,4 +240,8 @@ func (m *Model) shutdown() {
 		m.cancelOperation()
 		m.cancelOperation = nil
 	}
+	if m.cancelEnvDiff != nil {
+		m.cancelEnvDiff()
+		m.cancelEnvDiff = nil
+	}
 }

@@ -20,6 +20,7 @@ type Capabilities struct {
 	ApplicationLogs bool
 	Deployments     bool
 	DeploymentLogs  bool
+	EnvVars         bool
 	Deploy          bool
 	Restart         bool
 	StartStop       bool
@@ -29,7 +30,7 @@ type Capabilities struct {
 func FullCapabilities() Capabilities {
 	return Capabilities{
 		Applications: true, ApplicationLogs: true,
-		Deployments: true, DeploymentLogs: true,
+		Deployments: true, DeploymentLogs: true, EnvVars: true,
 		Deploy: true, Restart: true, StartStop: true,
 	}
 }
@@ -127,6 +128,11 @@ type Service interface {
 	RuntimeLogs(ctx context.Context, appUUID string, lines int) (LogSnapshot, error)
 	Deployments(ctx context.Context, appUUID string, limit int) ([]domain.Deployment, error)
 	DeploymentLogs(ctx context.Context, deploymentUUID string) (LogSnapshot, error)
+
+	// EnvVars lists an application's environment variables reduced to keys and
+	// value fingerprints. Implementations must never let the raw values escape
+	// this call: hashing happens at the API boundary.
+	EnvVars(ctx context.Context, appUUID string) ([]domain.EnvVar, error)
 
 	Deploy(ctx context.Context, appUUID string, opts DeployOptions) (OperationResult, error)
 	Restart(ctx context.Context, appUUID string) (OperationResult, error)

@@ -34,6 +34,7 @@ func (m *Model) render() string {
 	frame = m.overlayConfirmation(frame)
 	frame = m.overlayPalette(frame)
 	frame = m.overlayHelp(frame)
+	frame = m.overlayEnvDiff(frame)
 	frame = m.overlayInstanceForm(frame)
 	frame = trimTrailingBlank(frame)
 
@@ -360,6 +361,7 @@ func (m *Model) footerHints() []components.KeyHint {
 			{Key: "↑↓", Desc: "select"},
 			{Key: "enter", Desc: "open log", Short: "open"},
 			{Key: "a", Desc: "active filter", Short: "filter"},
+			{Key: "t", Desc: "timeline"},
 			{Key: "c", Desc: "copy UUID", Short: "copy"},
 			{Key: "R", Desc: "refresh"},
 			{Key: "1", Desc: "apps"},
