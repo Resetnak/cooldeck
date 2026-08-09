@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-09
+
+### Added
+
+- Fleet timeline: `t` in the Deployments section switches from the
+  status-grouped table to a strictly chronological view of every deployment
+  across the fleet, newest first, with relative day separators
+- Env drift comparison: `x` on the applications list marks a baseline
+  application, a second `x` on another one shows which environment variable
+  keys exist only on one side and which differ in value; values are reduced
+  to fingerprints at the API boundary and never reach the UI
+- Fleet snapshot: `!` copies a secret-free markdown digest of the fleet -
+  statuses, recent deployments, recent errors - to the clipboard, ready to
+  paste at an AI assistant or a colleague during an incident
+
 ## [0.3.2] - 2026-08-07
 
 ### Fixed
@@ -161,7 +176,8 @@ Packaging only - the binary is identical to 0.1.0.
 - Tokens excluded from logs, toasts, and diagnostics
 - Browser open restricted to http(s) URLs
 
-[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Resetnak/cooldeck/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/Resetnak/cooldeck/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Resetnak/cooldeck/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Resetnak/cooldeck/compare/v0.2.1...v0.3.0
