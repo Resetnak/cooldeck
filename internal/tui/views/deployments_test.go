@@ -69,3 +69,25 @@ func TestSelectionFollowsADeploymentThatSettles(t *testing.T) {
 		t.Fatalf("selection = %q (ok=%v), want watched", selected.UUID, ok)
 	}
 }
+
+func TestTimelineOrdersChronologically(t *testing.T) {
+	view := NewDeployments()
+	now := time.Now()
+
+	older := deployment("older-active", domain.DeploymentInProgress)
+	older.CreatedAt = now.Add(-2 * time.Hour)
+	newer := deployment("newer-finished", domain.DeploymentFinished)
+	newer.CreatedAt = now.Add(-5 * time.Minute)
+	view.SetItems([]domain.Deployment{older, newer}, now)
+
+	// The table leads with the active build; the timeline must not.
+	if got := uuids(view.visible()); got[0] != "older-active" {
+		t.Fatalf("table order = %v, want active first", got)
+	}
+	if !view.ToggleTimeline() {
+		t.Fatal("ToggleTimeline() = false on first toggle")
+	}
+	if got := uuids(view.visible()); got[0] != "newer-finished" {
+		t.Fatalf("timeline order = %v, want newest first", got)
+	}
+}

@@ -185,6 +185,28 @@ func (s *Service) DeploymentLogs(ctx context.Context, deploymentUUID string) (ap
 	return app.LogSnapshot{Lines: parseDeploymentLogs(dto.Logs), LoadedAt: s.now()}, nil
 }
 
+// EnvVars lists an application's environment variables. Raw values are hashed
+// into fingerprints here, at the API boundary, so nothing above this call can
+// ever see or leak them.
+func (s *Service) EnvVars(ctx context.Context, appUUID string) ([]domain.EnvVar, error) {
+	dtos := []envDTO{}
+	path := "applications/" + url.PathEscape(appUUID) + "/envs"
+	if err := s.client.getJSON(ctx, path, nil, &dtos); err != nil {
+		s.downgradeForError(err, "envs")
+		return nil, domain.AsError(err).WithOperation("list environment variables")
+	}
+	vars := make([]domain.EnvVar, 0, len(dtos))
+	for _, dto := range dtos {
+		vars = append(vars, domain.EnvVar{
+			Key:         dto.Key,
+			Fingerprint: domain.FingerprintEnvValue(dto.Value),
+			IsBuildTime: dto.IsBuildTime,
+			IsPreview:   dto.IsPreview,
+		})
+	}
+	return vars, nil
+}
+
 func (s *Service) Deploy(ctx context.Context, appUUID string, opts app.DeployOptions) (app.OperationResult, error) {
 	query := url.Values{"uuid": {appUUID}, "force": {strconv.FormatBool(opts.Force)}}
 	dto := deployResponseDTO{}
@@ -382,6 +404,8 @@ func (s *Service) downgradeForError(err error, capability string) {
 		s.capabilities.Deployments = false
 	case "deployment_logs":
 		s.capabilities.DeploymentLogs = false
+	case "envs":
+		s.capabilities.EnvVars = false
 	case "deploy":
 		s.capabilities.Deploy = false
 	case "restart":

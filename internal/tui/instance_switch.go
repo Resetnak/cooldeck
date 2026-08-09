@@ -65,6 +65,11 @@ func (m *Model) applyInstanceSwitch(msg instanceSwitchedMsg) tea.Cmd {
 	m.filterText = ""
 	m.logSearching = false
 	m.logSearchText = ""
+	// An env comparison must not span two fleets.
+	m.compareBaseUUID = ""
+	m.compareBaseName = ""
+	m.envDiff = nil
+	m.envDiffSeq++
 	m.lastError = nil
 	m.lastSuccess = time.Time{}
 	m.connectionErr = nil

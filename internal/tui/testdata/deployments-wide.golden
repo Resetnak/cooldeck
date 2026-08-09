@@ -37,4 +37,4 @@
                          │  + Finished   notes-app                      35d4a45  13d 17h... 32s                          manual   feat: add weekly summary endp.
                          │  + Finished   notes-app                      63538d5  15d 2h ago 36s                          manual   fix: correct timezone handlin.
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-  ↑↓  select   enter  open log   a  active filter   c  copy UUID   R  refresh   1  apps   ?  help                                                          1/33
+  ↑↓  select   enter  open log   a  active filter   t  timeline   c  copy UUID   R  refresh   1  apps   ?  help                                            1/33

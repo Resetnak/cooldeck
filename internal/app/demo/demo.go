@@ -226,6 +226,38 @@ func (s *Service) DeploymentLogs(ctx context.Context, deploymentUUID string) (ap
 		WithOperation("get deployment logs")
 }
 
+// EnvVars implements app.Service. The demo fleet shares a common baseline of
+// variables with deliberate per-application drift, so the env comparison has
+// something interesting to show.
+func (s *Service) EnvVars(ctx context.Context, appUUID string) ([]domain.EnvVar, error) {
+	if err := s.simulate(ctx); err != nil {
+		return nil, err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for i, a := range s.apps {
+		if a.UUID != appUUID {
+			continue
+		}
+		vars := []domain.EnvVar{
+			{Key: "APP_ENV", Fingerprint: domain.FingerprintEnvValue("production")},
+			{Key: "DATABASE_URL", Fingerprint: domain.FingerprintEnvValue("postgres://" + a.UUID)},
+			{Key: "REDIS_URL", Fingerprint: domain.FingerprintEnvValue("redis://cache:6379")},
+			// LOG_LEVEL drifts across the fleet so a comparison shows a
+			// different-value row, not just missing keys.
+			{Key: "LOG_LEVEL", Fingerprint: domain.FingerprintEnvValue([]string{"info", "warn", "debug"}[i%3])},
+		}
+		// Every other application is missing its SENTRY_DSN - the classic
+		// "works on staging" drift.
+		if i%2 == 0 {
+			vars = append(vars, domain.EnvVar{Key: "SENTRY_DSN", Fingerprint: domain.FingerprintEnvValue("dsn-" + a.UUID)})
+		}
+		return vars, nil
+	}
+	return nil, domain.NewError(domain.ErrorNotFound, nil).WithOperation("list environment variables")
+}
+
 // Deploy implements app.Service. Nothing is really deployed: a queued
 // deployment is inserted so the UI can follow it through to completion.
 func (s *Service) Deploy(ctx context.Context, appUUID string, opts app.DeployOptions) (app.OperationResult, error) {

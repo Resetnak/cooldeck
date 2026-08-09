@@ -177,7 +177,9 @@ type Model struct {
 	tailSeq              uint64
 	deploymentLogsSeq    uint64
 	operationSeq         uint64
+	envDiffSeq           uint64
 	cancelDashboard      context.CancelFunc
+	cancelEnvDiff        context.CancelFunc
 	cancelDetail         context.CancelFunc
 	cancelRuntimeLogs    context.CancelFunc
 	cancelDeploymentLogs context.CancelFunc
@@ -222,6 +224,12 @@ type Model struct {
 
 	pendingAction     *pendingAction
 	operationInFlight bool
+
+	// compareBaseUUID holds the first application picked for an env drift
+	// comparison; envDiff is non-nil while the result overlay is open.
+	compareBaseUUID string
+	compareBaseName string
+	envDiff         *envDiffResult
 
 	// deployStates is the deployment status seen on the previous refresh, keyed
 	// by deployment UUID. It is rebuilt from every snapshot, so it cannot grow
@@ -476,6 +484,23 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.pushToast(components.ToastSuccess, "Action queued", "Coolify accepted the "+msg.Result.Operation+" request."),
 			m.manualRefresh(),
 		)
+
+	case envDiffLoadedMsg:
+		if msg.Seq != m.envDiffSeq {
+			return m, nil
+		}
+		m.cancelEnvDiff = nil
+		m.compareBaseUUID = ""
+		m.compareBaseName = ""
+		m.envDiff = &msg.Result
+		return m, nil
+
+	case envDiffFailedMsg:
+		if msg.Seq != m.envDiffSeq || msg.Err.Kind == domain.ErrorCancelled {
+			return m, nil
+		}
+		m.cancelEnvDiff = nil
+		return m, m.pushToast(components.ToastError, msg.Err.Title, msg.Err.Message)
 
 	case actionFailedMsg:
 		if msg.Seq != m.operationSeq || msg.Err.Kind == domain.ErrorCancelled {

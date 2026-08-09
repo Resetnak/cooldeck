@@ -20,6 +20,10 @@ type Deployments struct {
 	loaded     bool
 	loadedAt   time.Time
 	activeOnly bool
+	// timeline switches from the status-grouped table to a strictly
+	// chronological view with day separators - one merged story of what
+	// happened across the fleet, newest first.
+	timeline bool
 }
 
 // NewDeployments returns an empty deployments view.
@@ -67,15 +71,41 @@ func (v *Deployments) ToggleActiveOnly() bool {
 // ActiveOnly reports the current filter.
 func (v *Deployments) ActiveOnly() bool { return v.activeOnly }
 
+// ToggleTimeline switches between the status-grouped table and the
+// chronological fleet timeline.
+func (v *Deployments) ToggleTimeline() bool {
+	v.timeline = !v.timeline
+	v.selected = 0
+	return v.timeline
+}
+
+// Timeline reports whether the chronological view is active.
+func (v *Deployments) Timeline() bool { return v.timeline }
+
+// Items returns the full loaded history, for the fleet snapshot.
+func (v *Deployments) Items() []domain.Deployment {
+	return append([]domain.Deployment{}, v.items...)
+}
+
 func (v *Deployments) visible() []domain.Deployment {
-	if !v.activeOnly {
-		return v.items
-	}
-	out := make([]domain.Deployment, 0, len(v.items))
-	for _, d := range v.items {
-		if d.Status.IsActive() {
-			out = append(out, d)
+	out := v.items
+	if v.activeOnly {
+		filtered := make([]domain.Deployment, 0, len(out))
+		for _, d := range out {
+			if d.Status.IsActive() {
+				filtered = append(filtered, d)
+			}
 		}
+		out = filtered
+	}
+	if v.timeline {
+		// The timeline tells the story in the order it happened, so the
+		// active-first grouping of the table gives way to pure chronology.
+		chrono := append([]domain.Deployment{}, out...)
+		slices.SortStableFunc(chrono, func(a, b domain.Deployment) int {
+			return b.CreatedAt.Compare(a.CreatedAt)
+		})
+		return chrono
 	}
 	return out
 }
@@ -160,6 +190,10 @@ func (v *Deployments) Render(th *theme.Theme, width, height int, focused bool, n
 		)
 	}
 
+	if v.timeline {
+		return v.renderTimeline(th, width, height, visible, now)
+	}
+
 	// The baseline is taken from the whole loaded history, not just the visible
 	// rows, so filtering to active-only does not remove the very deployments the
 	// expectation is computed from.
@@ -218,4 +252,59 @@ func (v *Deployments) Render(th *theme.Theme, width, height int, focused bool, n
 	}
 	body := lipgloss.JoinVertical(lipgloss.Left, header, meta, "", table.Render(th, width, max(height-3, 1)))
 	return components.FitBlock(body, width, height)
+}
+
+// renderTimeline draws the chronological fleet timeline: every deployment
+// across every application on one axis, separated by day, newest first.
+func (v *Deployments) renderTimeline(th *theme.Theme, width, height int, visible []domain.Deployment, now time.Time) string {
+	header := th.Title.Render("FLEET TIMELINE")
+	meta := th.Subtle.Render(strconv.Itoa(len(visible)) + " deployments  ·  newest first  ·  t table view")
+
+	// Build the full line list first, remembering which line the cursor is on,
+	// then window it around the selection.
+	lines := make([]string, 0, len(visible)*2)
+	selectedLine := 0
+	lastDay := ""
+	for i, d := range visible {
+		if day := timelineDay(d.CreatedAt, now); day != lastDay {
+			lastDay = day
+			lines = append(lines, th.Subtle.Render(components.Truncate("── "+day+" ", width, th.Sym.Ellipsis)))
+		}
+		row := th.DeploymentStatusText(d.Status) + "  " +
+			components.OrDash(d.ApplicationName) + "  " +
+			th.Subtle.Render(domain.HumanizeAge(d.CreatedAt, now)+"  "+
+				domain.HumanizeDuration(d.Duration(now))+"  "+
+				components.OrDash(d.ShortCommit())) + "  " +
+			components.OrDash(d.CommitMessage)
+		row = components.Truncate("  "+row, width-2, th.Sym.Ellipsis)
+		if i == v.selected {
+			selectedLine = len(lines)
+			row = th.TableRowActive.Render(components.Pad(row, width))
+		}
+		lines = append(lines, row)
+	}
+
+	bodyHeight := max(height-3, 1)
+	start := 0
+	if selectedLine >= bodyHeight {
+		start = selectedLine - bodyHeight + 1
+	}
+	end := min(start+bodyHeight, len(lines))
+	body := lipgloss.JoinVertical(lipgloss.Left, lines[start:end]...)
+	block := lipgloss.JoinVertical(lipgloss.Left, header, meta, "", body)
+	return components.FitBlock(block, width, height)
+}
+
+// timelineDay buckets a timestamp into a relative day label. Relative labels
+// keep golden snapshots host-independent where absolute dates would not.
+func timelineDay(t, now time.Time) string {
+	days := int(now.Sub(t).Hours() / 24)
+	switch {
+	case days <= 0:
+		return "Today"
+	case days == 1:
+		return "Yesterday"
+	default:
+		return strconv.Itoa(days) + " days ago"
+	}
 }

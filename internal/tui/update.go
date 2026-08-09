@@ -41,6 +41,9 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if m.helpOpen {
 		return m.handleHelpKey(msg)
 	}
+	if m.envDiff != nil {
+		return m.handleEnvDiffKey(msg)
+	}
 	if m.paletteOpen {
 		return m.handlePaletteKey(msg)
 	}
@@ -74,6 +77,9 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, m.keys.Refresh):
 		return m, m.manualRefresh()
+
+	case key.Matches(msg, m.keys.Snapshot):
+		return m, m.copyFleetSnapshot()
 
 	case key.Matches(msg, m.keys.NextPane):
 		m.cycleFocus(1)
@@ -239,6 +245,8 @@ func (m *Model) handleApplicationsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) 
 		return m, nil
 	case key.Matches(msg, m.keys.Tail):
 		return m.openTail()
+	case key.Matches(msg, m.keys.CompareEnv):
+		return m, m.handleCompareEnv()
 	case key.Matches(msg, m.keys.Up):
 		m.apps.Move(-1)
 	case key.Matches(msg, m.keys.Down):
@@ -349,6 +357,12 @@ func (m *Model) handleDeploymentsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			label = "active only"
 		}
 		return m, m.pushToast(components.ToastInfo, "Deployments filter: "+label, "")
+	case key.Matches(msg, m.keys.DeploymentsTimeline):
+		label := "table"
+		if m.deployments.ToggleTimeline() {
+			label = "timeline"
+		}
+		return m, m.pushToast(components.ToastInfo, "Deployments view: "+label, "")
 	case key.Matches(msg, m.keys.Quit), key.Matches(msg, m.keys.Back):
 		return m.gotoSection(SectionApplications)
 	}

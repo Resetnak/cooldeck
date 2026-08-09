@@ -97,6 +97,8 @@ func (m *Model) helpGroups() []helpGroup {
 				{"S", "cycle sort mode"},
 				{"space", "mark for the fleet tail"},
 				{"t", "tail the marked applications"},
+				{"x", "compare env with another application"},
+				{"!", "copy fleet snapshot as markdown"},
 			},
 		},
 		{
@@ -127,6 +129,7 @@ func (m *Model) helpGroups() []helpGroup {
 			Rows: []helpRow{
 				{"enter", "open build log for deployment"},
 				{"a", "toggle active-only / recent history"},
+				{"t", "toggle chronological fleet timeline"},
 				{"c", "copy deployment UUID"},
 			},
 		},

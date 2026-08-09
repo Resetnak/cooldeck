@@ -101,6 +101,12 @@ func (v *Applications) Count() int { return len(v.visible) }
 // Total returns the number of applications before filtering.
 func (v *Applications) Total() int { return len(v.all) }
 
+// All returns every loaded application regardless of filter, for the fleet
+// snapshot.
+func (v *Applications) All() []domain.Application {
+	return append([]domain.Application{}, v.all...)
+}
+
 // Filter returns the active filter.
 func (v *Applications) Filter() domain.Filter { return v.filter }
 
