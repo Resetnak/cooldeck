@@ -19,6 +19,7 @@ z terminálu, který stejně máte otevřený.
 [![Platformy](https://img.shields.io/badge/testov%C3%A1no-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-yellow)](.github/workflows/ci.yml)
 [![Coolify API](https://img.shields.io/badge/Coolify-API%20v1-8B5CF6)](docs/coolify-api.md)
 [![Release](https://img.shields.io/github/v/release/Resetnak/cooldeck?color=brightgreen)](https://github.com/Resetnak/cooldeck/releases/latest)
+[![Hvězdy za měsíc](https://repometer.online/badge/Resetnak/cooldeck/stars-30d.svg)](https://repometer.online/p/Resetnak/cooldeck)
 
 <br>
 
