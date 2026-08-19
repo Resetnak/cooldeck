@@ -13,7 +13,7 @@ z terminálu, který stejně máte otevřený.
 
 [![CI](https://github.com/Resetnak/cooldeck/actions/workflows/ci.yml/badge.svg)](https://github.com/Resetnak/cooldeck/actions/workflows/ci.yml)
 [![Bezpečnost](https://github.com/Resetnak/cooldeck/actions/workflows/security.yml/badge.svg)](https://github.com/Resetnak/cooldeck/actions/workflows/security.yml)
-[![Go](https://img.shields.io/badge/Go-1.26.5%2B-00ADD8?logo=go&logoColor=white)](go.mod)
+[![Go](https://img.shields.io/badge/Go-1.26.6%2B-00ADD8?logo=go&logoColor=white)](go.mod)
 [![Go Report Card](https://goreportcard.com/badge/github.com/resetnak/cooldeck)](https://goreportcard.com/report/github.com/resetnak/cooldeck)
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-green.svg)](LICENSE)
 [![Platformy](https://img.shields.io/badge/testov%C3%A1no-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-yellow)](.github/workflows/ci.yml)
@@ -241,7 +241,7 @@ Kompletní mapa: v aplikaci `?`, nebo [docs/keybindings.md](docs/keybindings.md)
 ## 📦 Instalace
 
 **Žádné runtime závislosti.** Každá varianta níž vám dá jednu statickou binárku; toolchain
-potřebuje jen build ze zdrojáků (Go **1.26.5+**, bez CGO).
+potřebuje jen build ze zdrojáků (Go **1.26.6+**, bez CGO).
 
 ### Varianta 1: Homebrew (macOS)
 

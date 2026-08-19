@@ -13,7 +13,7 @@ from the terminal you already have open.
 
 [![CI](https://github.com/Resetnak/cooldeck/actions/workflows/ci.yml/badge.svg)](https://github.com/Resetnak/cooldeck/actions/workflows/ci.yml)
 [![Security](https://github.com/Resetnak/cooldeck/actions/workflows/security.yml/badge.svg)](https://github.com/Resetnak/cooldeck/actions/workflows/security.yml)
-[![Go](https://img.shields.io/badge/Go-1.26.5%2B-00ADD8?logo=go&logoColor=white)](go.mod)
+[![Go](https://img.shields.io/badge/Go-1.26.6%2B-00ADD8?logo=go&logoColor=white)](go.mod)
 [![Go Report Card](https://goreportcard.com/badge/github.com/resetnak/cooldeck)](https://goreportcard.com/report/github.com/resetnak/cooldeck)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/tested-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-yellow)](.github/workflows/ci.yml)
@@ -241,7 +241,7 @@ Full map: press `?` in the app, or read [docs/keybindings.md](docs/keybindings.m
 ## 📦 Installation
 
 **No runtime dependencies.** Every option below leaves you with a single static binary; only building
-from source needs a toolchain (Go **1.26.5+**, no CGO).
+from source needs a toolchain (Go **1.26.6+**, no CGO).
 
 ### Option 1: Homebrew (macOS)
 

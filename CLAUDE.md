@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 CoolDeck - a keyboard-first terminal dashboard (Bubble Tea / Charm v2) for [Coolify](https://coolify.io).
-Single Go module, `github.com/resetnak/cooldeck`, Go 1.26.5+, no CGO.
+Single Go module, `github.com/resetnak/cooldeck`, Go 1.26.6+, no CGO.
 
 ## Commands
 

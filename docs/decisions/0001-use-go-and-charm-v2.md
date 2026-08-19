@@ -12,7 +12,7 @@ project.
 
 ## Decision
 
-- Language: **Go** (version pinned in `go.mod`, currently 1.26.5+).
+- Language: **Go** (version pinned in `go.mod`, currently 1.26.6+).
 - TUI stack: **Charm v2** modules (`charm.land/bubbletea/v2`, `bubbles/v2`,
   `lipgloss/v2`), not the legacy `github.com/charmbracelet/...` v1 import path
   for Bubble Tea.

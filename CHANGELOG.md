@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Minimum Go version is now 1.26.6, which closes four standard-library
+  advisories (`GO-2026-6218`, `GO-2026-6090`, `GO-2026-5972`, `GO-2026-5026`)
+  that `govulncheck` flagged against 1.26.5
+
 ## [0.4.0] - 2026-08-09
 
 ### Added
