@@ -36,8 +36,21 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      # Linux doubles as the coverage run so the suite compiles once, not in a
+      # separate job.
       - name: Test
-        run: go test ./...
+        run: go test ./... ${{ runner.os == 'Linux' && '-covermode=atomic -coverprofile=coverage.out' || '' }}
+
+      - name: Coverage summary
+        if: runner.os == 'Linux'
+        run: go tool cover -func=coverage.out | tail -n 1
+
+      - uses: actions/upload-artifact@v7
+        if: runner.os == 'Linux'
+        with:
+          name: coverage
+          path: coverage.out
+          if-no-files-found: error
 
       - name: Race
         # -race is flaky/slow on Windows runners and not the primary target.
@@ -70,29 +83,11 @@ jobs:
         run: |
           go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6 run --timeout=5m
 
-  coverage:
-    name: Coverage
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
-        with:
-          go-version-file: go.mod
-          cache: true
-      - name: Coverage profile
-        run: go test ./... -covermode=atomic -coverprofile=coverage.out
-      - name: Coverage summary
-        run: |
-          go tool cover -func=coverage.out | tail -n 1
-      - uses: actions/upload-artifact@v7
-        with:
-          name: coverage
-          path: coverage.out
-          if-no-files-found: error
-
   build-matrix:
     name: Cross-build
+    # Release archives come from goreleaser on tags; this is only a PR gate
+    # against breaking a cross-compile, so it need not run on every main push.
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
