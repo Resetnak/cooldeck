@@ -1,6 +1,7 @@
 <div align="center">
+  <img src="assets/icon.png" alt="CoolDeck" width="84">
 
-# 🎛️ CoolDeck
+# CoolDeck
 
 **Your Coolify fleet, one keystroke away.**
 
@@ -29,11 +30,9 @@ from the terminal you already have open.
 
 </div>
 
-<div align="center">
-  <img src="assets/demo.gif" alt="CoolDeck in demo mode: filtering a degraded application, searching its runtime logs, confirming a deploy, and watching the new deployment appear in the active queue" width="900">
-
-  <sub>One degraded app, start to finish: <code>/</code> to filter, <code>enter</code> for the detail, <code>l</code> for runtime logs, <code>d</code> to redeploy behind a confirmation, <code>2</code> <code>a</code> to watch it land in the active queue. Rendered from <a href="cassette.tape">cassette.tape</a>.</sub>
-</div>
+<p align="center">
+  <img src="assets/banner.png" alt="CoolDeck: a keyboard-first terminal dashboard for Coolify, shown against several application list screenshots" width="900">
+</p>
 
 **Try the whole UI in one line - no Coolify instance, no token, no network:**
 
@@ -84,6 +83,13 @@ your config, pulls a token out of your OS keyring, and renders.
 2. **Create a Coolify API token**: in Coolify, *profile → API tokens*. Give it the least privilege you can live with (`read` plus only the write scopes you actually want).
 3. **Connect**: `cooldeck setup` walks you through URL, token and keyring storage.
 4. **Use it**: `cooldeck`. Press `?` for the key map, `:` for the command palette, `/` to filter.
+
+
+<div align="center">
+  <img src="assets/demo.gif" alt="CoolDeck in demo mode: filtering a degraded application, searching its runtime logs, confirming a deploy, and watching the new deployment appear in the active queue" width="900">
+
+  <sub>One degraded app, start to finish: <code>/</code> to filter, <code>enter</code> for the detail, <code>l</code> for runtime logs, <code>d</code> to redeploy behind a confirmation, <code>2</code> <code>a</code> to watch it land in the active queue. Rendered from <a href="cassette.tape">cassette.tape</a>.</sub>
+</div>
 
 ---
 

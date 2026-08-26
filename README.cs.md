@@ -1,6 +1,7 @@
 <div align="center">
+  <img src="assets/icon.png" alt="CoolDeck" width="84">
 
-# 🎛️ CoolDeck
+# CoolDeck
 
 **Vaše Coolify flotila na jedno stisknutí klávesy.**
 
@@ -28,6 +29,10 @@ z terminálu, který stejně máte otevřený.
 [Rychlý start](#-rychlý-start) · [Vlastnosti](#-hlavní-vlastnosti) · [Fleet tail](#-fleet-tail) · [MCP](#-vaše-flotila-ve-vašem-agentovi) · [Srovnání](#-srovnání) · [Klávesové zkratky](#-klávesové-zkratky) · [Instalace](#-instalace) · [Konfigurace](#-konfigurace) · [Bezpečnost](#-bezpečnost) · [Přispívání](CONTRIBUTING.md)
 
 </div>
+
+<p align="center">
+  <img src="assets/banner.png" alt="CoolDeck: terminálový dashboard pro Coolify ovládaný z klávesnice, na pozadí několik snímků seznamu aplikací" width="900">
+</p>
 
 <div align="center">
   <img src="assets/demo.gif" alt="CoolDeck v demo režimu: filtrování degradované aplikace, hledání v runtime logách, potvrzení deploye a nový deployment v aktivní frontě" width="900">
