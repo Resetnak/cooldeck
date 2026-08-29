@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-29
+
+### Added
+
+- Container terminal: `T` on an application opens an interactive shell inside
+  its container, connected over SSH (`ssh_host` per instance in the config;
+  the Coolify API has no exec endpoint). A picker lists every running
+  container before connecting, mirroring the web terminal's choice for
+  multi-container applications
+
 ### Changed
 
 - Minimum Go version is now 1.26.6, which closes four standard-library
@@ -182,7 +192,8 @@ Packaging only - the binary is identical to 0.1.0.
 - Tokens excluded from logs, toasts, and diagnostics
 - Browser open restricted to http(s) URLs
 
-[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/Resetnak/cooldeck/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Resetnak/cooldeck/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/Resetnak/cooldeck/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Resetnak/cooldeck/compare/v0.3.0...v0.3.1
