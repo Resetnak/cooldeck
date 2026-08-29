@@ -6,3 +6,4 @@
 .DS_Store
 coverage.out
 /.code-review-graph/
+/.serena/
