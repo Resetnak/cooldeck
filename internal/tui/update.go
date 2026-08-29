@@ -1,6 +1,9 @@
 package tui
 
 import (
+	"context"
+	"errors"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -9,6 +12,7 @@ import (
 
 	"github.com/resetnak/cooldeck/internal/config"
 	"github.com/resetnak/cooldeck/internal/domain"
+	"github.com/resetnak/cooldeck/internal/platform"
 	"github.com/resetnak/cooldeck/internal/tui/components"
 	"github.com/resetnak/cooldeck/internal/tui/views"
 )
@@ -34,6 +38,9 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	}
 	if m.pendingAction != nil {
 		return m.handleConfirmationKey(msg)
+	}
+	if m.terminalPicker != nil {
+		return m.handleTerminalPickerKey(msg)
 	}
 	if m.instanceForm != nil {
 		return m.handleInstanceFormKey(msg)
@@ -299,6 +306,9 @@ func (m *Model) handleApplicationsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) 
 
 	case key.Matches(msg, m.keys.OpenRepo):
 		return m, m.openSelectedRepository()
+
+	case key.Matches(msg, m.keys.Terminal):
+		return m, m.openTerminal()
 
 	case key.Matches(msg, m.keys.CopyUUID):
 		return m, m.copyApplicationUUID()
@@ -570,6 +580,8 @@ func (m *Model) handleDetailKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, m.openSelectedDomain()
 	case key.Matches(msg, m.keys.OpenRepo):
 		return m, m.openSelectedRepository()
+	case key.Matches(msg, m.keys.Terminal):
+		return m, m.openTerminal()
 	}
 	return m, nil
 }
@@ -705,6 +717,91 @@ func (m *Model) openSelectedRepository() tea.Cmd {
 		return m.pushToast(components.ToastWarning, "No browsable repository URL", a.RepositoryURL)
 	}
 	return m.openURL(url)
+}
+
+// terminalPicker is open while the user chooses between the running containers
+// of a multi-container application, mirroring the picker Coolify's web
+// terminal offers.
+type terminalPicker struct {
+	app        domain.Application
+	containers []string
+	selected   int
+}
+
+// openTerminal starts a terminal session for the current application. The
+// containers are listed over SSH first (the Coolify API has no exec or
+// container endpoint): one match connects immediately, several open the
+// picker. ssh_host on the instance config is what authorises the whole flow,
+// so without one the key explains itself instead of failing.
+func (m *Model) openTerminal() tea.Cmd {
+	a, ok := m.currentApplication()
+	if !ok {
+		return nil
+	}
+	if m.cancelTerminal != nil {
+		m.cancelTerminal()
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	m.cancelTerminal = cancel
+	m.terminalSeq++
+	seq := m.terminalSeq
+
+	cmd, err := platform.ContainerListCommand(ctx, activeInstance(m).SSHHost, a.UUID)
+	if err != nil {
+		cancel()
+		m.cancelTerminal = nil
+		return m.pushToast(components.ToastWarning, "Terminal unavailable",
+			err.Error()+`. Set ssh_host = "user@host" on the instance in the config file.`)
+	}
+	list := func() tea.Msg {
+		defer cancel()
+		out, err := cmd.Output()
+		if err != nil {
+			return terminalListFailedMsg{Seq: seq, Err: err}
+		}
+		return terminalContainersMsg{Seq: seq, App: a, Containers: platform.ParseContainerList(string(out))}
+	}
+	return tea.Batch(m.pushToast(components.ToastInfo, "Looking up containers", ""), list)
+}
+
+// execTerminal suspends the TUI and hands the screen to an interactive SSH
+// session inside one container.
+func (m *Model) execTerminal(container string) tea.Cmd {
+	cmd, err := platform.TerminalCommand(activeInstance(m).SSHHost, container)
+	if err != nil {
+		return m.pushToast(components.ToastError, "Terminal unavailable", err.Error())
+	}
+	return tea.ExecProcess(cmd, func(err error) tea.Msg { return terminalDoneMsg{Err: err} })
+}
+
+// handleTerminalPickerKey drives the container choice modal.
+func (m *Model) handleTerminalPickerKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	p := m.terminalPicker
+	switch {
+	case key.Matches(msg, m.keys.Cancel), key.Matches(msg, m.keys.Quit):
+		m.terminalPicker = nil
+	case key.Matches(msg, m.keys.Up):
+		p.selected = max(p.selected-1, 0)
+	case key.Matches(msg, m.keys.Down):
+		p.selected = min(p.selected+1, len(p.containers)-1)
+	case key.Matches(msg, m.keys.Confirm):
+		container := p.containers[p.selected]
+		m.terminalPicker = nil
+		return m, m.execTerminal(container)
+	}
+	return m, nil
+}
+
+// terminalErrDetail surfaces ssh's own stderr, which is where the actionable
+// part of a connection failure lives; exec's generic "exit status 255" is not.
+// The bytes are remote-controlled (sshd emits its banner pre-auth), so they
+// pass through SanitizeLogText like every other externally-sourced text.
+func terminalErrDetail(err error) string {
+	var exit *exec.ExitError
+	if errors.As(err, &exit) && len(exit.Stderr) > 0 {
+		return domain.SanitizeLogText(strings.TrimSpace(string(exit.Stderr)))
+	}
+	return domain.SanitizeLogText(err.Error())
 }
 
 // currentApplication returns whichever application the user is acting on,

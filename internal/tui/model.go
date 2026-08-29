@@ -178,12 +178,14 @@ type Model struct {
 	deploymentLogsSeq    uint64
 	operationSeq         uint64
 	envDiffSeq           uint64
+	terminalSeq          uint64
 	cancelDashboard      context.CancelFunc
 	cancelEnvDiff        context.CancelFunc
 	cancelDetail         context.CancelFunc
 	cancelRuntimeLogs    context.CancelFunc
 	cancelDeploymentLogs context.CancelFunc
 	cancelOperation      context.CancelFunc
+	cancelTerminal       context.CancelFunc
 
 	connection    components.ConnectionState
 	connectionErr *domain.Error
@@ -224,6 +226,9 @@ type Model struct {
 
 	pendingAction     *pendingAction
 	operationInFlight bool
+
+	// terminalPicker is non-nil while the container choice modal is open.
+	terminalPicker *terminalPicker
 
 	// compareBaseUUID holds the first application picked for an env drift
 	// comparison; envDiff is non-nil while the result overlay is open.
@@ -529,6 +534,34 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case openURLFailedMsg:
 		return m, m.pushToast(components.ToastError, "Could not open link", msg.Err.Error())
+
+	case terminalDoneMsg:
+		if msg.Err != nil {
+			return m, m.pushToast(components.ToastError, "Terminal session failed", msg.Err.Error())
+		}
+		return m, nil
+
+	case terminalContainersMsg:
+		if msg.Seq != m.terminalSeq {
+			return m, nil
+		}
+		m.cancelTerminal = nil
+		if len(msg.Containers) == 0 {
+			return m, m.pushToast(components.ToastWarning, "No running container",
+				"Nothing on the server matches "+msg.App.UUID+".")
+		}
+		// The picker opens even for a single match: the operator must see which
+		// container they are about to enter before the screen is handed over,
+		// because the name filter is a substring match driven by API data.
+		m.terminalPicker = &terminalPicker{app: msg.App, containers: msg.Containers}
+		return m, nil
+
+	case terminalListFailedMsg:
+		if msg.Seq != m.terminalSeq {
+			return m, nil
+		}
+		m.cancelTerminal = nil
+		return m, m.pushToast(components.ToastError, "Could not list containers", terminalErrDetail(msg.Err))
 
 	case instanceSwitchedMsg:
 		return m, m.applyInstanceSwitch(msg)

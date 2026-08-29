@@ -130,6 +130,10 @@ type Instance struct {
 	Insecure bool `toml:"insecure_skip_verify,omitempty"`
 	// RefreshInterval overrides the global interval for this instance.
 	RefreshInterval Duration `toml:"refresh_interval,omitzero"`
+	// SSHHost is the user@host destination the in-app container terminal
+	// connects through. The Coolify API has no exec endpoint, so the terminal
+	// reaches containers over SSH instead. Empty disables the terminal.
+	SSHHost string `toml:"ssh_host,omitempty"`
 }
 
 // DisplayName returns the human label for the instance, falling back to its ID.

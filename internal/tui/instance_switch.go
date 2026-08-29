@@ -70,6 +70,14 @@ func (m *Model) applyInstanceSwitch(msg instanceSwitchedMsg) tea.Cmd {
 	m.compareBaseName = ""
 	m.envDiff = nil
 	m.envDiffSeq++
+	// A container lookup or picker from the previous instance must not resolve
+	// against the new one: the ssh_host would belong to the wrong server.
+	m.terminalSeq++
+	if m.cancelTerminal != nil {
+		m.cancelTerminal()
+		m.cancelTerminal = nil
+	}
+	m.terminalPicker = nil
 	m.lastError = nil
 	m.lastSuccess = time.Time{}
 	m.connectionErr = nil

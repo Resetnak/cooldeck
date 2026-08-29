@@ -93,6 +93,7 @@ func (m *Model) helpGroups() []helpGroup {
 				{"s", "start or stop"},
 				{"l / L", "runtime logs / build log"},
 				{"b / o", "open domain / repository"},
+				{"T", "shell in the container over SSH"},
 				{"c", "copy UUID"},
 				{"S", "cycle sort mode"},
 				{"space", "mark for the fleet tail"},

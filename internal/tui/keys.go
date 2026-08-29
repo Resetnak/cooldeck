@@ -59,6 +59,7 @@ type KeyMap struct {
 	OpenRepo    key.Binding
 	CopyUUID    key.Binding
 	Sort        key.Binding
+	Terminal    key.Binding
 
 	// Deployments section.
 	DeploymentsActive   key.Binding
@@ -142,6 +143,7 @@ func DefaultKeyMap() KeyMap {
 		OpenRepo:    key.NewBinding(key.WithKeys("o"), key.WithHelp("o", "open repo")),
 		CopyUUID:    key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "copy UUID")),
 		Sort:        key.NewBinding(key.WithKeys("S"), key.WithHelp("S", "sort")),
+		Terminal:    key.NewBinding(key.WithKeys("T"), key.WithHelp("T", "terminal")),
 
 		DeploymentsActive:   key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "active filter")),
 		DeploymentsTimeline: key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "timeline")),

@@ -122,6 +122,25 @@ type toastMsg struct {
 // openURLFailedMsg reports that the OS refused to open a link.
 type openURLFailedMsg struct{ Err error }
 
+// terminalDoneMsg is delivered when an interactive container terminal session
+// ends and the TUI takes the screen back.
+type terminalDoneMsg struct{ Err error }
+
+// terminalContainersMsg carries the running containers found for an
+// application before a terminal session opens. One container connects
+// immediately; several open the picker.
+type terminalContainersMsg struct {
+	Seq        uint64
+	App        domain.Application
+	Containers []string
+}
+
+// terminalListFailedMsg reports that the container lookup over SSH failed.
+type terminalListFailedMsg struct {
+	Seq uint64
+	Err error
+}
+
 // instanceSwitchedMsg is delivered after OpenService succeeds.
 type instanceSwitchedMsg struct {
 	Service      app.Service

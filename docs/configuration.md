@@ -49,6 +49,7 @@ token_key = "production"             # keyring account; defaults to instance id
 # token = "…"                        # only with token_source = "plaintext"
 # insecure_skip_verify = false       # TLS skip - trusted networks only
 # refresh_interval = "15s"           # optional per-instance override
+# ssh_host = "root@coolify.example.com"  # enables the container terminal (T)
 ```
 
 ## Token sources

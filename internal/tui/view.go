@@ -32,6 +32,7 @@ func (m *Model) render() string {
 	frame := joinRows(header, body, footer)
 	frame = m.overlayToasts(frame)
 	frame = m.overlayConfirmation(frame)
+	frame = m.overlayTerminalPicker(frame)
 	frame = m.overlayPalette(frame)
 	frame = m.overlayHelp(frame)
 	frame = m.overlayEnvDiff(frame)
@@ -250,6 +251,36 @@ func (m *Model) overlayConfirmation(frame string) string {
 	return components.Overlay(frame, modal, x, y)
 }
 
+// overlayTerminalPicker draws the container choice for a multi-container
+// application, mirroring the picker Coolify's web terminal offers.
+func (m *Model) overlayTerminalPicker(frame string) string {
+	p := m.terminalPicker
+	if p == nil || m.layout.Width < 24 || m.layout.Height < 8 {
+		return frame
+	}
+	th := m.theme
+	width := min(m.layout.Width-6, 54)
+	rows := []string{
+		th.ModalTitle.Render("Open terminal in which container?"),
+		th.ModalHint.Render(components.Truncate(domain.SanitizeLogText(p.app.Name), width-4, th.Sym.Ellipsis)),
+		"",
+	}
+	for i, name := range p.containers {
+		label := components.Truncate(domain.SanitizeLogText(name), width-8, th.Sym.Ellipsis)
+		if i == p.selected {
+			rows = append(rows, th.ModalTitle.Render(th.Sym.Selected+" "+label))
+		} else {
+			rows = append(rows, th.ModalBody.Render("  "+label))
+		}
+	}
+	rows = append(rows, "", th.ModalHint.Render("enter connect  ·  esc cancel"))
+	content := lipgloss.JoinVertical(lipgloss.Left, rows...)
+	modal := th.Modal.Width(width).Render(content)
+	x := max((m.layout.Width-lipgloss.Width(modal))/2, 0)
+	y := max((m.layout.Height-lipgloss.Height(modal))/2, 0)
+	return components.Overlay(frame, modal, x, y)
+}
+
 // footerHints returns the contextual key hints for the active screen.
 func (m *Model) footerHints() []components.KeyHint {
 	switch {
@@ -264,6 +295,12 @@ func (m *Model) footerHints() []components.KeyHint {
 			{Key: "↑↓", Desc: "scroll"},
 			{Key: "esc", Desc: "close"},
 			{Key: "?", Desc: "close"},
+		}
+	case m.terminalPicker != nil:
+		return []components.KeyHint{
+			{Key: "↑↓", Desc: "select"},
+			{Key: "enter", Desc: "connect"},
+			{Key: "esc", Desc: "cancel"},
 		}
 	case m.paletteOpen:
 		return []components.KeyHint{
@@ -337,6 +374,7 @@ func (m *Model) footerHints() []components.KeyHint {
 			{Key: "s", Desc: "start/stop", Short: "state"},
 			{Key: "b", Desc: "open domain", Short: "domain"},
 			{Key: "o", Desc: "open repo", Short: "repo"},
+			{Key: "T", Desc: "terminal", Short: "term"},
 			{Key: "esc", Desc: "back"},
 			{Key: "?", Desc: "help"},
 		}
