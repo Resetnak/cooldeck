@@ -1,8 +1,10 @@
 package mcpserver
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"maps"
 	"slices"
 	"strings"
@@ -14,6 +16,7 @@ import (
 	"github.com/resetnak/cooldeck/internal/app"
 	"github.com/resetnak/cooldeck/internal/app/demo"
 	"github.com/resetnak/cooldeck/internal/domain"
+	"github.com/resetnak/cooldeck/internal/logging"
 )
 
 // connect runs the server over an in-memory transport and returns a client
@@ -239,4 +242,145 @@ func contentText(res *mcp.CallToolResult) string {
 		}
 	}
 	return b.String()
+}
+
+// TestRedactingWriterStripsSecretsFromFrames covers the transport wrapper the
+// MCP server writes through. Every frame here would otherwise land verbatim in
+// a model provider's context window.
+func TestRedactingWriterStripsSecretsFromFrames(t *testing.T) {
+	const sanctum = "7|qA3xZk9LmPb2NrTvWy8Hc4Ju6Ef1Sd0Gh5Ki2Lo"
+
+	tests := []struct {
+		name  string
+		frame string
+		leak  string
+	}{
+		{"log line with env dump", `{"text":"boot: DATABASE_PASSWORD=hunter2 ok"}`, "hunter2"},
+		{"json credential pair", `{"api_key":"` + sanctum + `"}`, sanctum},
+		{"quoted json secret", `{"aws_secret_access_key":"wJalrXUtnFEMIK7MDENG"}`, "wJalrXUtnFEMIK7MDENG"},
+		{"authorization header", `{"header":"Authorization: Bearer AbCdEfGh12345678"}`, "AbCdEfGh12345678"},
+		{"git remote with basic auth", `{"commit":"see https://ci:hunter2@git.example.com"}`, "hunter2"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var out bytes.Buffer
+			w := &redactingWriter{w: &out}
+			if _, err := w.Write([]byte(tt.frame + "\n")); err != nil {
+				t.Fatalf("write: %v", err)
+			}
+			got := out.String()
+			if strings.Contains(got, tt.leak) {
+				t.Fatalf("secret survived the transport: %q", got)
+			}
+			if !strings.Contains(got, logging.Mask) {
+				t.Fatalf("nothing was redacted: %q", got)
+			}
+			if !json.Valid([]byte(strings.TrimSpace(got))) {
+				t.Fatalf("redaction produced invalid JSON: %q", got)
+			}
+		})
+	}
+}
+
+// A credential split across two Write calls must still be redacted: the writer
+// buffers to the newline precisely so the pattern sees a whole frame.
+func TestRedactingWriterBuffersPartialFrames(t *testing.T) {
+	var out bytes.Buffer
+	w := &redactingWriter{w: &out}
+
+	if _, err := w.Write([]byte(`{"text":"TOKEN=hunt`)); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	if out.Len() != 0 {
+		t.Fatalf("partial frame was forwarded unredacted: %q", out.String())
+	}
+	if _, err := w.Write([]byte("er2 done\"}\n")); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+
+	got := out.String()
+	if strings.Contains(got, "hunter2") {
+		t.Fatalf("split secret survived: %q", got)
+	}
+	if !strings.Contains(got, "done") {
+		t.Fatalf("frame lost its tail: %q", got)
+	}
+}
+
+// Close must flush a frame that never got its newline, or a client waiting on
+// the final response hangs.
+func TestRedactingWriterFlushesOnClose(t *testing.T) {
+	var out bytes.Buffer
+	w := &redactingWriter{w: &out}
+
+	if _, err := w.Write([]byte(`{"text":"password=hunter2"}`)); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	if err := w.Close(); err != nil {
+		t.Fatalf("close: %v", err)
+	}
+	if got := out.String(); got == "" || strings.Contains(got, "hunter2") {
+		t.Fatalf("close did not flush a redacted frame: %q", got)
+	}
+}
+
+// TestRedactingTransportKeepsEveryFrameParseable drives the whole surface
+// through the same writer Run uses, over a real pipe rather than the in-memory
+// transport. The redactor rewrites raw JSON frames, so the risk it guards
+// against is a pattern that matches a structural key or bridges a delimiter
+// and hands the client a frame it cannot parse.
+func TestRedactingTransportKeepsEveryFrameParseable(t *testing.T) {
+	svc := demo.New(demo.Options{})
+	toServer, fromClient := io.Pipe()
+	toClient, fromServer := io.Pipe()
+
+	server := New(Options{Service: svc, AllowMutations: true})
+	serverSession, err := server.Connect(t.Context(), &mcp.IOTransport{
+		Reader: toServer,
+		Writer: &redactingWriter{w: fromServer},
+	}, nil)
+	if err != nil {
+		t.Fatalf("server connect: %v", err)
+	}
+	t.Cleanup(func() { _ = serverSession.Close() })
+
+	client := mcp.NewClient(&mcp.Implementation{Name: "test", Version: "v0"}, nil)
+	session, err := client.Connect(t.Context(), &mcp.IOTransport{Reader: toClient, Writer: fromClient}, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	t.Cleanup(func() { _ = session.Close() })
+
+	if _, err := session.ListTools(t.Context(), nil); err != nil {
+		t.Fatalf("list tools over redacting transport: %v", err)
+	}
+
+	snapshot, err := svc.Dashboard(t.Context())
+	if err != nil {
+		t.Fatalf("dashboard: %v", err)
+	}
+	appUUID := snapshot.Applications[0].UUID
+	deployments, err := svc.Deployments(t.Context(), appUUID, 1)
+	if err != nil || len(deployments) == 0 {
+		t.Fatalf("deployments: %v (%d)", err, len(deployments))
+	}
+
+	calls := []*mcp.CallToolParams{
+		{Name: "list_applications"},
+		{Name: "get_instance_info"},
+		{Name: "get_application", Arguments: map[string]any{"application_uuid": appUUID}},
+		{Name: "get_runtime_logs", Arguments: map[string]any{"application_uuid": appUUID}},
+		{Name: "list_deployments", Arguments: map[string]any{"application_uuid": appUUID}},
+		{Name: "get_deployment_logs", Arguments: map[string]any{"deployment_uuid": deployments[0].UUID}},
+		{Name: "restart_application", Arguments: map[string]any{"application_uuid": appUUID}},
+	}
+	for _, params := range calls {
+		res, err := session.CallTool(t.Context(), params)
+		if err != nil {
+			t.Fatalf("%s over redacting transport: %v", params.Name, err)
+		}
+		if res.IsError {
+			t.Fatalf("%s reported an error: %+v", params.Name, res.Content)
+		}
+	}
 }

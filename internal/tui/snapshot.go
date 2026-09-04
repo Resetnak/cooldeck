@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 
 	"github.com/resetnak/cooldeck/internal/app"
 	"github.com/resetnak/cooldeck/internal/domain"
+	"github.com/resetnak/cooldeck/internal/logging"
 	"github.com/resetnak/cooldeck/internal/tui/components"
 )
 
@@ -67,11 +69,19 @@ func fleetSnapshotMarkdown(
 		shown := deployments
 		if len(shown) > snapshotDeploymentLimit {
 			shown = shown[:snapshotDeploymentLimit]
+			b.WriteString("_Newest " + strconv.Itoa(snapshotDeploymentLimit) + " of " +
+				strconv.Itoa(len(deployments)) + "; the rest were truncated._\n\n")
 		}
 		for _, d := range shown {
 			line := "- " + snapshotCell(d.ApplicationName) +
 				": " + string(d.Status) +
 				" " + domain.HumanizeAge(d.CreatedAt, now)
+			// The UUID is what turns a pasted line back into something
+			// actionable: it is the handle for get_deployment_logs and for
+			// Coolify's own API.
+			if d.UUID != "" {
+				line += " (" + snapshotCell(d.UUID) + ")"
+			}
 			if msg := strings.TrimSpace(d.CommitMessage); msg != "" {
 				line += " - " + snapshotCell(msg)
 			}
@@ -85,7 +95,16 @@ func fleetSnapshotMarkdown(
 			b.WriteString("- " + domain.SanitizeLogText(e) + "\n")
 		}
 	}
-	return b.String()
+
+	// Redaction runs once over the finished document rather than per field, so
+	// a field added later cannot be the one that forgot to call it. Every value
+	// here crossed a trust boundary - commit messages, application names and
+	// Coolify's own error text are all attacker- or accident-controlled.
+	out := b.String()
+	if safe := logging.Redact(out); safe != out {
+		out = safe + "\n_Credential-shaped values were replaced with " + logging.Mask + " before copying._\n"
+	}
+	return out
 }
 
 // snapshotCell sanitises a value and keeps it from breaking the markdown table.

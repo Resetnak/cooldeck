@@ -9,8 +9,11 @@
 package mcpserver
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -18,6 +21,7 @@ import (
 
 	"github.com/resetnak/cooldeck/internal/app"
 	"github.com/resetnak/cooldeck/internal/domain"
+	"github.com/resetnak/cooldeck/internal/logging"
 )
 
 // Options configures the server. Service is required.
@@ -207,8 +211,54 @@ func addMutationTools(server *mcp.Server, svc app.Service) {
 
 // Run serves the MCP protocol over stdin/stdout until the client disconnects
 // or ctx is cancelled. Nothing else may write to stdout while this runs.
+//
+// The write side is wrapped rather than using StdioTransport directly: every
+// frame an agent receives carries production data - runtime logs, build logs,
+// commit messages - straight into a context window belonging to somebody else's
+// model provider. Redacting at the transport covers tools added later too,
+// which redacting per result type would not.
 func Run(ctx context.Context, opts Options) error {
-	return New(opts).Run(ctx, &mcp.StdioTransport{})
+	return New(opts).Run(ctx, &mcp.IOTransport{
+		Reader: os.Stdin,
+		Writer: &redactingWriter{w: os.Stdout},
+	})
+}
+
+// redactingWriter applies logging.Redact to each newline-delimited JSON frame
+// on its way out. Buffering to the newline matters: a partial write must not be
+// scanned, or a credential split across two Write calls would slip through the
+// pattern that would otherwise have matched it whole.
+type redactingWriter struct {
+	w   io.Writer
+	buf []byte
+}
+
+func (r *redactingWriter) Write(p []byte) (int, error) {
+	r.buf = append(r.buf, p...)
+	for {
+		i := bytes.IndexByte(r.buf, '\n')
+		if i < 0 {
+			return len(p), nil
+		}
+		frame := logging.Redact(string(r.buf[:i]))
+		r.buf = r.buf[i+1:]
+		if _, err := io.WriteString(r.w, frame+"\n"); err != nil {
+			return 0, err
+		}
+	}
+}
+
+// Close flushes a trailing frame that never got its newline, so a client
+// waiting on the last response is not left hanging on shutdown. The underlying
+// writer is left open on purpose: it is stdout, and the SDK's own stdio
+// transport never closes that either.
+func (r *redactingWriter) Close() error {
+	if len(r.buf) == 0 {
+		return nil
+	}
+	_, err := io.WriteString(r.w, logging.Redact(string(r.buf)))
+	r.buf = nil
+	return err
 }
 
 // toolError turns a domain error into the message the agent sees. Error() alone

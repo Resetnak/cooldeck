@@ -17,13 +17,36 @@ var sensitiveKeys = []string{
 	"credential", "api_key", "apikey", "private_key", "cookie",
 }
 
-var redactPatterns = []*regexp.Regexp{
+// redactPattern is a match paired with the replacement that keeps the
+// surrounding context readable - the point of redaction is to leave a message
+// that still explains itself once the secret is gone.
+type redactPattern struct {
+	re   *regexp.Regexp
+	with string
+}
+
+var redactPatterns = []redactPattern{
 	// Authorization: Bearer <token> (header dumps).
-	regexp.MustCompile(`(?i)(bearer\s+)[A-Za-z0-9._~+/=|-]{8,}`),
+	{regexp.MustCompile(`(?i)(bearer\s+)[A-Za-z0-9._~+/=|-]{8,}`), "${1}" + Mask},
 	// Laravel Sanctum personal access tokens, which is what Coolify issues.
-	regexp.MustCompile(`\b\d+\|[A-Za-z0-9]{20,}\b`),
-	// token=... / api_key=... in query strings and key/value dumps.
-	regexp.MustCompile(`(?i)\b(token|api_key|apikey|secret|password)([=:]\s?)[^\s&"']+`),
+	{regexp.MustCompile(`\b\d+\|[A-Za-z0-9]{20,}\b`), Mask},
+	// JSON Web Tokens, whatever key they were carried under.
+	{regexp.MustCompile(`\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_=-]*`), Mask},
+	// Basic auth embedded in a URL, e.g. a git remote in a commit message.
+	// Quotes and commas end the match, or the pattern would bridge from a
+	// host:port through a JSON delimiter to an unrelated e-mail address.
+	{regexp.MustCompile(`([a-zA-Z][a-zA-Z0-9+.-]*://)[^\s/@:"',]+:[^\s/@"',]+@`), "${1}" + Mask + "@"},
+	// TOKEN=... / AWS_SECRET_ACCESS_KEY: ... / "db_password": "..." in query
+	// strings, env dumps, JSON bodies and key/value prose. The surrounding
+	// [\w-]* is what makes prefixed and suffixed names match; a bare \b would
+	// stop at the underscore. Dots are deliberately not part of a name, or
+	// "credentials.go:42" in a stack trace would lose its line number. The
+	// optional quote in group 2 is what lets the value in a JSON pair be
+	// reached - without it the match dies on the quote and only oddly-shaped
+	// values get caught.
+	{regexp.MustCompile(
+		`(?i)([\w-]*(?:token|api[_-]?key|secret|password|passwd|credential|private[_-]?key)[\w-]*)("?\s*[=:]\s*"?)[^\s&"',\\]+`),
+		"${1}${2}" + Mask},
 }
 
 // Redact removes credential-shaped substrings from arbitrary text. It is
@@ -33,8 +56,8 @@ func Redact(s string) string {
 	if s == "" {
 		return s
 	}
-	for _, re := range redactPatterns {
-		s = re.ReplaceAllString(s, "${1}${2}"+Mask)
+	for _, p := range redactPatterns {
+		s = p.re.ReplaceAllString(s, p.with)
 	}
 	return s
 }

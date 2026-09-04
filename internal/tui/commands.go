@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/resetnak/cooldeck/internal/domain"
+	"github.com/resetnak/cooldeck/internal/logging"
 	"github.com/resetnak/cooldeck/internal/platform"
 	"github.com/resetnak/cooldeck/internal/tui/components"
 )
@@ -211,7 +212,17 @@ func (m *Model) openURL(url string) tea.Cmd {
 }
 
 // copyText writes text to the system clipboard and reports the result as a toast.
+//
+// Redaction happens here rather than at each call site: everything that reaches
+// the clipboard is on its way to a chat window, an issue tracker or an AI
+// assistant, and a copy path added later cannot be the one that forgot to ask.
+// Logs on screen stay untouched - reading your own output is the whole job.
 func (m *Model) copyText(text, success string) tea.Cmd {
+	detail := ""
+	if safe := logging.Redact(text); safe != text {
+		text = safe
+		detail = "Credential-shaped values were replaced with " + logging.Mask + "."
+	}
 	return func() tea.Msg {
 		if err := platform.WriteClipboard(text); err != nil {
 			return toastMsg{
@@ -220,7 +231,7 @@ func (m *Model) copyText(text, success string) tea.Cmd {
 				Detail: err.Error(),
 			}
 		}
-		return toastMsg{Kind: int(components.ToastSuccess), Text: success}
+		return toastMsg{Kind: int(components.ToastSuccess), Text: success, Detail: detail}
 	}
 }
 

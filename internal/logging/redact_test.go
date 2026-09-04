@@ -21,6 +21,10 @@ func TestRedact(t *testing.T) {
 		{"query parameter", "https://coolify.example.com/api/v1/applications?token=" + secret},
 		{"json field", `{"api_key":"` + secret + `"}`},
 		{"lowercase bearer", "bearer " + secret},
+		{"env dump", "boot: DATABASE_PASSWORD=" + secret + " ok"},
+		{"quoted json pair", `{"aws_secret_access_key": "` + secret + `"}`},
+		{"jwt", "session eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dBjftJeZ4CVPmB92K27uhbUJU1p1r_wW1gFWFOEjXk"},
+		{"basic auth url", "cloning https://ci:" + secret + "@git.example.com"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -36,9 +40,16 @@ func TestRedact(t *testing.T) {
 }
 
 func TestRedactKeepsHarmlessText(t *testing.T) {
-	in := "GET https://coolify.example.com/api/v1/applications -> 200 in 84ms"
-	if got := Redact(in); got != in {
-		t.Fatalf("harmless text was altered:\n got %q\nwant %q", got, in)
+	for _, in := range []string{
+		"GET https://coolify.example.com/api/v1/applications -> 200 in 84ms",
+		"credentials.go:42 keyring unavailable",
+		"password reset email sent",
+		"GET /api/v1/security?limit=10",
+		`{"url":"https://coolify.example.com:8000","email":"ops@example.com"}`,
+	} {
+		if got := Redact(in); got != in {
+			t.Fatalf("harmless text was altered:\n got %q\nwant %q", got, in)
+		}
 	}
 }
 

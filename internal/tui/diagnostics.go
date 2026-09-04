@@ -12,6 +12,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/resetnak/cooldeck/internal/config"
+	"github.com/resetnak/cooldeck/internal/logging"
 	"github.com/resetnak/cooldeck/internal/tui/components"
 	"github.com/resetnak/cooldeck/internal/tui/theme"
 	"github.com/resetnak/cooldeck/internal/tui/views"
@@ -152,7 +153,9 @@ func (m *Model) copyDiagnostics() tea.Cmd {
 // exportDiagnostics writes diagnostics to a file under the state directory.
 func (m *Model) exportDiagnostics() tea.Cmd {
 	m.refreshDiagnostics()
-	text := m.diagnostics.PlainText()
+	// Same belt-and-braces pass as the fleet snapshot: the fields are built to
+	// be secret-free, but this file is the one users attach to bug reports.
+	text := logging.Redact(m.diagnostics.PlainText())
 	if text == "" {
 		return m.pushToast(components.ToastWarning, "Nothing to export", "")
 	}

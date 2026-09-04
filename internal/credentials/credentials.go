@@ -12,6 +12,7 @@ import (
 	"github.com/zalando/go-keyring"
 
 	"github.com/resetnak/cooldeck/internal/config"
+	"github.com/resetnak/cooldeck/internal/logging"
 	"github.com/resetnak/cooldeck/internal/version"
 )
 
@@ -204,7 +205,11 @@ func fromCommand(ctx context.Context, argv []string) (Token, error) {
 		}
 		msg := strings.TrimSpace(stderr.String())
 		if msg != "" {
-			return Token{}, fmt.Errorf("token command %q failed: %w: %s", argv[0], err, firstLine(msg))
+			// The command's job is to print a secret, so its diagnostics are the
+			// most likely place for one to appear - a password manager echoing
+			// the entry it failed to unlock, for instance.
+			return Token{}, fmt.Errorf("token command %q failed: %w: %s",
+				argv[0], err, logging.Redact(firstLine(msg)))
 		}
 		return Token{}, fmt.Errorf("token command %q failed: %w", argv[0], err)
 	}
