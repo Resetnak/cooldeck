@@ -2,9 +2,9 @@
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  RESOURCES               │DEPLOYMENTS
                          │33 shown  ·  2 active  ·  recent history  ·  a toggle
-   Applications      12  │
- > Deployments       33  │  STATUS       APPLICATION                    COMMIT   STARTED    DURATION   PROGRESS          TRIGGER  MESSAGE
-   Instances          1  │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   Applications       12 │
+ > Deployments        33 │  STATUS       APPLICATION                    COMMIT   STARTED    DURATION   PROGRESS          TRIGGER  MESSAGE
+   Instances           1 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
    Diagnostics           │> * Running    landing-web                    6c880be  21s ago    21s        #------- ~2m 2s   api      fix: handle empty response fr.
                          │  . Queued     vault-web                      a5f785b  just now   4s         -------- ~1m 4s   api      refactor: extract deployment .
                          │  + Finished   shipyard-api                   6b3514c  3m ago     1m 12s                       api      chore(deps): bump base image .

@@ -38,7 +38,7 @@ func Sidebar(th *theme.Theme, items []NavItem, active, width, height int, focuse
 		label := it.Label
 		badge := ""
 		if it.Count >= 0 {
-			badge = th.NavCount.Render(" " + strconv.Itoa(it.Count) + " ")
+			badge = th.NavCount.Render(strconv.Itoa(it.Count))
 		}
 		if !it.Enabled {
 			badge = th.Subtle.Render(" " + th.Sym.Lock + " ")
@@ -50,7 +50,7 @@ func Sidebar(th *theme.Theme, items []NavItem, active, width, height int, focuse
 			marker = th.TableMarker.Render(th.Sym.Selected)
 		}
 
-		textBudget := inner - 3 - Width(badge) - Width(marker)
+		textBudget := inner - 4 - Width(badge) - Width(marker) // marker, gap, min pad, and the trailing badge
 		text := Fit(label, max(textBudget, 1), th.Sym.Ellipsis)
 		row := marker + " " + text
 		if badge != "" {

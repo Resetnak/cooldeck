@@ -2,9 +2,9 @@
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  RESOURCES         │Demo -> shipyard-api
                    │  Overview  |  Deployments  |  Runtime Logs  |  Configuration
- > Applic...   12  │
-   Deploym...   0  │OVERVIEW
-   Instances    1  │Status         o Running
+ > Applications 12 │
+   Deployments   0 │OVERVIEW
+   Instances     1 │Status         o Running
    Diagnostics     │Health         healthy
                    │Description    Public REST API
                    │UUID           demo000ayg9ml

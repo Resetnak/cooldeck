@@ -227,10 +227,7 @@ func New(opts Options) *Theme {
 		Foreground(p.Text).
 		Background(p.SelectionDim).
 		Padding(0, SpaceXS)
-	t.NavCount = lipgloss.NewStyle().
-		Foreground(p.TextSubtle).
-		Background(p.SurfaceRaised).
-		Padding(0, SpaceXS)
+	t.NavCount = lipgloss.NewStyle().Foreground(p.TextSubtle)
 	t.TabActive = lipgloss.NewStyle().
 		Bold(true).
 		Foreground(p.Primary).

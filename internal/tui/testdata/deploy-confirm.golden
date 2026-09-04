@@ -1,6 +1,6 @@
  COOLDECK  Demo   o connected    DEMO                                12 apps  |  refreshed just now
 ────────────────────────────────────────────────────────────────────────────────────────────────────
-  Applications  12   |  Deployme
+  Applications 12  |  Deployments 0  |  Instances 1  |  Diagnostics
   STATUS       APPLICATION                      BRANCH            DEPLOYED DOMAIN
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 > ! Degraded   billing-api                      main               47m ago api.billing.example

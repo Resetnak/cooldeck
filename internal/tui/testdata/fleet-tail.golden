@@ -2,9 +2,9 @@
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  RESOURCES               │FLEET TAIL
                          │18 lines  shipyard-api  shipyard-web  billing-api  just now  follow
- > Applications      12  │
-   Deployments        0  │>shipyard-api 2026-08-04T11:56:28Z INFO  GET /healthz 200 in 2ms
-   Instances          1  │>shipyard-web 2026-08-04T11:56:28Z INFO  GET /healthz 200 in 2ms
+ > Applications       12 │
+   Deployments         0 │>shipyard-api 2026-08-04T11:56:28Z INFO  GET /healthz 200 in 2ms
+   Instances           1 │>shipyard-web 2026-08-04T11:56:28Z INFO  GET /healthz 200 in 2ms
    Diagnostics           │>shipyard-api 2026-08-04T11:56:35Z INFO  GET /api/v1/entries 200 in 31ms
                          │>shipyard-web 2026-08-04T11:56:35Z INFO  GET /api/v1/entries 200 in 31ms
                          │>shipyard-api 2026-08-04T11:56:42Z WARN  slow query detected: SELECT * FROM entries took 812ms

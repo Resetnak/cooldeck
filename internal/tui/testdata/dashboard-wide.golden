@@ -2,9 +2,9 @@
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  RESOURCES               │  STATUS       APPLICATION                 BRANCH          DEPLOYED DOMAIN                +----------------------------------------+
                          │──────────────────────────────────────────────────────────────────────────────────────────| billing-api                            |
- > Applications      12  │> ! Degraded   billing-api                 main             47m ago api.billing.example   | ! Degraded                             |
-   Deployments        0  │  * Restarting ingest-dashboard            feat/charts   1m 30s ago -                     |                                        |
-   Instances          1  │  * Running    landing-web                 main                 21s landing.example       | Branch     main                        |
+ > Applications       12 │> ! Degraded   billing-api                 main             47m ago api.billing.example   | ! Degraded                             |
+   Deployments         0 │  * Restarting ingest-dashboard            feat/charts   1m 30s ago -                     |                                        |
+   Instances           1 │  * Running    landing-web                 main                 21s landing.example       | Branch     main                        |
    Diagnostics           │  . Queued     vault-web                   main                  4s vault.example         | Commit     2099246                     |
                          │  # Stopped    billing-worker              main              2h ago -                     | Domain     api.billing.example         |
                          │  # Stopped    metrics-web                 develop        1d 2h ago staging.metrics.exampl|                                        |
