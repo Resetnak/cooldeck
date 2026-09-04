@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-09-04
+
+### Fixed
+
+- Theme background no longer drops out after the first styled fragment on a
+  line. Nested style resets fell back to the host terminal colour, which made
+  the light theme render as white islands on a non-white terminal
+
 ## [0.5.0] - 2026-08-29
 
 ### Added
@@ -192,7 +200,8 @@ Packaging only - the binary is identical to 0.1.0.
 - Tokens excluded from logs, toasts, and diagnostics
 - Browser open restricted to http(s) URLs
 
-[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/Resetnak/cooldeck/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/Resetnak/cooldeck/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Resetnak/cooldeck/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/Resetnak/cooldeck/compare/v0.3.1...v0.3.2
