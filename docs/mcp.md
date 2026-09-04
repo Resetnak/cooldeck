@@ -123,6 +123,10 @@ deliberately:
   mutations, as above, means a mistaken instruction cannot reach production at all.
 - **Nothing is hidden from you.** Every call is an ordinary Coolify API call and shows up in
   Coolify's own deployment history, attributed to the token that made it.
+- **Credentials do not reach the agent.** Every frame the server writes is passed through the same
+  redactor as the log file, so a token or password sitting in a build log or a commit message is
+  replaced with `[REDACTED]` before it lands in a model provider's context window. Scoping the
+  token is still the real boundary; the redactor is a pattern match, not a guarantee.
 
 The reasoning behind the default is recorded in
 [ADR 0006](decisions/0006-mcp-server-read-only-by-default.md).

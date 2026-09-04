@@ -414,6 +414,7 @@ cooldeck version                  version, commit, build date
 ## 🔒 Security
 
 - **Tokens stay out of sight**: never rendered in the UI, never written to logs, toasts or the diagnostics export - [`internal/logging/redact.go`](internal/logging/redact.go) enforces the log side, and the diagnostics dump is secret-free by construction.
+- **Anything that leaves the app is redacted**: the fleet snapshot, the diagnostics export, every copy to the clipboard and every frame the MCP server sends pass through the same redactor, so a credential that slipped into a commit message or a runtime log does not travel with the paste. Logs on screen stay untouched.
 - **Log output is sanitised**: raw ANSI control sequences from a remote log stream cannot repaint your terminal.
 - **Only `http`/`https`** URLs are ever handed to the browser.
 - **Deleting an instance** removes the *local* config entry and its keyring item. It never touches anything in Coolify.

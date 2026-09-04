@@ -414,6 +414,7 @@ cooldeck version                  verze, commit, datum buildu
 ## 🔒 Bezpečnost
 
 - **Tokeny zůstávají mimo dohled**: nikdy se nevykreslí v UI, nikdy nejdou do logů, toastů ani do exportu diagnostiky - logovací stranu hlídá [`internal/logging/redact.go`](internal/logging/redact.go) a diagnostický výpis je bez tajemství z principu.
+- **Cokoliv, co aplikaci opouští, je redigováno**: snapshot flotily, export diagnostiky, každé kopírování do schránky i každý rámec, který posílá MCP server, procházejí stejným redaktorem. Credential, který proklouzl do commit message nebo runtime logu, tak s vložením neputuje dál. Logy na obrazovce zůstávají netknuté.
 - **Výstup logů se sanitizuje**: syrové ANSI řídicí sekvence ze vzdáleného log streamu vám nepřekreslí terminál.
 - **Do prohlížeče jdou jen `http`/`https`** URL.
 - **Smazání instance** odstraní *lokální* záznam v konfiguraci a jeho položku v keyringu. V Coolify se nedotkne ničeho.

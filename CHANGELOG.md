@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-04
+
+### Security
+
+- Credential-shaped values are redacted everywhere data leaves the app, not
+  only in logs: the fleet snapshot and diagnostics export, any text copied to
+  the clipboard, every frame the MCP server writes to stdout, and the
+  diagnostics of a failed `token_source = "command"`. The redactor now also
+  recognises JWTs, basic-auth URLs and prefixed env names such as
+  `DATABASE_PASSWORD`, and the snapshot says when it replaced something.
+
+### Changed
+
+- The fleet snapshot lists each deployment's UUID, so a pasted line can be
+  fed straight back to `get_deployment_logs`, and states how many
+  deployments were truncated.
+
 ## [0.5.2] - 2026-09-04
 
 ### Fixed
@@ -209,6 +226,7 @@ Packaging only - the binary is identical to 0.1.0.
 - Browser open restricted to http(s) URLs
 
 [Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.5.2...HEAD
+[0.6.0]: https://github.com/Resetnak/cooldeck/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/Resetnak/cooldeck/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/Resetnak/cooldeck/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/Resetnak/cooldeck/compare/v0.4.0...v0.5.0
