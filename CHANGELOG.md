@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-09-04
+
+### Fixed
+
+- Sidebar counts no longer sit on a raised background block that broke the
+  layout; they render as plain muted digits aligned right. The row budget
+  also overflowed by one column, which the old badge padding was hiding
+
 ## [0.5.1] - 2026-09-04
 
 ### Fixed
@@ -200,7 +208,8 @@ Packaging only - the binary is identical to 0.1.0.
 - Tokens excluded from logs, toasts, and diagnostics
 - Browser open restricted to http(s) URLs
 
-[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/Resetnak/cooldeck/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/Resetnak/cooldeck/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/Resetnak/cooldeck/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/Resetnak/cooldeck/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Resetnak/cooldeck/compare/v0.3.2...v0.4.0
