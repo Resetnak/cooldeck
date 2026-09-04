@@ -65,7 +65,7 @@ func ErrorState(th *theme.Theme, width, height int, err *domain.Error, hints []K
 		block = append(block, "", strings.Join(parts, "   "))
 	}
 
-	card := th.Modal.Width(inner).Render(lipgloss.JoinVertical(lipgloss.Left, block...))
+	card := theme.Fill(th.Modal.Width(inner), lipgloss.JoinVertical(lipgloss.Left, block...))
 	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, card)
 }
 

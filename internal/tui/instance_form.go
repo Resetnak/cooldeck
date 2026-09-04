@@ -12,6 +12,7 @@ import (
 	"github.com/resetnak/cooldeck/internal/config"
 	"github.com/resetnak/cooldeck/internal/credentials"
 	"github.com/resetnak/cooldeck/internal/tui/components"
+	"github.com/resetnak/cooldeck/internal/tui/theme"
 )
 
 // StoreCredentialsFunc writes a token for an instance (typically keyring).
@@ -395,7 +396,7 @@ func (m *Model) renderInstanceForm() string {
 	}
 
 	content := lipgloss.JoinVertical(lipgloss.Left, lines...)
-	return th.Modal.Width(width).Render(content)
+	return theme.Fill(th.Modal.Width(width), content)
 }
 
 func (m *Model) overlayInstanceForm(frame string) string {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/resetnak/cooldeck/internal/domain"
 	"github.com/resetnak/cooldeck/internal/tui/components"
+	"github.com/resetnak/cooldeck/internal/tui/theme"
 )
 
 // envDiffResult is the loaded comparison shown in the env drift overlay.
@@ -138,7 +139,7 @@ func (m *Model) overlayEnvDiff(frame string) string {
 	if len(lines) > maxBody {
 		lines = lines[:maxBody]
 	}
-	modal := th.Modal.Width(width).Render(lipgloss.JoinVertical(lipgloss.Left, lines...))
+	modal := theme.Fill(th.Modal.Width(width), lipgloss.JoinVertical(lipgloss.Left, lines...))
 	dimmed := m.theme.Backdrop.Render(lipgloss.JoinVertical(lipgloss.Left, components.Lines(frame)...))
 	x := max((m.layout.Width-lipgloss.Width(modal))/2, 0)
 	y := max((m.layout.Height-lipgloss.Height(modal))/6, 1)

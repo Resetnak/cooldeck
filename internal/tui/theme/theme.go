@@ -1,7 +1,10 @@
 package theme
 
 import (
+	"strings"
+
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/resetnak/cooldeck/internal/domain"
 )
@@ -396,4 +399,26 @@ func resolvePalette(opts Options) Palette {
 		}
 		return DarkPalette
 	}
+}
+
+// Fill renders s with style and keeps the style's colours alive across the
+// resets that nested lipgloss styles emit. Without this, everything after
+// the first styled fragment on a line falls back to the host terminal's
+// colours, which is what makes a light theme look like scattered white
+// islands on a non-white terminal.
+func Fill(style lipgloss.Style, s string) string {
+	sgr := ansi.Style{}
+	if c := style.GetForeground(); c != (lipgloss.NoColor{}) {
+		sgr = sgr.ForegroundColor(c)
+	}
+	if c := style.GetBackground(); c != (lipgloss.NoColor{}) {
+		sgr = sgr.BackgroundColor(c)
+	}
+	out := style.Render(s)
+	if len(sgr) == 0 {
+		return out
+	}
+	restore := sgr.String()
+	out = strings.ReplaceAll(out, "\x1b[0m", "\x1b[m")
+	return strings.ReplaceAll(out, "\x1b[m", "\x1b[m"+restore)
 }

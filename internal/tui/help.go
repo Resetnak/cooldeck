@@ -7,6 +7,7 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"github.com/resetnak/cooldeck/internal/tui/components"
+	"github.com/resetnak/cooldeck/internal/tui/theme"
 	"github.com/resetnak/cooldeck/internal/version"
 )
 
@@ -193,7 +194,7 @@ func (m *Model) renderHelp() string {
 	}
 
 	content := lipgloss.JoinVertical(lipgloss.Left, visible...)
-	return th.Modal.Width(width).Render(content)
+	return theme.Fill(th.Modal.Width(width), content)
 }
 
 // overlayHelp places the help modal over the frame.

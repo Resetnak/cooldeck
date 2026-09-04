@@ -8,6 +8,7 @@ import (
 
 	"github.com/resetnak/cooldeck/internal/domain"
 	"github.com/resetnak/cooldeck/internal/tui/components"
+	"github.com/resetnak/cooldeck/internal/tui/theme"
 	"github.com/resetnak/cooldeck/internal/tui/views"
 )
 
@@ -41,7 +42,7 @@ func (m *Model) render() string {
 
 	// Fill the terminal with the theme background so the UI reads as one
 	// surface rather than floating text on the host terminal colour.
-	return m.theme.App.Width(m.width).Height(m.height).Render(frame)
+	return theme.Fill(m.theme.App.Width(m.width).Height(m.height), frame)
 }
 
 func (m *Model) headerData() components.HeaderData {
@@ -245,7 +246,7 @@ func (m *Model) overlayConfirmation(frame string) string {
 		"",
 		buttons,
 	)
-	modal := m.theme.ModalDanger.Width(width).Render(content)
+	modal := theme.Fill(m.theme.ModalDanger.Width(width), content)
 	x := max((m.layout.Width-lipgloss.Width(modal))/2, 0)
 	y := max((m.layout.Height-lipgloss.Height(modal))/2, 0)
 	return components.Overlay(frame, modal, x, y)
@@ -275,7 +276,7 @@ func (m *Model) overlayTerminalPicker(frame string) string {
 	}
 	rows = append(rows, "", th.ModalHint.Render("enter connect  ·  esc cancel"))
 	content := lipgloss.JoinVertical(lipgloss.Left, rows...)
-	modal := th.Modal.Width(width).Render(content)
+	modal := theme.Fill(th.Modal.Width(width), content)
 	x := max((m.layout.Width-lipgloss.Width(modal))/2, 0)
 	y := max((m.layout.Height-lipgloss.Height(modal))/2, 0)
 	return components.Overlay(frame, modal, x, y)

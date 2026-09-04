@@ -9,6 +9,7 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"github.com/resetnak/cooldeck/internal/tui/components"
+	"github.com/resetnak/cooldeck/internal/tui/theme"
 	"github.com/resetnak/cooldeck/internal/tui/views"
 )
 
@@ -536,7 +537,7 @@ func (m *Model) renderPalette() string {
 	}
 
 	content := lipgloss.JoinVertical(lipgloss.Left, rows...)
-	return th.Modal.Width(width).Render(content)
+	return theme.Fill(th.Modal.Width(width), content)
 }
 
 func (m *Model) renderPaletteRow(item rankedCommand, active bool, width int) string {
