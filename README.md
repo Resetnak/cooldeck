@@ -490,6 +490,12 @@ Bug reports, feature requests and PRs are welcome - see [CONTRIBUTING.md](CONTRI
 local setup, the golden-test workflow and what `make check` expects before review. Participation is
 covered by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
+## 👤 Author
+
+CoolDeck is built and maintained by [Alexandr Rešetňak](https://resetnak.cz/en/) - a senior PHP
+backend developer in Prague who runs his own products on Coolify. Find him on
+[GitHub](https://github.com/Resetnak).
+
 ## 📄 License
 
 [MIT](LICENSE) © 2026 Alexandr Rešetňak

@@ -491,6 +491,12 @@ Hlášení chyb, návrhy funkcí i PR jsou vítané - v [CONTRIBUTING.md](CONTRI
 setup, workflow golden testů a co má projít před review přes `make check`. Účast se řídí
 [Code of Conduct](CODE_OF_CONDUCT.md).
 
+## 👤 Autor
+
+CoolDeck vytváří a udržuje [Alexandr Rešetňak](https://resetnak.cz/) - senior PHP backend developer
+z Prahy, který na Coolify provozuje vlastní produkty. Najdete ho i na
+[GitHubu](https://github.com/Resetnak).
+
 ## 📄 Licence
 
 [MIT](LICENSE) © 2026 Alexandr Rešetňak
